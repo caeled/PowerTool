@@ -155,6 +155,23 @@ public class DriveEntry
     public string PctColor => PctUsed > 85 ? "#CC4400" : PctUsed > 70 ? "#B8860B" : "#228B22";
 }
 
+public class SchedTaskEntry
+{
+    public string TaskName { get; set; } = "";
+    public string Status { get; set; } = "";
+    public string LastRun { get; set; } = "";
+    public string NextRun { get; set; } = "";
+    public string Author { get; set; } = "";
+    public string StatusColor => Status == "Running" ? "#228B22" : Status == "Disabled" ? "#999" : "#1565C0";
+}
+
+public class StartupEntry
+{
+    public string Name { get; set; } = "";
+    public string Command { get; set; } = "";
+    public string Location { get; set; } = "";
+}
+
 // ── ViewModel ────────────────────────────────────────────────────────────────
 
 public class ToolsViewModel : BaseViewModel
@@ -385,6 +402,53 @@ public class ToolsViewModel : BaseViewModel
     public bool GpUpdateLoading   { get => _gpUpdateLoading;  set => SetProperty(ref _gpUpdateLoading, value); }
     public string GpUpdateOutput  { get => _gpUpdateOutput;   set => SetProperty(ref _gpUpdateOutput, value); }
     public ICommand GpUpdateCommand { get; }
+
+    // ── Scheduled Tasks ──────────────────────────────────────────────────
+    private bool _schedTasksLoading;
+    public bool SchedTasksLoading { get => _schedTasksLoading; set => SetProperty(ref _schedTasksLoading, value); }
+    public ObservableCollection<SchedTaskEntry> SchedTasks { get; } = [];
+    private SchedTaskEntry? _selectedSchedTask;
+    public SchedTaskEntry? SelectedSchedTask { get => _selectedSchedTask; set => SetProperty(ref _selectedSchedTask, value); }
+    public ICommand LoadSchedTasksCommand { get; private set; } = null!;
+    public ICommand RunSchedTaskCommand { get; private set; } = null!;
+    public ICommand DisableSchedTaskCommand { get; private set; } = null!;
+    public ICommand EnableSchedTaskCommand { get; private set; } = null!;
+
+    // ── Windows Activation ───────────────────────────────────────────────
+    private bool _activationLoading;
+    private string _activationOutput = "";
+    public bool ActivationLoading { get => _activationLoading; set => SetProperty(ref _activationLoading, value); }
+    public string ActivationOutput { get => _activationOutput; set => SetProperty(ref _activationOutput, value); }
+    public ICommand CheckActivationCommand { get; private set; } = null!;
+
+    // ── Temp Cleanup ─────────────────────────────────────────────────────
+    private bool _tempCleanLoading;
+    private string _tempCleanOutput = "";
+    private string _tempCleanDomain = ".";
+    private string _tempCleanUsername = "";
+    private string _tempCleanPassword = "";
+    public bool TempCleanLoading { get => _tempCleanLoading; set => SetProperty(ref _tempCleanLoading, value); }
+    public string TempCleanOutput { get => _tempCleanOutput; set => SetProperty(ref _tempCleanOutput, value); }
+    public string TempCleanDomain   { get => _tempCleanDomain;   set => SetProperty(ref _tempCleanDomain, value); }
+    public string TempCleanUsername { get => _tempCleanUsername; set => SetProperty(ref _tempCleanUsername, value); }
+    public string TempCleanPassword { get => _tempCleanPassword; set => SetProperty(ref _tempCleanPassword, value); }
+    public ObservableCollection<string> TempCleanFolders { get; } =
+        ["C:\\Windows\\Temp", "C:\\Windows\\Prefetch", "%TEMP% (session user)"];
+    private string _tempCleanSelectedFolder = "C:\\Windows\\Temp";
+    public string TempCleanSelectedFolder
+    {
+        get => _tempCleanSelectedFolder;
+        set => SetProperty(ref _tempCleanSelectedFolder, value);
+    }
+    public ICommand TempCleanScanCommand { get; private set; } = null!;
+    public ICommand TempCleanRunCommand { get; private set; } = null!;
+    public ICommand TempCleanListCommand { get; private set; } = null!;
+
+    // ── Startup Programs ─────────────────────────────────────────────────
+    private bool _startupLoading;
+    public bool StartupLoading { get => _startupLoading; set => SetProperty(ref _startupLoading, value); }
+    public ObservableCollection<StartupEntry> StartupItems { get; } = [];
+    public ICommand LoadStartupCommand { get; private set; } = null!;
 
     // ── Copy File ────────────────────────────────────────────────────────
     private string _copyLocalPath = "";
@@ -1098,6 +1162,117 @@ public class ToolsViewModel : BaseViewModel
             SweepLoading = false;
         });
 
+        LoadSchedTasksCommand = new Command(async () =>
+        {
+            SchedTasksLoading = true; SchedTasks.Clear(); StatusMessage = "";
+            var target = await ResolveTargetAsync(); if (target == null) { SchedTasksLoading = false; return; }
+            var results = await Task.Run(() => {
+                var json = RunPsSync(PsScripts.SchedTasks(target));
+                if (string.IsNullOrWhiteSpace(json)) return new List<SchedTaskEntry>();
+                try { return JsonSerializer.Deserialize<List<SchedTaskEntry>>(json) ?? []; }
+                catch { return new List<SchedTaskEntry>(); }
+            });
+            foreach (var t in results) SchedTasks.Add(t);
+            StatusMessage = $"Loaded {results.Count} scheduled tasks from {target}.";
+            SchedTasksLoading = false;
+        });
+
+        RunSchedTaskCommand = new Command(async () =>
+        {
+            if (SelectedSchedTask == null) { StatusMessage = "Select a task first."; return; }
+            var target = await ResolveTargetAsync(); if (target == null) return;
+            var isLocal = IsLocal(target);
+            var cmd = isLocal
+                ? $"Start-ScheduledTask -TaskName '{SelectedSchedTask.TaskName}'"
+                : $"Invoke-Command -ComputerName '{target}' -ScriptBlock {{ Start-ScheduledTask -TaskName '{SelectedSchedTask.TaskName}' }}";
+            await Task.Run(() => RunPsSync(cmd));
+            StatusMessage = $"Started task '{SelectedSchedTask.TaskName}' on {target}.";
+        });
+
+        DisableSchedTaskCommand = new Command(async () =>
+        {
+            if (SelectedSchedTask == null) { StatusMessage = "Select a task first."; return; }
+            var target = await ResolveTargetAsync(); if (target == null) return;
+            var isLocal = IsLocal(target);
+            var cmd = isLocal
+                ? $"Disable-ScheduledTask -TaskName '{SelectedSchedTask.TaskName}'"
+                : $"Invoke-Command -ComputerName '{target}' -ScriptBlock {{ Disable-ScheduledTask -TaskName '{SelectedSchedTask.TaskName}' }}";
+            await Task.Run(() => RunPsSync(cmd));
+            StatusMessage = $"Disabled task '{SelectedSchedTask.TaskName}' on {target}.";
+        });
+
+        EnableSchedTaskCommand = new Command(async () =>
+        {
+            if (SelectedSchedTask == null) { StatusMessage = "Select a task first."; return; }
+            var target = await ResolveTargetAsync(); if (target == null) return;
+            var isLocal = IsLocal(target);
+            var cmd = isLocal
+                ? $"Enable-ScheduledTask -TaskName '{SelectedSchedTask.TaskName}'"
+                : $"Invoke-Command -ComputerName '{target}' -ScriptBlock {{ Enable-ScheduledTask -TaskName '{SelectedSchedTask.TaskName}' }}";
+            await Task.Run(() => RunPsSync(cmd));
+            StatusMessage = $"Enabled task '{SelectedSchedTask.TaskName}' on {target}.";
+        });
+
+        CheckActivationCommand = new Command(async () =>
+        {
+            ActivationLoading = true; ActivationOutput = ""; StatusMessage = "";
+            var target = await ResolveTargetAsync(); if (target == null) { ActivationLoading = false; return; }
+            var output = await Task.Run(() => RunPsSync(PsScripts.Activation(target)));
+            ActivationOutput = string.IsNullOrWhiteSpace(output) ? "No output returned." : output.Trim();
+            StatusMessage = $"Activation check complete on {target}.";
+            ActivationLoading = false;
+        });
+
+        TempCleanScanCommand = new Command(async () =>
+        {
+            TempCleanLoading = true; TempCleanOutput = "Scanning..."; StatusMessage = "";
+            var target = await ResolveTargetAsync(); if (target == null) { TempCleanLoading = false; return; }
+            var hasCreds = !string.IsNullOrWhiteSpace(TempCleanUsername) && !string.IsNullOrWhiteSpace(TempCleanPassword);
+            var output = await Task.Run(() => RunPsSync(PsScripts.TempCleanScan(target, hasCreds ? TempCleanDomain : null, hasCreds ? TempCleanUsername : null, hasCreds ? TempCleanPassword : null)));
+            TempCleanOutput = string.IsNullOrWhiteSpace(output) ? "Nothing found." : output.Trim();
+            StatusMessage = $"Scan complete on {target}.";
+            TempCleanLoading = false;
+        });
+
+        TempCleanRunCommand = new Command(async () =>
+        {
+            TempCleanLoading = true; TempCleanOutput = "Cleaning..."; StatusMessage = "";
+            var target = await ResolveTargetAsync(); if (target == null) { TempCleanLoading = false; return; }
+            var hasCreds = !string.IsNullOrWhiteSpace(TempCleanUsername) && !string.IsNullOrWhiteSpace(TempCleanPassword);
+            var output = await Task.Run(() => RunPsSync(PsScripts.TempCleanRun(target, hasCreds ? TempCleanDomain : null, hasCreds ? TempCleanUsername : null, hasCreds ? TempCleanPassword : null)));
+            TempCleanOutput = string.IsNullOrWhiteSpace(output) ? "Clean complete." : output.Trim();
+            StatusMessage = $"Temp cleanup complete on {target}.";
+            TempCleanLoading = false;
+        });
+
+        TempCleanListCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(TempCleanSelectedFolder)) { StatusMessage = "Select a folder first."; return; }
+            TempCleanLoading = true; TempCleanOutput = "Listing files..."; StatusMessage = "";
+            var target = await ResolveTargetAsync(); if (target == null) { TempCleanLoading = false; return; }
+            var folder = TempCleanSelectedFolder == "%TEMP% (session user)" ? "$env:TEMP" : TempCleanSelectedFolder;
+            var hasCreds = !string.IsNullOrWhiteSpace(TempCleanUsername) && !string.IsNullOrWhiteSpace(TempCleanPassword);
+            var output = await Task.Run(() => RunPsSync(PsScripts.TempListFiles(target, folder, hasCreds ? TempCleanDomain : null, hasCreds ? TempCleanUsername : null, hasCreds ? TempCleanPassword : null)));
+            TempCleanOutput = string.IsNullOrWhiteSpace(output) ? "(empty folder)" : output.Trim();
+            StatusMessage = $"Listed {TempCleanSelectedFolder} on {target}.";
+            TempCleanLoading = false;
+        });
+
+        LoadStartupCommand = new Command(async () =>
+        {
+            StartupLoading = true; StartupItems.Clear(); StatusMessage = "";
+            var target = await ResolveTargetAsync(); if (target == null) { StartupLoading = false; return; }
+            var results = await Task.Run(() => {
+                var json = RunPsSync(PsScripts.StartupPrograms(target));
+                if (string.IsNullOrWhiteSpace(json)) return new List<StartupEntry>();
+                try { return JsonSerializer.Deserialize<List<StartupEntry>>(json) ?? []; }
+                catch { return new List<StartupEntry>(); }
+            });
+            foreach (var s in results) StartupItems.Add(s);
+            StatusMessage = $"Loaded {results.Count} startup entries from {target}.";
+            StartupLoading = false;
+        });
+
         // Pre-fill credential fields from the shared service on startup
         ApplyCredentials();
     }
@@ -1106,15 +1281,18 @@ public class ToolsViewModel : BaseViewModel
     {
         if (_creds.HasUserCred)
         {
-            DeployDomain   = _creds.UserDomain;
-            DeployUsername = _creds.UserUsername;
-            DeployPassword = _creds.UserPassword;
-            CopyDomain     = _creds.UserDomain;
-            CopyUsername   = _creds.UserUsername;
-            CopyPassword   = _creds.UserPassword;
-            RunAsDomain    = _creds.UserDomain;
-            RunAsUsername  = _creds.UserUsername;
-            RunAsPassword  = _creds.UserPassword;
+            DeployDomain      = _creds.UserDomain;
+            DeployUsername    = _creds.UserUsername;
+            DeployPassword    = _creds.UserPassword;
+            CopyDomain        = _creds.UserDomain;
+            CopyUsername      = _creds.UserUsername;
+            CopyPassword      = _creds.UserPassword;
+            RunAsDomain       = _creds.UserDomain;
+            RunAsUsername     = _creds.UserUsername;
+            RunAsPassword     = _creds.UserPassword;
+            TempCleanDomain   = _creds.UserDomain;
+            TempCleanUsername = _creds.UserUsername;
+            TempCleanPassword = _creds.UserPassword;
         }
     }
 
@@ -1170,7 +1348,7 @@ public class ToolsViewModel : BaseViewModel
     private static string RunPsSync(string script)
     {
         var temp = Path.Combine(Path.GetTempPath(), $"tool_{Guid.NewGuid():N}.ps1");
-        File.WriteAllText(temp, script);
+        File.WriteAllText(temp, script, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
         try
         {
             var psi = new ProcessStartInfo("powershell.exe",
@@ -1182,9 +1360,12 @@ public class ToolsViewModel : BaseViewModel
                 CreateNoWindow = true
             };
             using var proc = Process.Start(psi)!;
-            var output = proc.StandardOutput.ReadToEnd();
+            var stdout = proc.StandardOutput.ReadToEnd();
+            var stderr = proc.StandardError.ReadToEnd();
             proc.WaitForExit();
-            return output;
+            if (!string.IsNullOrWhiteSpace(stderr) && string.IsNullOrWhiteSpace(stdout))
+                return $"STDERR: {stderr.Trim()}";
+            return stdout;
         }
         finally { try { File.Delete(temp); } catch { } }
     }
@@ -1283,6 +1464,19 @@ internal static class PsScripts
             "}\n" +
             $"if ($isLocal) {{ @(& $sb) | ConvertTo-Json -Depth {depth} }}\n" +
             $"else {{ @(Invoke-Command -ComputerName '{target}' -ScriptBlock $sb) | ConvertTo-Json -Depth {depth} }}\n";
+    }
+
+    // For scripts that output plain text (not JSON) — avoids WinRM PSObject serialization
+    private static string TextScriptWithTarget(string target, string body)
+    {
+        return
+            "$ErrorActionPreference = 'SilentlyContinue'\n" +
+            $"$isLocal = ('{target}' -eq 'localhost' -or '{target}' -eq $env:COMPUTERNAME)\n" +
+            "$sb = {\n" +
+            body + "\n" +
+            "}\n" +
+            $"if ($isLocal) {{ & $sb }}\n" +
+            $"else {{ Invoke-Command -ComputerName '{target}' -ScriptBlock $sb | ForEach-Object {{ \"$_\" }} }}\n";
     }
 
     public static string NetworkInfo(string target) => ScriptWithTarget(target, """
@@ -1906,6 +2100,152 @@ internal static class PsScripts
         }
         $results | ConvertTo-Json -Depth 2
         """;
+
+    public static string SchedTasks(string target) => ScriptWithTarget(target, """
+            Get-ScheduledTask | ForEach-Object {
+                $info = $_ | Get-ScheduledTaskInfo -ErrorAction SilentlyContinue
+                [PSCustomObject]@{
+                    TaskName = $_.TaskName
+                    Status   = $_.State.ToString()
+                    LastRun  = if ($info.LastRunTime) { $info.LastRunTime.ToString('yyyy-MM-dd HH:mm') } else { 'Never' }
+                    NextRun  = if ($info.NextRunTime) { $info.NextRunTime.ToString('yyyy-MM-dd HH:mm') } else { 'N/A' }
+                    Author   = $_.Author
+                }
+            }
+        """, 2);
+
+    public static string Activation(string target) => TextScriptWithTarget(target, """
+            $sl = Get-WmiObject -Query "SELECT * FROM SoftwareLicensingProduct WHERE PartialProductKey IS NOT NULL AND Name LIKE 'Windows%'"
+            foreach ($p in $sl) {
+                $status = switch ($p.LicenseStatus) {
+                    0 { 'Unlicensed' } 1 { 'Licensed' } 2 { 'OOB Grace' }
+                    3 { 'OOT Grace' } 4 { 'Non-Genuine Grace' } 5 { 'Notification' }
+                    6 { 'Extended Grace' } default { "Unknown ($($p.LicenseStatus))" }
+                }
+                "Name        : $($p.Name)"
+                "Status      : $status"
+                "Description : $($p.Description)"
+                "Product Key : $($p.PartialProductKey)XXXXX"
+                "Grace Mins  : $($p.GracePeriodRemaining)"
+                ""
+            }
+        """);
+
+    public static string TempCleanScan(string target, string? domain = null, string? username = null, string? password = null)
+    {
+        var body = """
+            $paths = @($env:TEMP, "C:\Windows\Temp", "C:\Windows\Prefetch")
+            foreach ($p in $paths) {
+                if (Test-Path $p) {
+                    $files = Get-ChildItem $p -Recurse -File -ErrorAction SilentlyContinue
+                    $size  = ($files | Measure-Object Length -Sum).Sum / 1MB
+                    "$p : $([math]::Round($size,1)) MB ($($files.Count) files)"
+                }
+            }
+        """;
+        return BuildCredScript(target, body, domain, username, password);
+    }
+
+    public static string TempCleanRun(string target, string? domain = null, string? username = null, string? password = null)
+    {
+        var body = """
+            $paths = @("C:\Windows\Temp", "C:\Windows\Prefetch")
+            $deleted = 0; $failed = 0; $freed = 0.0
+            foreach ($p in $paths) {
+                if (-not (Test-Path $p)) { continue }
+                $files = Get-ChildItem $p -Recurse -File -ErrorAction SilentlyContinue
+                "--- $p ($($files.Count) files) ---"
+                foreach ($f in $files) {
+                    try {
+                        $size = $f.Length
+                        Remove-Item $f.FullName -Force
+                        $freed += $size; $deleted++
+                        "  Deleted: $($f.Name)"
+                    } catch {
+                        $failed++
+                        "  SKIPPED: $($f.Name) - $($_.Exception.Message)"
+                    }
+                }
+            }
+            ""
+            "Deleted $deleted file(s), skipped $failed - freed $([math]::Round($freed/1MB,1)) MB"
+        """;
+        return BuildCredScript(target, body, domain, username, password);
+    }
+
+    public static string TempListFiles(string target, string folder, string? domain = null, string? username = null, string? password = null)
+    {
+        // Quote literal paths; leave PS variables (starting with $) unquoted
+        var psPath = folder.StartsWith("$") ? folder : $"\"{folder}\"";
+        var body =
+            $"$p = {psPath}\n" +
+            "if (-not (Test-Path $p)) { \"Folder not found: $p\"; return }\n" +
+            "$files = Get-ChildItem $p -File -ErrorAction SilentlyContinue | Sort-Object LastWriteTime -Descending\n" +
+            "\"$($files.Count) file(s) in $p\"\n" +
+            "\"-\" * 60\n" +
+            "foreach ($f in $files) {\n" +
+            "    \"{0}  {1,12}  {2}\" -f $f.LastWriteTime.ToString('yyyy-MM-dd HH:mm'), $f.Length, $f.Name\n" +
+            "}\n";
+        return BuildCredScript(target, body, domain, username, password);
+    }
+
+    // Builds a plain-text script that optionally uses credentials for remote execution
+    private static string BuildCredScript(string target, string body, string? domain, string? username, string? password)
+    {
+        if (IsLocalStatic(target) || string.IsNullOrWhiteSpace(username) || string.IsNullOrWhiteSpace(password))
+            return TextScriptWithTarget(target, body);
+
+        var userFull = string.IsNullOrWhiteSpace(domain) || domain == "." ? username : $"{domain}\\{username}";
+        return
+            "$ErrorActionPreference = 'Stop'\n" +
+            $"$secpw = ConvertTo-SecureString '{password}' -AsPlainText -Force\n" +
+            $"$cred  = New-Object System.Management.Automation.PSCredential('{userFull}', $secpw)\n" +
+            "$sb = {\n" + body + "\n}\n" +
+            "try {\n" +
+            $"    Invoke-Command -ComputerName '{target}' -Credential $cred -ScriptBlock $sb | ForEach-Object {{ \"$_\" }}\n" +
+            "} catch {\n" +
+            "    \"ERROR: $_\"\n" +
+            "}\n";
+    }
+
+    private static bool IsLocalStatic(string target) =>
+        string.IsNullOrWhiteSpace(target)
+        || target.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+        || target.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase);
+
+    public static string StartupPrograms(string target) => ScriptWithTarget(target, """
+            $items = @()
+            $regPaths = @(
+                @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'; Loc='HKLM Run' },
+                @{ Path='HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'; Loc='HKCU Run' },
+                @{ Path='HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce'; Loc='HKLM RunOnce' },
+                @{ Path='HKCU:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce'; Loc='HKCU RunOnce' }
+            )
+            foreach ($r in $regPaths) {
+                if (Test-Path $r.Path) {
+                    Get-ItemProperty $r.Path | Get-Member -MemberType NoteProperty |
+                        Where-Object { $_.Name -notmatch '^PS' } | ForEach-Object {
+                            $items += [PSCustomObject]@{
+                                Name     = $_.Name
+                                Command  = (Get-ItemProperty $r.Path).$($_.Name)
+                                Location = $r.Loc
+                            }
+                        }
+                }
+            }
+            $startupFolders = @(
+                @{ Path=[System.Environment]::GetFolderPath('Startup'); Loc='User Startup Folder' },
+                @{ Path="C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup"; Loc='All Users Startup Folder' }
+            )
+            foreach ($f in $startupFolders) {
+                if (Test-Path $f.Path) {
+                    Get-ChildItem $f.Path -ErrorAction SilentlyContinue | ForEach-Object {
+                        $items += [PSCustomObject]@{ Name=$_.Name; Command=$_.FullName; Location=$f.Loc }
+                    }
+                }
+            }
+            $items
+        """, 2);
 
     public static string WindowsUpdates(string target) => $$"""
         $ErrorActionPreference = 'SilentlyContinue'

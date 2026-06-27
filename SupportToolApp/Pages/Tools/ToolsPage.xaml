@@ -37,6 +37,10 @@
                 <Button Text="Processes"        x:Name="TabProcesses"     Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
                 <Button Text="Printers"         x:Name="TabPrinters"      Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
                 <Button Text="Disk Space"       x:Name="TabDiskSpace"     Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
+                <Button Text="Scheduled Tasks"  x:Name="TabSchedTasks"    Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
+                <Button Text="Activation"       x:Name="TabActivation"    Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
+                <Button Text="Temp Cleanup"     x:Name="TabTempClean"     Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
+                <Button Text="Startup Programs" x:Name="TabStartup"       Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
                 <!-- Users -->
                 <Button Text="Local Users &amp; Groups" x:Name="TabLocalUsers"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Logged On User"           x:Name="TabLoggedOn"         Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
@@ -940,6 +944,136 @@
                             <DataTemplate>
                                 <Label FontFamily="Courier New" FontSize="11" TextColor="#00FF41"
                                        Text="{Binding Message}" Padding="0,1"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+
+            <!-- ── Scheduled Tasks ────────────────────────────────────────────── -->
+            <Grid x:Name="PanelSchedTasks" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Tasks" Command="{Binding LoadSchedTasksCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <Button Grid.Column="1" Text="▶ Run" Command="{Binding RunSchedTaskCommand}"
+                            BackgroundColor="#228B22" Padding="14,8"/>
+                    <Button Grid.Column="2" Text="Enable" Command="{Binding EnableSchedTaskCommand}"
+                            BackgroundColor="#1565C0" Padding="14,8"/>
+                    <Button Grid.Column="3" Text="Disable" Command="{Binding DisableSchedTaskCommand}"
+                            BackgroundColor="#CC4400" Padding="14,8"/>
+                    <ActivityIndicator Grid.Column="4" IsRunning="{Binding SchedTasksLoading}"
+                                       IsVisible="{Binding SchedTasksLoading}" Color="SteelBlue" VerticalOptions="Center"/>
+                    <Label Grid.Column="5" Text="{Binding SelectedSchedTask.TaskName, StringFormat='Selected: {0}'}"
+                           VerticalOptions="Center" TextColor="Gray" FontSize="12"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding SchedTasks}" SelectionMode="Single"
+                                    SelectedItem="{Binding SelectedSchedTask}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="*,90,130,130,150" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="Task Name" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Status" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Last Run" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="3" Text="Next Run" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="4" Text="Author" FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,90,130,130,150" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding TaskName}" FontSize="12"/>
+                                    <Label Grid.Column="1" Text="{Binding Status}" FontSize="12" TextColor="{Binding StatusColor}"/>
+                                    <Label Grid.Column="2" Text="{Binding LastRun}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="3" Text="{Binding NextRun}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="4" Text="{Binding Author}" FontSize="11" TextColor="Gray"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Windows Activation ─────────────────────────────────────────── -->
+            <Grid x:Name="PanelActivation" RowDefinitions="Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Check Activation" Command="{Binding CheckActivationCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding ActivationLoading}"
+                                       IsVisible="{Binding ActivationLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
+                    <ScrollView>
+                        <Label Text="{Binding ActivationOutput}" FontFamily="Courier New" FontSize="12" TextColor="#00FF41"/>
+                    </ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Temp Cleanup ───────────────────────────────────────────────── -->
+            <Grid x:Name="PanelTempClean" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <!-- Credentials row -->
+                <Grid Grid.Row="0" ColumnDefinitions="60,100,80,*,80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Domain:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="1" Text="{Binding TempCleanDomain}" Placeholder="."/>
+                    <Label Grid.Column="2" Text="Username:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="3" Text="{Binding TempCleanUsername}" Placeholder="admin (blank = current user)"/>
+                    <Label Grid.Column="4" Text="Password:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="5" Text="{Binding TempCleanPassword}" IsPassword="True"/>
+                </Grid>
+                <!-- Action buttons row -->
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Scan" Command="{Binding TempCleanScanCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <Button Grid.Column="1" Text="Clean Now" Command="{Binding TempCleanRunCommand}"
+                            BackgroundColor="#CC4400" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="2" IsRunning="{Binding TempCleanLoading}"
+                                       IsVisible="{Binding TempCleanLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                    <Label Grid.Column="3" Text="Cleans: C:\Windows\Temp and Prefetch"
+                           VerticalOptions="Center" TextColor="Gray" FontSize="12"/>
+                </Grid>
+                <!-- Folder browser row -->
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Browse folder:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Picker Grid.Column="1" ItemsSource="{Binding TempCleanFolders}"
+                            SelectedItem="{Binding TempCleanSelectedFolder}" VerticalOptions="Center"/>
+                    <Button Grid.Column="2" Text="List Files" Command="{Binding TempCleanListCommand}"
+                            BackgroundColor="#1565C0" Padding="16,8"/>
+                </Grid>
+                <!-- Output -->
+                <Border Grid.Row="3" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
+                    <ScrollView>
+                        <Label Text="{Binding TempCleanOutput}" FontFamily="Courier New" FontSize="12" TextColor="#00FF41"/>
+                    </ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Startup Programs ───────────────────────────────────────────── -->
+            <Grid x:Name="PanelStartup" RowDefinitions="Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Startup Programs" Command="{Binding LoadStartupCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding StartupLoading}"
+                                       IsVisible="{Binding StartupLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding StartupItems}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="160,*,160" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="Name" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Command / Path" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Location" FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="160,*,160" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding Name}" FontSize="12" FontAttributes="Bold"/>
+                                    <Label Grid.Column="1" Text="{Binding Command}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="2" Text="{Binding Location}" FontSize="11" TextColor="#1565C0"/>
+                                </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>

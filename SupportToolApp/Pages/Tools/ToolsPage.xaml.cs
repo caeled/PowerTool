@@ -39,6 +39,10 @@ public partial class ToolsPage : ContentPage
             { TabShares,          PanelShares },
             { TabDeploy,          PanelDeploy },
             { TabDiskSpace,       PanelDiskSpace },
+            { TabSchedTasks,      PanelSchedTasks },
+            { TabActivation,      PanelActivation },
+            { TabTempClean,       PanelTempClean },
+            { TabStartup,         PanelStartup },
             { TabGroupMembership, PanelGroupMembership },
             { TabDns,             PanelDns },
             { TabRegistry,        PanelRegistry },
@@ -48,7 +52,7 @@ public partial class ToolsPage : ContentPage
 
         _categories = new()
         {
-            { CatSystem,  [TabApps, TabServices, TabUpdates, TabPatches, TabProcesses, TabPrinters, TabDiskSpace] },
+            { CatSystem,  [TabApps, TabServices, TabUpdates, TabPatches, TabProcesses, TabPrinters, TabDiskSpace, TabSchedTasks, TabActivation, TabTempClean, TabStartup] },
             { CatUsers,   [TabLocalUsers, TabLoggedOn, TabLocalAdmins, TabRunAs, TabGroupMembership] },
             { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns] },
             { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate] },
