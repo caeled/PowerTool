@@ -172,6 +172,32 @@ public class StartupEntry
     public string Location { get; set; } = "";
 }
 
+public class RdpSessionEntry
+{
+    public string SessionId  { get; set; } = "";
+    public string Username   { get; set; } = "";
+    public string State      { get; set; } = "";
+    public string IdleTime   { get; set; } = "";
+    public string LogonTime  { get; set; } = "";
+}
+
+public class PwdExpiryEntry
+{
+    public string Username   { get; set; } = "";
+    public string Enabled    { get; set; } = "";
+    public string ExpiryDate { get; set; } = "";
+    public string DaysLeft   { get; set; } = "";
+    public string ExpiryColor { get; set; } = "White";
+}
+
+public class LocalUserMgmtEntry
+{
+    public string Name         { get; set; } = "";
+    public string Enabled      { get; set; } = "";
+    public string EnabledColor { get; set; } = "White";
+    public string Description  { get; set; } = "";
+}
+
 // ── ViewModel ────────────────────────────────────────────────────────────────
 
 public class ToolsViewModel : BaseViewModel
@@ -368,6 +394,74 @@ public class ToolsViewModel : BaseViewModel
     public ICommand AddToGroupCommand { get; }
     public ICommand RemoveFromGroupCommand { get; }
     public ICommand ListGroupMembersCommand { get; }
+
+    // ── Account Lockout ──────────────────────────────────────────────────
+    private string _lockoutUsername = "";
+    private string _lockoutDetails = "";
+    private string _lockoutStatusText = "";
+    private string _lockoutStatusColor = "#555555";
+    private bool _lockoutStatusVisible;
+    private bool _lockoutLoading;
+    public string LockoutUsername     { get => _lockoutUsername;     set => SetProperty(ref _lockoutUsername, value); }
+    public string LockoutDetails      { get => _lockoutDetails;      set => SetProperty(ref _lockoutDetails, value); }
+    public string LockoutStatusText   { get => _lockoutStatusText;   set => SetProperty(ref _lockoutStatusText, value); }
+    public string LockoutStatusColor  { get => _lockoutStatusColor;  set => SetProperty(ref _lockoutStatusColor, value); }
+    public bool   LockoutStatusVisible{ get => _lockoutStatusVisible; set => SetProperty(ref _lockoutStatusVisible, value); }
+    public bool   LockoutLoading      { get => _lockoutLoading;       set => SetProperty(ref _lockoutLoading, value); }
+    public ICommand CheckLockoutCommand  { get; private set; } = null!;
+    public ICommand UnlockAccountCommand { get; private set; } = null!;
+    public ICommand ResetBadPwdCommand   { get; private set; } = null!;
+
+    // ── RDP Sessions ─────────────────────────────────────────────────────
+    private bool _rdpLoading;
+    private string _rdpStatus = "";
+    private RdpSessionEntry? _rdpSelectedSession;
+    public bool   RdpLoading         { get => _rdpLoading;          set => SetProperty(ref _rdpLoading, value); }
+    public string RdpStatus          { get => _rdpStatus;           set => SetProperty(ref _rdpStatus, value); }
+    public RdpSessionEntry? RdpSelectedSession { get => _rdpSelectedSession; set => SetProperty(ref _rdpSelectedSession, value); }
+    public ObservableCollection<RdpSessionEntry> RdpSessions { get; } = [];
+    public ICommand ListRdpCommand { get; private set; } = null!;
+    public ICommand KickRdpCommand { get; private set; } = null!;
+
+    // ── Password Expiry ───────────────────────────────────────────────────
+    private string _pwdExpiryUsername = "";
+    private bool _pwdExpiryLoading;
+    public string PwdExpiryUsername { get => _pwdExpiryUsername; set => SetProperty(ref _pwdExpiryUsername, value); }
+    public bool   PwdExpiryLoading  { get => _pwdExpiryLoading;  set => SetProperty(ref _pwdExpiryLoading, value); }
+    public ObservableCollection<PwdExpiryEntry> PwdExpiryResults { get; } = [];
+    public ICommand CheckPwdExpiryCommand { get; private set; } = null!;
+
+    // ── User Management ───────────────────────────────────────────────────
+    private string _userMgmtDomain = ".", _userMgmtUsername = "", _userMgmtPassword = "";
+    private string _newUserUsername = "", _newUserFullName = "", _newUserDescription = "";
+    private string _newUserPassword = "", _newUserGroup = "Users";
+    private bool   _newUserAddRdp;
+    private bool   _newUserPwdNeverExpires;
+    private string _resetPwdUsername = "", _resetPwdPassword = "";
+    private bool   _resetPwdMustChange;
+    private string _userMgmtStatusText = "", _userMgmtStatusColor = "#228B22";
+    private bool   _userMgmtStatusVisible, _userMgmtLoading;
+    public string UserMgmtDomain      { get => _userMgmtDomain;      set => SetProperty(ref _userMgmtDomain, value); }
+    public string UserMgmtUsername    { get => _userMgmtUsername;    set => SetProperty(ref _userMgmtUsername, value); }
+    public string UserMgmtPassword    { get => _userMgmtPassword;    set => SetProperty(ref _userMgmtPassword, value); }
+    public string NewUserUsername      { get => _newUserUsername;      set => SetProperty(ref _newUserUsername, value); }
+    public string NewUserFullName      { get => _newUserFullName;      set => SetProperty(ref _newUserFullName, value); }
+    public string NewUserDescription   { get => _newUserDescription;   set => SetProperty(ref _newUserDescription, value); }
+    public string NewUserPassword      { get => _newUserPassword;      set => SetProperty(ref _newUserPassword, value); }
+    public string NewUserGroup         { get => _newUserGroup;         set => SetProperty(ref _newUserGroup, value); }
+    public bool   NewUserPwdNeverExpires { get => _newUserPwdNeverExpires; set => SetProperty(ref _newUserPwdNeverExpires, value); }
+    public bool   NewUserAddRdp          { get => _newUserAddRdp;          set => SetProperty(ref _newUserAddRdp, value); }
+    public string ResetPwdUsername     { get => _resetPwdUsername;     set => SetProperty(ref _resetPwdUsername, value); }
+    public string ResetPwdPassword     { get => _resetPwdPassword;     set => SetProperty(ref _resetPwdPassword, value); }
+    public bool   ResetPwdMustChange   { get => _resetPwdMustChange;   set => SetProperty(ref _resetPwdMustChange, value); }
+    public string UserMgmtStatusText   { get => _userMgmtStatusText;   set => SetProperty(ref _userMgmtStatusText, value); }
+    public string UserMgmtStatusColor  { get => _userMgmtStatusColor;  set => SetProperty(ref _userMgmtStatusColor, value); }
+    public bool   UserMgmtStatusVisible{ get => _userMgmtStatusVisible; set => SetProperty(ref _userMgmtStatusVisible, value); }
+    public bool   UserMgmtLoading      { get => _userMgmtLoading;       set => SetProperty(ref _userMgmtLoading, value); }
+    public ObservableCollection<LocalUserMgmtEntry> LocalUsersMgmt { get; } = [];
+    public ICommand CreateUserCommand    { get; private set; } = null!;
+    public ICommand ResetPasswordCommand { get; private set; } = null!;
+    public ICommand LoadUsersMgmtCommand { get; private set; } = null!;
 
     // ── DNS ──────────────────────────────────────────────────────────────
     private string _dnsQuery = "";
@@ -1017,6 +1111,243 @@ public class ToolsViewModel : BaseViewModel
             ListGroupMembersCommand.Execute(null);
         });
 
+        // ── Account Lockout ──────────────────────────────────────────────────
+        CheckLockoutCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(LockoutUsername)) { StatusMessage = "Enter a username."; return; }
+            LockoutLoading = true; LockoutDetails = ""; LockoutStatusVisible = false;
+            var target = await ResolveTargetAsync();
+            if (target == null) { LockoutLoading = false; return; }
+            var body =
+                $"$u = Get-LocalUser -Name '{LockoutUsername}' -ErrorAction SilentlyContinue\n" +
+                $"if (-not $u) {{ throw \"User '{LockoutUsername}' not found.\" }}\n" +
+                $"[PSCustomObject]@{{\n" +
+                $"  Name              = $u.Name\n" +
+                $"  Enabled           = $u.Enabled\n" +
+                $"  LastLogon         = if ($u.LastLogon) {{ $u.LastLogon.ToString('g') }} else {{ 'Never' }}\n" +
+                $"  PasswordExpires   = if ($u.PasswordExpires) {{ $u.PasswordExpires.ToString('g') }} else {{ 'Never' }}\n" +
+                $"  PasswordNeverExpires = $u.PasswordNeverExpires\n" +
+                $"}}";
+            var script = IsLocal(target)
+                ? body + "\n| ConvertTo-Json -Depth 2"
+                : $"Invoke-Command -ComputerName '{target}' -ScriptBlock {{\n{body}\n}} | ConvertTo-Json -Depth 2";
+            var result = await Task.Run(() => RunPsSync(script));
+            LockoutLoading = false;
+            try
+            {
+                var obj = JsonSerializer.Deserialize<JsonElement>(result);
+                bool enabled = obj.GetProperty("Enabled").GetBoolean();
+                LockoutStatusText  = enabled ? $"{LockoutUsername} - Account OK (enabled)" : $"{LockoutUsername} - ACCOUNT DISABLED/LOCKED";
+                LockoutStatusColor = enabled ? "#228B22" : "#CC2200";
+                LockoutStatusVisible = true;
+                LockoutDetails =
+                    $"Name:                  {obj.GetProperty("Name").GetString()}\n" +
+                    $"Enabled:               {enabled}\n" +
+                    $"Last Logon:            {obj.GetProperty("LastLogon").GetString()}\n" +
+                    $"Password Expires:      {obj.GetProperty("PasswordExpires").GetString()}\n" +
+                    $"Password Never Expires:{obj.GetProperty("PasswordNeverExpires").GetBoolean()}";
+            }
+            catch { LockoutDetails = result; LockoutStatusVisible = false; }
+        });
+
+        UnlockAccountCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(LockoutUsername)) { StatusMessage = "Enter a username."; return; }
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+            LockoutLoading = true;
+            var body = $"Enable-LocalUser -Name '{LockoutUsername}'";
+            var script = IsLocal(target)
+                ? body
+                : $"Invoke-Command -ComputerName '{target}' -ScriptBlock {{ {body} }} | Out-String -Stream";
+            var result = await Task.Run(() => RunPsSync(script));
+            LockoutLoading = false;
+            LockoutStatusText = string.IsNullOrWhiteSpace(result) ? $"{LockoutUsername} enabled successfully." : result.Trim();
+            LockoutStatusColor = "#228B22"; LockoutStatusVisible = true;
+            CheckLockoutCommand.Execute(null);
+        });
+
+        ResetBadPwdCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(LockoutUsername)) { StatusMessage = "Enter a username."; return; }
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+            LockoutLoading = true;
+            var body =
+                $"$u = Get-LocalUser -Name '{LockoutUsername}' -ErrorAction SilentlyContinue\n" +
+                $"if ($u) {{ Enable-LocalUser -Name '{LockoutUsername}'; 'Local user re-enabled (clears lock).' }}\n" +
+                $"else {{ $adUser = [ADSI]'WinNT://./{LockoutUsername},user'; $adUser.IsAccountLocked = $false; $adUser.SetInfo(); 'AD lock cleared.' }}";
+            var script = IsLocal(target)
+                ? body
+                : $"Invoke-Command -ComputerName '{target}' -ScriptBlock {{\n{body}\n}} | Out-String -Stream";
+            var result = await Task.Run(() => RunPsSync(script));
+            LockoutLoading = false;
+            LockoutStatusText = string.IsNullOrWhiteSpace(result) ? "Done." : result.Trim();
+            LockoutStatusColor = "#228B22"; LockoutStatusVisible = true;
+        });
+
+        // ── RDP Sessions ─────────────────────────────────────────────────
+        ListRdpCommand = new Command(async () =>
+        {
+            RdpLoading = true; RdpStatus = ""; RdpSessions.Clear();
+            var target = await ResolveTargetAsync();
+            if (target == null) { RdpLoading = false; return; }
+            var script = IsLocal(target)
+                ? "qwinsta"
+                : $"Invoke-Command -ComputerName '{target}' -ScriptBlock {{ qwinsta }} | Out-String -Stream";
+            var raw = await Task.Run(() => RunPsSync(script));
+            RdpLoading = false;
+            foreach (var line in raw.Split('\n').Skip(1))
+            {
+                if (string.IsNullOrWhiteSpace(line)) continue;
+                var parts = System.Text.RegularExpressions.Regex.Split(line.Trim(), @"\s{2,}");
+                if (parts.Length >= 3)
+                    RdpSessions.Add(new RdpSessionEntry
+                    {
+                        SessionId = parts.Length > 2 ? parts[2].Trim() : "",
+                        Username  = parts.Length > 1 ? parts[1].Trim() : parts[0].Trim(),
+                        State     = parts.Length > 3 ? parts[3].Trim() : "",
+                        IdleTime  = parts.Length > 4 ? parts[4].Trim() : "",
+                        LogonTime = parts.Length > 5 ? parts[5].Trim() : "",
+                    });
+            }
+            RdpStatus = $"{RdpSessions.Count} session(s) found.";
+        });
+
+        KickRdpCommand = new Command(async () =>
+        {
+            if (RdpSelectedSession == null) { RdpStatus = "Select a session to kick."; return; }
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlert(
+                "Kick Session", $"Log off session {RdpSelectedSession.SessionId} ({RdpSelectedSession.Username}) on {target}?", "Kick", "Cancel");
+            if (!confirm) return;
+            RdpLoading = true;
+            var script = IsLocal(target)
+                ? $"logoff {RdpSelectedSession.SessionId}"
+                : $"Invoke-Command -ComputerName '{target}' -ScriptBlock {{ logoff {RdpSelectedSession.SessionId} }}";
+            await Task.Run(() => RunPsSync(script));
+            RdpLoading = false;
+            RdpStatus = $"Session {RdpSelectedSession.SessionId} logged off.";
+            ListRdpCommand.Execute(null);
+        });
+
+        // ── Password Expiry ──────────────────────────────────────────────
+        CheckPwdExpiryCommand = new Command(async () =>
+        {
+            PwdExpiryLoading = true; PwdExpiryResults.Clear();
+            var target = await ResolveTargetAsync();
+            if (target == null) { PwdExpiryLoading = false; return; }
+            var filter = string.IsNullOrWhiteSpace(PwdExpiryUsername) ? "" : $"-Name '{PwdExpiryUsername}'";
+            // Select-Object calculated properties are more reliable through WinRM deserialization
+            var body =
+                $"Get-LocalUser {filter} | Select-Object " +
+                $"@{{N='Username';  E={{$_.Name}}}}, " +
+                $"@{{N='Enabled';   E={{if ($_.Enabled) {{'Enabled'}} else {{'Disabled'}}}}}}, " +
+                $"@{{N='ExpiryDate';E={{if ($_.PasswordExpires) {{$_.PasswordExpires.ToString('yyyy-MM-dd')}} else {{'Never'}}}}}}, " +
+                $"@{{N='DaysLeft';  E={{if ($_.PasswordExpires) {{\"$([int]($_.PasswordExpires-(Get-Date)).TotalDays) days\"}} else {{'N/A'}}}}}}, " +
+                $"@{{N='IsExpired'; E={{$_.PasswordExpires -and $_.PasswordExpires -lt (Get-Date)}}}}, " +
+                $"@{{N='IsSoon';    E={{$_.PasswordExpires -and $_.PasswordExpires -gt (Get-Date) -and $_.PasswordExpires -le (Get-Date).AddDays(14)}}}}";
+            // -InputObject @(...) forces array output in PS 5.1 even for a single result
+            var script = IsLocal(target)
+                ? $"ConvertTo-Json -Depth 2 -InputObject @({body})"
+                : $"ConvertTo-Json -Depth 2 -InputObject @(Invoke-Command -ComputerName '{target}' -ScriptBlock {{ @({body}) }})";
+            var raw = await Task.Run(() => RunPsSync(script));
+            PwdExpiryLoading = false;
+            if (string.IsNullOrWhiteSpace(raw) || raw.StartsWith("STDERR") || raw.StartsWith("ERROR"))
+            {
+                StatusMessage = $"Password Expiry error: {raw.Trim()}";
+                return;
+            }
+            try
+            {
+                var items = JsonSerializer.Deserialize<List<JsonElement>>(raw);
+                foreach (var item in items ?? [])
+                {
+                    bool expired = item.TryGetProperty("IsExpired", out var ep) && ep.GetBoolean();
+                    bool soon    = item.TryGetProperty("IsSoon",    out var sp) && sp.GetBoolean();
+                    PwdExpiryResults.Add(new PwdExpiryEntry
+                    {
+                        Username   = item.TryGetProperty("Username",   out var u) ? u.GetString() ?? "" : "",
+                        Enabled    = item.TryGetProperty("Enabled",    out var en)? en.GetString() ?? "" : "",
+                        ExpiryDate = item.TryGetProperty("ExpiryDate", out var ed)? ed.GetString() ?? "" : "",
+                        DaysLeft   = item.TryGetProperty("DaysLeft",   out var dl)? dl.GetString() ?? "" : "",
+                        ExpiryColor = expired ? "#FF4444" : soon ? "#FFA500" : "#228B22",
+                    });
+                }
+            }
+            catch (Exception ex) { StatusMessage = $"Password Expiry parse error: {ex.Message} | raw: {raw[..Math.Min(120, raw.Length)]}"; }
+        });
+
+        // ── User Management ──────────────────────────────────────────────
+        LoadUsersMgmtCommand = new Command(async () =>
+        {
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+            UserMgmtLoading = true;
+            await RefreshLocalUsersMgmt(target);
+            UserMgmtLoading = false;
+        });
+
+        CreateUserCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(NewUserUsername) || string.IsNullOrWhiteSpace(NewUserPassword))
+            { UserMgmtStatusText = "Username and password are required."; UserMgmtStatusColor = "#CC2200"; UserMgmtStatusVisible = true; return; }
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+            UserMgmtLoading = true; UserMgmtStatusVisible = false;
+            var pw = NewUserPassword.Replace("'", "''");
+            var neverExpires = NewUserPwdNeverExpires ? "-PasswordNeverExpires" : "";
+            var fullName = string.IsNullOrWhiteSpace(NewUserFullName) ? "" : $"-FullName '{NewUserFullName.Replace("'", "''")}'";
+            var desc = string.IsNullOrWhiteSpace(NewUserDescription) ? "" : $"-Description '{NewUserDescription.Replace("'", "''")}'";
+            var group = string.IsNullOrWhiteSpace(NewUserGroup) ? "Users" : NewUserGroup.Trim();
+            var rdpLine = NewUserAddRdp
+                ? $"Add-LocalGroupMember -Group 'Remote Desktop Users' -Member '{NewUserUsername}' -ErrorAction SilentlyContinue\n"
+                : "";
+            var rdpMsg = NewUserAddRdp ? " and Remote Desktop Users" : "";
+            var body =
+                $"$secpw = ConvertTo-SecureString '{pw}' -AsPlainText -Force\n" +
+                $"New-LocalUser -Name '{NewUserUsername}' -Password $secpw {fullName} {desc} {neverExpires} -ErrorAction Stop\n" +
+                $"Add-LocalGroupMember -Group '{group}' -Member '{NewUserUsername}' -ErrorAction SilentlyContinue\n" +
+                rdpLine +
+                $"\"User '{NewUserUsername}' created and added to {group}{rdpMsg}.\"";
+            var script = BuildUserMgmtScript(target, body);
+            var result = await Task.Run(() => RunPsSync(script));
+            UserMgmtLoading = false;
+            var ok = !result.StartsWith("ERROR") && !result.StartsWith("STDERR");
+            UserMgmtStatusText = result.Trim();
+            UserMgmtStatusColor = ok ? "#228B22" : "#CC2200";
+            UserMgmtStatusVisible = true;
+            if (ok) { NewUserUsername = ""; NewUserFullName = ""; NewUserDescription = ""; NewUserPassword = ""; }
+            await RefreshLocalUsersMgmt(target);
+        });
+
+        ResetPasswordCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(ResetPwdUsername) || string.IsNullOrWhiteSpace(ResetPwdPassword))
+            { UserMgmtStatusText = "Username and new password are required."; UserMgmtStatusColor = "#CC2200"; UserMgmtStatusVisible = true; return; }
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+            UserMgmtLoading = true; UserMgmtStatusVisible = false;
+            var pw = ResetPwdPassword.Replace("'", "''");
+            var mustChange = ResetPwdMustChange
+                ? $"net user '{ResetPwdUsername}' /logonpasswordchg:yes 2>$null\n"
+                : "";
+            var body =
+                $"$secpw = ConvertTo-SecureString '{pw}' -AsPlainText -Force\n" +
+                $"Set-LocalUser -Name '{ResetPwdUsername}' -Password $secpw -ErrorAction Stop\n" +
+                $"{mustChange}" +
+                $"\"Password reset for '{ResetPwdUsername}'.\"";
+            var script = BuildUserMgmtScript(target, body);
+            var result = await Task.Run(() => RunPsSync(script));
+            UserMgmtLoading = false;
+            var ok = !result.StartsWith("ERROR") && !result.StartsWith("STDERR");
+            UserMgmtStatusText = result.Trim();
+            UserMgmtStatusColor = ok ? "#228B22" : "#CC2200";
+            UserMgmtStatusVisible = true;
+            if (ok) { ResetPwdPassword = ""; }
+        });
+
         DnsLookupCommand = new Command(async () =>
         {
             if (string.IsNullOrWhiteSpace(DnsQuery)) { StatusMessage = "Enter a hostname or IP to look up."; return; }
@@ -1421,6 +1752,9 @@ public class ToolsViewModel : BaseViewModel
             PsRunDomain   = _creds.UserDomain;
             PsRunUsername = _creds.UserUsername;
             PsRunPassword = _creds.UserPassword;
+            UserMgmtDomain   = _creds.UserDomain;
+            UserMgmtUsername = _creds.UserUsername;
+            UserMgmtPassword = _creds.UserPassword;
         }
     }
 
@@ -1530,6 +1864,68 @@ public class ToolsViewModel : BaseViewModel
             : _allServices.Where(s => s.DisplayName.Contains(q, StringComparison.OrdinalIgnoreCase)
                                    || s.Name.Contains(q, StringComparison.OrdinalIgnoreCase));
         foreach (var s in filtered.OrderBy(s => s.DisplayName)) Services.Add(s);
+    }
+
+    private string BuildUserMgmtScript(string target, string body)
+    {
+        if (IsLocal(target)) return body;
+        var hasCreds = !string.IsNullOrWhiteSpace(UserMgmtUsername) && !string.IsNullOrWhiteSpace(UserMgmtPassword);
+        if (!hasCreds)
+            return $"Invoke-Command -ComputerName '{target}' -ScriptBlock {{\n{body}\n}} | Out-String -Stream";
+        var userFull = string.IsNullOrWhiteSpace(UserMgmtDomain) || UserMgmtDomain == "."
+            ? UserMgmtUsername : $"{UserMgmtDomain}\\{UserMgmtUsername}";
+        var pw = UserMgmtPassword.Replace("'", "''");
+        return
+            $"$secpw = ConvertTo-SecureString '{pw}' -AsPlainText -Force\n" +
+            $"$cred = New-Object System.Management.Automation.PSCredential('{userFull}', $secpw)\n" +
+            $"$ErrorActionPreference = 'Stop'\n" +
+            $"try {{\n" +
+            $"  Invoke-Command -ComputerName '{target}' -Credential $cred -ScriptBlock {{\n{body}\n  }} | Out-String -Stream\n" +
+            $"}} catch {{ \"ERROR: $_\" }}";
+    }
+
+    private async Task RefreshLocalUsersMgmt(string target)
+    {
+        var body = "Get-LocalUser | Select-Object Name, Enabled, Description | Sort-Object Name";
+        string script;
+        if (IsLocal(target))
+        {
+            script = $"@({body}) | ConvertTo-Json -Depth 2";
+        }
+        else
+        {
+            var hasCreds = !string.IsNullOrWhiteSpace(UserMgmtUsername) && !string.IsNullOrWhiteSpace(UserMgmtPassword);
+            if (hasCreds)
+            {
+                var userFull = string.IsNullOrWhiteSpace(UserMgmtDomain) || UserMgmtDomain == "."
+                    ? UserMgmtUsername : $"{UserMgmtDomain}\\{UserMgmtUsername}";
+                var pw = UserMgmtPassword.Replace("'", "''");
+                script =
+                    $"$secpw = ConvertTo-SecureString '{pw}' -AsPlainText -Force\n" +
+                    $"$cred = New-Object System.Management.Automation.PSCredential('{userFull}', $secpw)\n" +
+                    $"@(Invoke-Command -ComputerName '{target}' -Credential $cred -ScriptBlock {{ @({body}) }}) | ConvertTo-Json -Depth 2";
+            }
+            else
+            {
+                script = $"@(Invoke-Command -ComputerName '{target}' -ScriptBlock {{ @({body}) }}) | ConvertTo-Json -Depth 2";
+            }
+        }
+        var items = await RunPsJson<List<JsonElement>>(target, script);
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            LocalUsersMgmt.Clear();
+            foreach (var item in items ?? [])
+            {
+                var enabled = item.TryGetProperty("Enabled", out var ep) && ep.GetBoolean();
+                LocalUsersMgmt.Add(new LocalUserMgmtEntry
+                {
+                    Name        = item.TryGetProperty("Name", out var np) ? np.GetString() ?? "" : "",
+                    Enabled     = enabled ? "Enabled" : "Disabled",
+                    EnabledColor= enabled ? "#228B22" : "#888888",
+                    Description = item.TryGetProperty("Description", out var dp) ? dp.GetString() ?? "" : "",
+                });
+            }
+        });
     }
 
     private static bool IsLocal(string target) =>

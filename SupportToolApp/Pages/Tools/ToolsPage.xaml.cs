@@ -44,6 +44,10 @@ public partial class ToolsPage : ContentPage
             { TabTempClean,       PanelTempClean },
             { TabStartup,         PanelStartup },
             { TabGroupMembership, PanelGroupMembership },
+            { TabAcctLockout,     PanelAcctLockout },
+            { TabRdpSessions,     PanelRdpSessions },
+            { TabPwdExpiry,       PanelPwdExpiry },
+            { TabUserMgmt,        PanelUserMgmt },
             { TabDns,             PanelDns },
             { TabRegistry,        PanelRegistry },
             { TabGpUpdate,        PanelGpUpdate },
@@ -57,7 +61,7 @@ public partial class ToolsPage : ContentPage
         _categories = new()
         {
             { CatSystem,  [TabApps, TabServices, TabUpdates, TabPatches, TabProcesses, TabPrinters, TabDiskSpace, TabSchedTasks, TabActivation, TabTempClean, TabStartup, TabRemotePsSystem, TabPsRunSystem] },
-            { CatUsers,   [TabLocalUsers, TabLoggedOn, TabLocalAdmins, TabRunAs, TabGroupMembership] },
+            { CatUsers,   [TabLocalUsers, TabLoggedOn, TabLocalAdmins, TabRunAs, TabGroupMembership, TabAcctLockout, TabRdpSessions, TabPwdExpiry, TabUserMgmt] },
             { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns] },
             { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate, TabRemotePsRemote, TabPsRunRemote] },
             { CatDeploy,  [TabDeploy, TabCopyFile] },

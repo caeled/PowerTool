@@ -49,6 +49,10 @@
                 <Button Text="Local Admins"             x:Name="TabLocalAdmins"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Run As"                   x:Name="TabRunAs"            Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Group Membership"         x:Name="TabGroupMembership"  Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Account Lockout"          x:Name="TabAcctLockout"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="RDP Sessions"             x:Name="TabRdpSessions"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Password Expiry"          x:Name="TabPwdExpiry"        Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="User Management"          x:Name="TabUserMgmt"         Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <!-- Network -->
                 <Button Text="Network Info" x:Name="TabNetwork"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Port Tester"  x:Name="TabPorts"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
@@ -843,6 +847,187 @@
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </Border>
+            </Grid>
+
+            <!-- ── Account Lockout ───────────────────────────────────────── -->
+            <Grid x:Name="PanelAcctLockout" RowDefinitions="Auto,Auto,*" RowSpacing="10"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Username:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                    <Entry Grid.Column="1" Text="{Binding LockoutUsername}" Placeholder="username to check"/>
+                    <Button Grid.Column="2" Text="Check" Command="{Binding CheckLockoutCommand}"
+                            BackgroundColor="SteelBlue" Padding="14,8"/>
+                    <Button Grid.Column="3" Text="Unlock" Command="{Binding UnlockAccountCommand}"
+                            BackgroundColor="#228B22" Padding="14,8"/>
+                    <Button Grid.Column="4" Text="Reset Bad Pwd Count" Command="{Binding ResetBadPwdCommand}"
+                            BackgroundColor="#CC4400" Padding="14,8"/>
+                    <ActivityIndicator Grid.Column="5" IsRunning="{Binding LockoutLoading}"
+                                       IsVisible="{Binding LockoutLoading}" Color="SteelBlue" VerticalOptions="Center"/>
+                </Grid>
+                <!-- Status banner -->
+                <Border Grid.Row="1" Padding="12,8" StrokeShape="RoundRectangle 4"
+                        BackgroundColor="{Binding LockoutStatusColor}" Stroke="#444" IsVisible="{Binding LockoutStatusVisible}">
+                    <Label Text="{Binding LockoutStatusText}" FontAttributes="Bold" FontSize="13" TextColor="White"/>
+                </Border>
+                <Border Grid.Row="2" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="14,10">
+                    <Label Text="{Binding LockoutDetails}" FontFamily="Consolas" FontSize="12" LineBreakMode="CharacterWrap"/>
+                </Border>
+            </Grid>
+
+            <!-- ── RDP Sessions ───────────────────────────────────────────── -->
+            <Grid x:Name="PanelRdpSessions" RowDefinitions="Auto,*,Auto" RowSpacing="10"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="List Sessions" Command="{Binding ListRdpCommand}"
+                            BackgroundColor="SteelBlue" Padding="14,8"/>
+                    <Button Grid.Column="1" Text="Kick Selected" Command="{Binding KickRdpCommand}"
+                            BackgroundColor="#CC4400" Padding="14,8"/>
+                    <ActivityIndicator Grid.Column="2" IsRunning="{Binding RdpLoading}"
+                                       IsVisible="{Binding RdpLoading}" Color="SteelBlue" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding RdpSessions}" SelectionMode="Single"
+                                    SelectedItem="{Binding RdpSelectedSession}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="80,120,80,80,*" ColumnSpacing="8" Padding="12,6">
+                                    <Label Grid.Column="0" Text="{Binding SessionId}" FontSize="12" FontAttributes="Bold"/>
+                                    <Label Grid.Column="1" Text="{Binding Username}"  FontSize="12"/>
+                                    <Label Grid.Column="2" Text="{Binding State}"     FontSize="12"/>
+                                    <Label Grid.Column="3" Text="{Binding IdleTime}"  FontSize="12" TextColor="Gray"/>
+                                    <Label Grid.Column="4" Text="{Binding LogonTime}" FontSize="12" TextColor="Gray"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+                <Label Grid.Row="2" Text="{Binding RdpStatus}" FontSize="12" TextColor="#228B22"/>
+            </Grid>
+
+            <!-- ── Password Expiry ────────────────────────────────────────── -->
+            <Grid x:Name="PanelPwdExpiry" RowDefinitions="Auto,*" RowSpacing="10"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Username:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                    <Entry Grid.Column="1" Text="{Binding PwdExpiryUsername}" Placeholder="username (blank = all local users)"/>
+                    <Button Grid.Column="2" Text="Check" Command="{Binding CheckPwdExpiryCommand}"
+                            BackgroundColor="SteelBlue" Padding="14,8"/>
+                    <ActivityIndicator Grid.Column="3" IsRunning="{Binding PwdExpiryLoading}"
+                                       IsVisible="{Binding PwdExpiryLoading}" Color="SteelBlue" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding PwdExpiryResults}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="140,100,120,*" ColumnSpacing="8" Padding="12,6">
+                                    <Label Grid.Column="0" Text="{Binding Username}"   FontSize="12" FontAttributes="Bold"/>
+                                    <Label Grid.Column="1" Text="{Binding Enabled}"    FontSize="12"/>
+                                    <Label Grid.Column="2" Text="{Binding ExpiryDate}" FontSize="12"
+                                           TextColor="{Binding ExpiryColor}"/>
+                                    <Label Grid.Column="3" Text="{Binding DaysLeft}"   FontSize="12" TextColor="Gray"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── User Management ───────────────────────────────────────── -->
+            <Grid x:Name="PanelUserMgmt" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="10"
+                  Padding="4" IsVisible="False">
+
+                <!-- Admin credentials (required for remote user ops) -->
+                <Grid Grid.Row="0" ColumnDefinitions="60,120,80,*,80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Domain:"   VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                    <Entry Grid.Column="1" Text="{Binding UserMgmtDomain}"   Placeholder=". or DOMAIN"/>
+                    <Label Grid.Column="2" Text="Username:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                    <Entry Grid.Column="3" Text="{Binding UserMgmtUsername}" Placeholder="admin username"/>
+                    <Label Grid.Column="4" Text="Password:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                    <Entry Grid.Column="5" Text="{Binding UserMgmtPassword}" IsPassword="True"/>
+                </Grid>
+
+                <!-- Create User section -->
+                <Border Grid.Row="1" Padding="14,12" Stroke="#0078D4" StrokeShape="RoundRectangle 6">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="10">
+                        <Label Grid.Row="0" Text="Create Local User" FontAttributes="Bold" FontSize="14" TextColor="#0078D4"/>
+                        <Grid Grid.Row="1" ColumnDefinitions="80,*,80,*,80,*" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="Username:"    VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                            <Entry Grid.Column="1" Text="{Binding NewUserUsername}" Placeholder="username"/>
+                            <Label Grid.Column="2" Text="Full Name:"   VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                            <Entry Grid.Column="3" Text="{Binding NewUserFullName}" Placeholder="Display name"/>
+                            <Label Grid.Column="4" Text="Description:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                            <Entry Grid.Column="5" Text="{Binding NewUserDescription}" Placeholder="optional"/>
+                        </Grid>
+                        <Grid Grid.Row="2" ColumnDefinitions="80,*,80,*,Auto,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="Password:"     VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                            <Entry Grid.Column="1" Text="{Binding NewUserPassword}" IsPassword="True" Placeholder="initial password"/>
+                            <Label Grid.Column="2" Text="Add to Group:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                            <Entry Grid.Column="3" Text="{Binding NewUserGroup}" Placeholder="Administrators / Users / etc."/>
+                            <CheckBox Grid.Column="4" IsChecked="{Binding NewUserPwdNeverExpires}" VerticalOptions="Center"/>
+                            <Label Grid.Column="5" Text="Pwd Never Expires" VerticalOptions="Center" FontSize="12"/>
+                            <CheckBox Grid.Column="6" IsChecked="{Binding NewUserAddRdp}" VerticalOptions="Center"/>
+                            <Label Grid.Column="7" Text="Add to RDP" VerticalOptions="Center" FontSize="12"/>
+                            <Button Grid.Column="8" Text="Create User" Command="{Binding CreateUserCommand}"
+                                    BackgroundColor="#228B22" TextColor="White" FontAttributes="Bold" Padding="16,8"/>
+                        </Grid>
+                        <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                            <Label Grid.Column="0"/>
+                            <ActivityIndicator Grid.Column="1" IsRunning="{Binding UserMgmtLoading}"
+                                               IsVisible="{Binding UserMgmtLoading}" Color="SteelBlue" VerticalOptions="Center"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- Reset Password section -->
+                <Border Grid.Row="2" Padding="14,12" Stroke="#555" StrokeShape="RoundRectangle 6">
+                    <Grid RowDefinitions="Auto,Auto" RowSpacing="10">
+                        <Label Grid.Row="0" Text="Reset Password" FontAttributes="Bold" FontSize="14" TextColor="#CCCCCC"/>
+                        <Grid Grid.Row="1" ColumnDefinitions="80,*,100,*,Auto,Auto,Auto" ColumnSpacing="8">
+                            <Label Grid.Column="0" Text="Username:"     VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                            <Entry Grid.Column="1" Text="{Binding ResetPwdUsername}" Placeholder="username"/>
+                            <Label Grid.Column="2" Text="New Password:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                            <Entry Grid.Column="3" Text="{Binding ResetPwdPassword}" IsPassword="True" Placeholder="new password"/>
+                            <CheckBox Grid.Column="4" IsChecked="{Binding ResetPwdMustChange}" VerticalOptions="Center"/>
+                            <Label Grid.Column="5" Text="Must change at next logon" VerticalOptions="Center" FontSize="12"/>
+                            <Button Grid.Column="6" Text="Reset Password" Command="{Binding ResetPasswordCommand}"
+                                    BackgroundColor="#CC4400" TextColor="White" FontAttributes="Bold" Padding="16,8"/>
+                        </Grid>
+                    </Grid>
+                </Border>
+
+                <!-- Status -->
+                <Border Grid.Row="3" Padding="12,8" StrokeShape="RoundRectangle 4"
+                        BackgroundColor="{Binding UserMgmtStatusColor}" Stroke="#444"
+                        IsVisible="{Binding UserMgmtStatusVisible}" MaximumHeightRequest="120">
+                    <ScrollView>
+                        <Label Text="{Binding UserMgmtStatusText}" FontSize="12" TextColor="White" LineBreakMode="WordWrap"/>
+                    </ScrollView>
+                </Border>
+
+                <!-- Existing local users list -->
+                <Grid Grid.Row="4" RowDefinitions="Auto,*" RowSpacing="6">
+                    <Grid Grid.Row="0" ColumnDefinitions="*,Auto">
+                        <Label Grid.Column="0" Text="Local Users on Target" FontSize="12" TextColor="Gray" VerticalOptions="Center"/>
+                        <Button Grid.Column="1" Text="Refresh List" Command="{Binding LoadUsersMgmtCommand}"
+                                BackgroundColor="#333" TextColor="White" FontSize="11" Padding="10,4"/>
+                    </Grid>
+                    <Border Grid.Row="1" Stroke="LightGray" StrokeShape="RoundRectangle 4"
+                            MaximumHeightRequest="220">
+                        <ScrollView>
+                            <CollectionView ItemsSource="{Binding LocalUsersMgmt}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="140,80,*" ColumnSpacing="8" Padding="12,6">
+                                            <Label Grid.Column="0" Text="{Binding Name}"        FontSize="12" FontAttributes="Bold"/>
+                                            <Label Grid.Column="1" Text="{Binding Enabled}"     FontSize="12" TextColor="{Binding EnabledColor}"/>
+                                            <Label Grid.Column="2" Text="{Binding Description}" FontSize="12" TextColor="Gray"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </ScrollView>
+                    </Border>
+                </Grid>
             </Grid>
 
             <!-- ── DNS ───────────────────────────────────────────────────── -->
