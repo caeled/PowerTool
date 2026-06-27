@@ -56,6 +56,10 @@ public partial class ToolsPage : ContentPage
             { TabRemotePsRemote,  PanelRemotePs },
             { TabPsRunSystem,     PanelPsRun },
             { TabPsRunRemote,     PanelPsRun },
+            { TabDirBrowser,      PanelDirBrowser },
+            { TabProcKill,        PanelProcKill },
+            { TabWinRmToggle,     PanelWinRmToggle },
+            { TabWakeOnLan,       PanelWakeOnLan },
         };
 
         _categories = new()
@@ -63,7 +67,7 @@ public partial class ToolsPage : ContentPage
             { CatSystem,  [TabApps, TabServices, TabUpdates, TabPatches, TabProcesses, TabPrinters, TabDiskSpace, TabSchedTasks, TabActivation, TabTempClean, TabStartup, TabRemotePsSystem, TabPsRunSystem] },
             { CatUsers,   [TabLocalUsers, TabLoggedOn, TabLocalAdmins, TabRunAs, TabGroupMembership, TabAcctLockout, TabRdpSessions, TabPwdExpiry, TabUserMgmt] },
             { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns] },
-            { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate, TabRemotePsRemote, TabPsRunRemote] },
+            { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate, TabRemotePsRemote, TabPsRunRemote, TabDirBrowser, TabProcKill, TabWinRmToggle, TabWakeOnLan] },
             { CatDeploy,  [TabDeploy, TabCopyFile] },
         };
 

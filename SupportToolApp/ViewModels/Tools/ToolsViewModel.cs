@@ -172,6 +172,14 @@ public class StartupEntry
     public string Location { get; set; } = "";
 }
 
+public class RemoteProcEntry
+{
+    public string Pid    { get; set; } = "";
+    public string Name   { get; set; } = "";
+    public string CpuPct { get; set; } = "";
+    public string MemMb  { get; set; } = "";
+}
+
 public class RdpSessionEntry
 {
     public string SessionId  { get; set; } = "";
@@ -570,6 +578,65 @@ public class ToolsViewModel : BaseViewModel
     public string PsRunStatus   { get => _psRunStatus;   set => SetProperty(ref _psRunStatus, value); }
     public ICommand RunPsOnRemoteCommand { get; private set; } = null!;
     public ICommand ClearPsRunCommand    { get; private set; } = null!;
+
+    // ── Remote Directory Browser ─────────────────────────────────────────
+    private string _dirSubfolder = "", _dirStatus = "", _dirOutput = "";
+    private string? _dirSelectedShare;
+    private bool _dirLoading;
+    private string _dirDomain = "", _dirUsername = "", _dirPassword = "";
+    public string  DirDomain       { get => _dirDomain;       set => SetProperty(ref _dirDomain, value); }
+    public string  DirUsername     { get => _dirUsername;     set => SetProperty(ref _dirUsername, value); }
+    public string  DirPassword     { get => _dirPassword;     set => SetProperty(ref _dirPassword, value); }
+    public string  DirSubfolder    { get => _dirSubfolder;    set => SetProperty(ref _dirSubfolder, value); }
+    public string  DirStatus       { get => _dirStatus;       set => SetProperty(ref _dirStatus, value); }
+    public string  DirOutput       { get => _dirOutput;       set => SetProperty(ref _dirOutput, value); }
+    public string? DirSelectedShare{ get => _dirSelectedShare; set => SetProperty(ref _dirSelectedShare, value); }
+    public bool    DirLoading      { get => _dirLoading;       set => SetProperty(ref _dirLoading, value); }
+    public ObservableCollection<string> DirShares { get; } = [];
+    public ICommand ScanSharesCommand { get; private set; } = null!;
+    public ICommand DirListCommand    { get; private set; } = null!;
+
+    // ── Remote Process Kill ───────────────────────────────────────────────
+    private string _procKillSearch = "", _procKillStatus = "";
+    private bool _procKillLoading;
+    private RemoteProcEntry? _procKillSelected;
+    public string  ProcKillSearch   { get => _procKillSearch;   set { SetProperty(ref _procKillSearch, value); FilterRemoteProcesses(); } }
+    public string  ProcKillStatus   { get => _procKillStatus;   set => SetProperty(ref _procKillStatus, value); }
+    public bool    ProcKillLoading  { get => _procKillLoading;  set => SetProperty(ref _procKillLoading, value); }
+    public RemoteProcEntry? ProcKillSelected { get => _procKillSelected; set => SetProperty(ref _procKillSelected, value); }
+    public ObservableCollection<RemoteProcEntry> RemoteProcesses { get; } = [];
+    private List<RemoteProcEntry> _allRemoteProcs = [];
+    public ICommand LoadProcKillCommand    { get; private set; } = null!;
+    public ICommand KillRemoteProcCommand  { get; private set; } = null!;
+
+    // ── WinRM Toggle ─────────────────────────────────────────────────────
+    private string _winRmStatusText = "", _winRmStatusColor = "#555", _winRmOutput = "";
+    private string _winRmDomain = "", _winRmUsername = "", _winRmPassword = "";
+    private bool _winRmStatusVisible, _winRmLoading;
+    public string WinRmDomain        { get => _winRmDomain;        set => SetProperty(ref _winRmDomain, value); }
+    public string WinRmUsername      { get => _winRmUsername;      set => SetProperty(ref _winRmUsername, value); }
+    public string WinRmPassword      { get => _winRmPassword;      set => SetProperty(ref _winRmPassword, value); }
+    public string WinRmStatusText    { get => _winRmStatusText;    set => SetProperty(ref _winRmStatusText, value); }
+    public string WinRmStatusColor   { get => _winRmStatusColor;   set => SetProperty(ref _winRmStatusColor, value); }
+    public string WinRmOutput        { get => _winRmOutput;        set => SetProperty(ref _winRmOutput, value); }
+    public bool   WinRmStatusVisible { get => _winRmStatusVisible; set => SetProperty(ref _winRmStatusVisible, value); }
+    public bool   WinRmLoading       { get => _winRmLoading;       set => SetProperty(ref _winRmLoading, value); }
+    public ICommand WinRmCheckCommand   { get; private set; } = null!;
+    public ICommand WinRmEnableCommand  { get; private set; } = null!;
+    public ICommand WinRmDisableCommand { get; private set; } = null!;
+
+    // ── Wake on LAN ──────────────────────────────────────────────────────
+    private string _wolMac = "", _wolBroadcast = "255.255.255.255";
+    private string _wolStatusText = "", _wolStatusColor = "#228B22", _wolHistory = "";
+    private bool _wolStatusVisible, _wolLoading;
+    public string WolMac          { get => _wolMac;          set => SetProperty(ref _wolMac, value); }
+    public string WolBroadcast    { get => _wolBroadcast;    set => SetProperty(ref _wolBroadcast, value); }
+    public string WolStatusText   { get => _wolStatusText;   set => SetProperty(ref _wolStatusText, value); }
+    public string WolStatusColor  { get => _wolStatusColor;  set => SetProperty(ref _wolStatusColor, value); }
+    public string WolHistory      { get => _wolHistory;      set => SetProperty(ref _wolHistory, value); }
+    public bool   WolStatusVisible{ get => _wolStatusVisible; set => SetProperty(ref _wolStatusVisible, value); }
+    public bool   WolLoading      { get => _wolLoading;       set => SetProperty(ref _wolLoading, value); }
+    public ICommand WakeOnLanCommand { get; private set; } = null!;
 
     // ── Copy File ────────────────────────────────────────────────────────
     private string _copyLocalPath = "";
@@ -1726,6 +1793,245 @@ public class ToolsViewModel : BaseViewModel
             PsRunStatus = "Done.";
         });
 
+        // ── Remote Directory Browser ─────────────────────────────────────
+        ScanSharesCommand = new Command(async () =>
+        {
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+            DirLoading = true; DirStatus = "Scanning admin shares..."; DirShares.Clear(); DirSelectedShare = null;
+
+            var credPart = BuildDirCredPart();
+            var credFlag = string.IsNullOrWhiteSpace(credPart) ? "" : " -Credential $cred";
+            var script = $@"
+{credPart}
+try {{
+    $r = Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
+        [System.IO.DriveInfo]::GetDrives() |
+            Where-Object {{ $_.IsReady }} |
+            ForEach-Object {{ [string]($_.Name[0] + '$') }}
+    }} -ErrorAction Stop
+    ConvertTo-Json -InputObject @($r | ForEach-Object {{ [string]$_ }})
+}} catch {{
+    Write-Output ""ERROR: $_""
+}}";
+
+            var raw = await Task.Run(() => RunPsSync(script));
+            List<string>? shares = null;
+            try { shares = System.Text.Json.JsonSerializer.Deserialize<List<string>>(raw); } catch { }
+            MainThread.BeginInvokeOnMainThread(() =>
+            {
+                foreach (var s in shares ?? []) DirShares.Add(s);
+                DirStatus = (shares?.Count ?? 0) > 0 ? $"Found {shares!.Count} share(s)." : $"No accessible admin shares found. {(string.IsNullOrWhiteSpace(raw) ? "" : raw.Trim())}";
+                if ((shares?.Count ?? 0) > 0) DirSelectedShare = shares![0];
+            });
+            DirLoading = false;
+        });
+
+        DirListCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(DirSelectedShare)) { DirStatus = "Select a share first."; return; }
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+            DirLoading = true; DirOutput = "";
+            // Convert C$ → C:\ for remote path
+            var driveLetter = DirSelectedShare.TrimEnd('$');
+            var sub = string.IsNullOrWhiteSpace(DirSubfolder) ? "" : DirSubfolder.Trim().TrimStart('\\', '/');
+            var remotePath = string.IsNullOrWhiteSpace(sub) ? $@"{driveLetter}:\" : $@"{driveLetter}:\{sub}";
+            DirStatus = $"Listing {target}\\{remotePath}...";
+
+            var credPart = BuildDirCredPart();
+            var script = $@"
+{credPart}
+Invoke-Command -ComputerName '{target}'{(string.IsNullOrWhiteSpace(credPart) ? "" : " -Credential $cred")} -ScriptBlock {{
+    param($p)
+    Get-ChildItem -Path $p -Force -ErrorAction Stop | ForEach-Object {{
+        if ($_.PSIsContainer) {{
+            ""[DIR]  $($_.Name)""
+        }} else {{
+            $size = if ($_.Length -lt 1KB) {{ ""$($_.Length) B"" }}
+                    elseif ($_.Length -lt 1MB) {{ ""{0:N0} KB"" -f ($_.Length/1KB) }}
+                    else {{ ""{0:N1} MB"" -f ($_.Length/1MB) }}
+            ""       $($_.Name.PadRight(40)) $($size.PadLeft(10))  $($_.LastWriteTime.ToString('yyyy-MM-dd HH:mm'))""
+        }}
+    }} | Sort-Object
+}} -ArgumentList '{remotePath}'";
+
+            var result = await Task.Run(() => RunPsSync(script));
+            DirOutput = string.IsNullOrWhiteSpace(result) ? "(empty directory)" : result;
+            var lineCount = string.IsNullOrWhiteSpace(result) ? 0 : result.Split('\n').Length;
+            DirStatus = $"{remotePath} — {lineCount} item(s)";
+            DirLoading = false;
+        });
+
+        // ── Remote Process Kill ───────────────────────────────────────────
+        LoadProcKillCommand = new Command(async () =>
+        {
+            ProcKillLoading = true; ProcKillStatus = ""; _allRemoteProcs.Clear(); RemoteProcesses.Clear();
+            var target = await ResolveTargetAsync();
+            if (target == null) { ProcKillLoading = false; return; }
+            var body =
+                "Get-Process | Select-Object Id, ProcessName," +
+                "@{N='CpuPct';E={''}},@{N='MemMb';E={[int]($_.WorkingSet64/1MB)}} | Sort-Object ProcessName";
+            var script = IsLocal(target)
+                ? $"ConvertTo-Json -Depth 2 -InputObject @({body})"
+                : $"ConvertTo-Json -Depth 2 -InputObject @(Invoke-Command -ComputerName '{target}' -ScriptBlock {{ @({body}) }})";
+            var items = await RunPsJson<List<JsonElement>>(target, script);
+            _allRemoteProcs = (items ?? []).Select(i => new RemoteProcEntry
+            {
+                Pid    = i.TryGetProperty("Id",          out var id)  ? id.ToString()              : "",
+                Name   = i.TryGetProperty("ProcessName", out var nm)  ? nm.GetString() ?? ""       : "",
+                MemMb  = i.TryGetProperty("MemMb",       out var mem) ? $"{mem.GetInt32()} MB"     : "",
+                CpuPct = "",
+            }).ToList();
+            FilterRemoteProcesses();
+            ProcKillStatus = $"{_allRemoteProcs.Count} processes.";
+            ProcKillLoading = false;
+        });
+
+        KillRemoteProcCommand = new Command(async () =>
+        {
+            if (ProcKillSelected == null) { ProcKillStatus = "Select a process first."; return; }
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlert(
+                "Kill Process", $"Kill {ProcKillSelected.Name} (PID {ProcKillSelected.Pid}) on {target}?", "Kill", "Cancel");
+            if (!confirm) return;
+            ProcKillLoading = true;
+            var script = IsLocal(target)
+                ? $"Stop-Process -Id {ProcKillSelected.Pid} -Force"
+                : $"Invoke-Command -ComputerName '{target}' -ScriptBlock {{ Stop-Process -Id {ProcKillSelected.Pid} -Force }}";
+            await Task.Run(() => RunPsSync(script));
+            ProcKillStatus = $"Killed {ProcKillSelected.Name} (PID {ProcKillSelected.Pid}).";
+            ProcKillLoading = false;
+            LoadProcKillCommand.Execute(null);
+        });
+
+        // ── WinRM Toggle ─────────────────────────────────────────────────
+        WinRmCheckCommand = new Command(async () =>
+        {
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+            WinRmLoading = true; WinRmOutput = "";
+            var credPart = BuildWinRmCredPart();
+            var credFlag = string.IsNullOrWhiteSpace(credPart) ? "" : " -Credential $cred";
+            var script = IsLocal(target)
+                ? "Get-Service WinRM | Select-Object Name, Status, StartType | ConvertTo-Json"
+                : $@"{credPart}
+try {{
+    $svc = Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
+        Get-Service WinRM | Select-Object Name, Status, StartType
+    }} -ErrorAction Stop
+    # If we got here, WinRM is responding — note trigger-start shows Status=1 (Stopped) even when functional
+    $svc | Select-Object Name, Status, StartType | ConvertTo-Json
+}} catch {{
+    Write-Output ""CONN_ERROR: $_""
+}}";
+            var raw = await Task.Run(() => RunPsSync(script));
+            WinRmLoading = false;
+            if (raw.TrimStart().StartsWith("CONN_ERROR:"))
+            {
+                WinRmStatusText = $"WinRM UNAVAILABLE on {target}"; WinRmStatusColor = "#CC2200";
+                WinRmStatusVisible = true; WinRmOutput = raw;
+                return;
+            }
+            try
+            {
+                var obj = JsonSerializer.Deserialize<JsonElement>(raw);
+                var status = obj.GetProperty("Status").ToString();
+                var running = status == "4" || status.Equals("Running", StringComparison.OrdinalIgnoreCase);
+                var startType = obj.GetProperty("StartType").ToString();
+                // Trigger-start: service shows Stopped (1) but WinRM IS functional — Invoke-Command succeeded
+                if (!running)
+                {
+                    WinRmStatusText  = $"WinRM FUNCTIONAL on {target} (trigger-start — service idle)";
+                    WinRmStatusColor = "#E6A817";
+                }
+                else
+                {
+                    WinRmStatusText  = $"WinRM RUNNING on {target}";
+                    WinRmStatusColor = "#228B22";
+                }
+                WinRmStatusVisible = true;
+                // StartType serializes as object with Value/value — extract the friendly name
+                string startTypeName = startType;
+                try {
+                    var st = JsonSerializer.Deserialize<JsonElement>(startType);
+                    startTypeName = st.TryGetProperty("Value", out var v) ? v.GetString() ?? startType : startType;
+                } catch { }
+                WinRmOutput = $"Service: WinRM\nStatus:  {(running ? "Running" : "Stopped (trigger/on-demand)")}\nStartType: {startTypeName}\n\nNote: Connection succeeded — WinRM is accepting remote sessions.";
+            }
+            catch { WinRmOutput = raw; WinRmStatusVisible = false; }
+        });
+
+        WinRmEnableCommand = new Command(async () =>
+        {
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+            WinRmLoading = true; WinRmStatusVisible = false; WinRmOutput = "Enabling WinRM...";
+            var credPart = BuildWinRmCredPart();
+            var credFlag = string.IsNullOrWhiteSpace(credPart) ? "" : " -Credential $cred";
+            var script = IsLocal(target)
+                ? "Enable-PSRemoting -Force -SkipNetworkProfileCheck | Out-String"
+                : $@"{credPart}
+Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
+    Enable-PSRemoting -Force -SkipNetworkProfileCheck
+}} | Out-String -Stream";
+            var result = await Task.Run(() => RunPsSync(script));
+            WinRmLoading = false;
+            WinRmOutput = result;
+            WinRmStatusText = "WinRM enabled. Run Check Status to confirm.";
+            WinRmStatusColor = "#228B22"; WinRmStatusVisible = true;
+        });
+
+        WinRmDisableCommand = new Command(async () =>
+        {
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlert(
+                "Disable WinRM", $"Disable WinRM on {target}? This will break remote management.", "Disable", "Cancel");
+            if (!confirm) return;
+            WinRmLoading = true; WinRmStatusVisible = false; WinRmOutput = "Disabling WinRM...";
+            var credPart = BuildWinRmCredPart();
+            var credFlag = string.IsNullOrWhiteSpace(credPart) ? "" : " -Credential $cred";
+            var script = IsLocal(target)
+                ? "Disable-PSRemoting -Force; Stop-Service WinRM -Force; Set-Service WinRM -StartupType Disabled"
+                : $@"{credPart}
+Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
+    Disable-PSRemoting -Force; Stop-Service WinRM -Force; Set-Service WinRM -StartupType Disabled
+}} | Out-String -Stream";
+            var result = await Task.Run(() => RunPsSync(script));
+            WinRmLoading = false;
+            WinRmOutput = string.IsNullOrWhiteSpace(result) ? "WinRM disabled." : result;
+            WinRmStatusText = "WinRM disabled.";
+            WinRmStatusColor = "#CC2200"; WinRmStatusVisible = true;
+        });
+
+        // ── Wake on LAN ──────────────────────────────────────────────────
+        WakeOnLanCommand = new Command(async () =>
+        {
+            var mac = WolMac.Trim().Replace(":", "").Replace("-", "").Replace(".", "");
+            if (mac.Length != 12) { WolStatusText = "Invalid MAC address — expected format AA:BB:CC:DD:EE:FF"; WolStatusColor = "#CC2200"; WolStatusVisible = true; return; }
+            if (!System.Net.IPAddress.TryParse(WolBroadcast.Trim(), out var broadcastIp))
+            { WolStatusText = "Invalid broadcast IP address."; WolStatusColor = "#CC2200"; WolStatusVisible = true; return; }
+
+            WolLoading = true; WolStatusVisible = false;
+            await Task.Run(() =>
+            {
+                var macBytes  = Enumerable.Range(0, 6).Select(i => Convert.ToByte(mac.Substring(i * 2, 2), 16)).ToArray();
+                var magic     = new byte[6 + 16 * 6];
+                for (int i = 0; i < 6; i++) magic[i] = 0xFF;
+                for (int i = 0; i < 16; i++) Array.Copy(macBytes, 0, magic, 6 + i * 6, 6);
+                using var client = new System.Net.Sockets.UdpClient();
+                client.EnableBroadcast = true;
+                client.Send(magic, magic.Length, new System.Net.IPEndPoint(broadcastIp, 9));
+            });
+            WolLoading = false;
+            var formatted = string.Join(":", Enumerable.Range(0, 6).Select(i => mac.Substring(i * 2, 2).ToUpper()));
+            WolStatusText  = $"Magic packet sent to {formatted} via {WolBroadcast.Trim()}";
+            WolStatusColor = "#228B22"; WolStatusVisible = true;
+            WolHistory = $"[{DateTime.Now:HH:mm:ss}] Sent WoL to {formatted} → {WolBroadcast.Trim()}\n" + WolHistory;
+        });
+
         // Pre-fill credential fields from the shared service on startup
         ApplyCredentials();
     }
@@ -1755,6 +2061,12 @@ public class ToolsViewModel : BaseViewModel
             UserMgmtDomain   = _creds.UserDomain;
             UserMgmtUsername = _creds.UserUsername;
             UserMgmtPassword = _creds.UserPassword;
+            DirDomain        = _creds.UserDomain;
+            DirUsername      = _creds.UserUsername;
+            DirPassword      = _creds.UserPassword;
+            WinRmDomain      = _creds.UserDomain;
+            WinRmUsername    = _creds.UserUsername;
+            WinRmPassword    = _creds.UserPassword;
         }
     }
 
@@ -1882,6 +2194,41 @@ public class ToolsViewModel : BaseViewModel
             $"try {{\n" +
             $"  Invoke-Command -ComputerName '{target}' -Credential $cred -ScriptBlock {{\n{body}\n  }} | Out-String -Stream\n" +
             $"}} catch {{ \"ERROR: $_\" }}";
+    }
+
+    private string BuildWinRmCredPart()
+    {
+        if (string.IsNullOrWhiteSpace(WinRmUsername) || string.IsNullOrWhiteSpace(WinRmPassword))
+            return "";
+        var userFull = string.IsNullOrWhiteSpace(WinRmDomain) || WinRmDomain == "."
+            ? WinRmUsername : $"{WinRmDomain}\\{WinRmUsername}";
+        var pw = WinRmPassword.Replace("'", "''");
+        return
+            $"$secpw = ConvertTo-SecureString '{pw}' -AsPlainText -Force\n" +
+            $"$cred = New-Object System.Management.Automation.PSCredential('{userFull}', $secpw)";
+    }
+
+    // Returns PS lines that define $cred, or empty string if no Dir creds set.
+    private string BuildDirCredPart()
+    {
+        if (string.IsNullOrWhiteSpace(DirUsername) || string.IsNullOrWhiteSpace(DirPassword))
+            return "";
+        var userFull = string.IsNullOrWhiteSpace(DirDomain) || DirDomain == "."
+            ? DirUsername : $"{DirDomain}\\{DirUsername}";
+        var pw = DirPassword.Replace("'", "''");
+        return
+            $"$secpw = ConvertTo-SecureString '{pw}' -AsPlainText -Force\n" +
+            $"$cred = New-Object System.Management.Automation.PSCredential('{userFull}', $secpw)";
+    }
+
+    private void FilterRemoteProcesses()
+    {
+        RemoteProcesses.Clear();
+        var q = _procKillSearch.Trim();
+        var filtered = string.IsNullOrWhiteSpace(q)
+            ? _allRemoteProcs
+            : _allRemoteProcs.Where(p => p.Name.Contains(q, StringComparison.OrdinalIgnoreCase));
+        foreach (var p in filtered) RemoteProcesses.Add(p);
     }
 
     private async Task RefreshLocalUsersMgmt(string target)

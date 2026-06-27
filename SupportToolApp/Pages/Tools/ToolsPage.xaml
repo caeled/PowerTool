@@ -66,7 +66,11 @@
                 <Button Text="Registry"       x:Name="TabRegistry"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="GP Update"      x:Name="TabGpUpdate"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Remote PS" x:Name="TabRemotePsRemote" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="PS Runner" x:Name="TabPsRunRemote"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="PS Runner"      x:Name="TabPsRunRemote"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Dir Browser"    x:Name="TabDirBrowser"    Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Process Kill"   x:Name="TabProcKill"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="WinRM Toggle"   x:Name="TabWinRmToggle"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Wake on LAN"    x:Name="TabWakeOnLan"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <!-- Deploy -->
                 <Button Text="File Drop &amp; Run" x:Name="TabDeploy"    Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Copy File"           x:Name="TabCopyFile"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
@@ -1327,6 +1331,141 @@
                     <ScrollView>
                         <Label Text="{Binding PsRunOutput}" FontFamily="Consolas" FontSize="12"
                                TextColor="#D4D4D4" BackgroundColor="#1E1E1E" LineBreakMode="CharacterWrap"/>
+                    </ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Remote Directory Browser ───────────────────────────────── -->
+            <Grid x:Name="PanelDirBrowser" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10"
+                  Padding="4" IsVisible="False">
+                <!-- Credentials -->
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,*,Auto,*" ColumnSpacing="6">
+                    <Label Grid.Column="0" Text="Domain:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                    <Entry Grid.Column="1" Text="{Binding DirDomain}" Placeholder="domain or ."/>
+                    <Label Grid.Column="2" Text="Username:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                    <Entry Grid.Column="3" Text="{Binding DirUsername}" Placeholder="username"/>
+                    <Label Grid.Column="4" Text="Password:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                    <Entry Grid.Column="5" Text="{Binding DirPassword}" IsPassword="True" Placeholder="password"/>
+                </Grid>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,Auto,Auto" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Scan Shares" Command="{Binding ScanSharesCommand}"
+                            BackgroundColor="SteelBlue" Padding="14,8"/>
+                    <Picker Grid.Column="1" ItemsSource="{Binding DirShares}"
+                            SelectedItem="{Binding DirSelectedShare}" Title="Select a share..."/>
+                    <Entry Grid.Column="2" Text="{Binding DirSubfolder}" Placeholder="subfolder (optional)"
+                           WidthRequest="200"/>
+                    <Button Grid.Column="3" Text="List" Command="{Binding DirListCommand}"
+                            BackgroundColor="#228B22" Padding="14,8"/>
+                    <ActivityIndicator Grid.Column="4" IsRunning="{Binding DirLoading}"
+                                       IsVisible="{Binding DirLoading}" Color="SteelBlue" VerticalOptions="Center"/>
+                </Grid>
+                <Label Grid.Row="2" Text="{Binding DirStatus}" FontSize="12" TextColor="Gray"/>
+                <Border Grid.Row="3" Stroke="#444" StrokeThickness="1" StrokeShape="RoundRectangle 4" Padding="8">
+                    <ScrollView>
+                        <Label Text="{Binding DirOutput}" FontFamily="Consolas" FontSize="12"
+                               TextColor="#D4D4D4" BackgroundColor="#1E1E1E" LineBreakMode="CharacterWrap"/>
+                    </ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Remote Process Kill ────────────────────────────────────── -->
+            <Grid x:Name="PanelProcKill" RowDefinitions="Auto,Auto,*" RowSpacing="10"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding ProcKillSearch}" Placeholder="Filter by process name..."/>
+                    <Button Grid.Column="1" Text="Refresh" Command="{Binding LoadProcKillCommand}"
+                            BackgroundColor="SteelBlue" Padding="14,8"/>
+                    <Button Grid.Column="2" Text="Kill Selected" Command="{Binding KillRemoteProcCommand}"
+                            BackgroundColor="#CC2200" Padding="14,8"/>
+                    <ActivityIndicator Grid.Column="3" IsRunning="{Binding ProcKillLoading}"
+                                       IsVisible="{Binding ProcKillLoading}" Color="SteelBlue" VerticalOptions="Center"/>
+                </Grid>
+                <Label Grid.Row="1" Text="{Binding ProcKillStatus}" FontSize="12" TextColor="#228B22"/>
+                <Border Grid.Row="2" Stroke="LightGray" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding RemoteProcesses}" SelectionMode="Single"
+                                    SelectedItem="{Binding ProcKillSelected}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="60,200,80,*" ColumnSpacing="8" Padding="12,5">
+                                    <Label Grid.Column="0" Text="{Binding Pid}"     FontSize="12" FontAttributes="Bold"/>
+                                    <Label Grid.Column="1" Text="{Binding Name}"    FontSize="12"/>
+                                    <Label Grid.Column="2" Text="{Binding CpuPct}"  FontSize="12" TextColor="Gray"/>
+                                    <Label Grid.Column="3" Text="{Binding MemMb}"   FontSize="12" TextColor="Gray"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── WinRM Toggle ───────────────────────────────────────────── -->
+            <Grid x:Name="PanelWinRmToggle" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="12"
+                  Padding="4" IsVisible="False">
+                <Border Grid.Row="0" Padding="12,10" BackgroundColor="#FFF8E1" Stroke="#FFB300"
+                        StrokeShape="RoundRectangle 4">
+                    <Label FontSize="12" TextColor="#5D4037" LineBreakMode="WordWrap"
+                           Text="Enabling WinRM allows remote PowerShell on the target. Requires admin rights and runs Enable-PSRemoting. Disable will stop the WinRM service and remove firewall rules."/>
+                </Border>
+                <!-- Credentials -->
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,*,Auto,*" ColumnSpacing="6">
+                    <Label Grid.Column="0" Text="Domain:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                    <Entry Grid.Column="1" Text="{Binding WinRmDomain}" Placeholder="domain or ."/>
+                    <Label Grid.Column="2" Text="Username:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                    <Entry Grid.Column="3" Text="{Binding WinRmUsername}" Placeholder="username"/>
+                    <Label Grid.Column="4" Text="Password:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                    <Entry Grid.Column="5" Text="{Binding WinRmPassword}" IsPassword="True" Placeholder="password"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,Auto,Auto" ColumnSpacing="12">
+                    <Button Grid.Column="0" Text="Check Status" Command="{Binding WinRmCheckCommand}"
+                            BackgroundColor="SteelBlue" Padding="14,8"/>
+                    <Button Grid.Column="1" Text="Enable WinRM" Command="{Binding WinRmEnableCommand}"
+                            BackgroundColor="#228B22" Padding="14,8"/>
+                    <Button Grid.Column="2" Text="Disable WinRM" Command="{Binding WinRmDisableCommand}"
+                            BackgroundColor="#CC2200" Padding="14,8"/>
+                    <ActivityIndicator Grid.Column="3" IsRunning="{Binding WinRmLoading}"
+                                       IsVisible="{Binding WinRmLoading}" Color="SteelBlue" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="3" Padding="12,10" StrokeShape="RoundRectangle 4"
+                        BackgroundColor="{Binding WinRmStatusColor}" Stroke="#444"
+                        IsVisible="{Binding WinRmStatusVisible}">
+                    <Label Text="{Binding WinRmStatusText}" FontAttributes="Bold" TextColor="White"/>
+                </Border>
+                <Border Grid.Row="4" Stroke="#444" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView>
+                        <Label Text="{Binding WinRmOutput}" FontFamily="Consolas" FontSize="12"
+                               TextColor="#D4D4D4" BackgroundColor="#1E1E1E" LineBreakMode="CharacterWrap"/>
+                    </ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Wake on LAN ────────────────────────────────────────────── -->
+            <Grid x:Name="PanelWakeOnLan" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12"
+                  Padding="4" IsVisible="False">
+                <Border Grid.Row="0" Padding="12,10" BackgroundColor="#E8F5E9" Stroke="#388E3C"
+                        StrokeShape="RoundRectangle 4">
+                    <Label FontSize="12" TextColor="#1B5E20" LineBreakMode="WordWrap"
+                           Text="Sends a Wake-on-LAN magic packet to the target MAC address. The machine must have WoL enabled in BIOS and the network adapter must support it. Use the broadcast address of the target subnet."/>
+                </Border>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto,*,Auto,Auto" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="MAC Address:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                    <Entry Grid.Column="1" Text="{Binding WolMac}" Placeholder="AA:BB:CC:DD:EE:FF"/>
+                    <Label Grid.Column="2" Text="Broadcast IP:" VerticalOptions="Center" LineBreakMode="NoWrap"/>
+                    <Entry Grid.Column="3" Text="{Binding WolBroadcast}" Placeholder="192.168.1.255"/>
+                    <Button Grid.Column="4" Text="Wake!" Command="{Binding WakeOnLanCommand}"
+                            BackgroundColor="#228B22" FontAttributes="Bold" Padding="20,8"/>
+                    <ActivityIndicator Grid.Column="5" IsRunning="{Binding WolLoading}"
+                                       IsVisible="{Binding WolLoading}" Color="SteelBlue" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="2" Padding="12,10" StrokeShape="RoundRectangle 4"
+                        BackgroundColor="{Binding WolStatusColor}" Stroke="#444"
+                        IsVisible="{Binding WolStatusVisible}">
+                    <Label Text="{Binding WolStatusText}" FontAttributes="Bold" TextColor="White"/>
+                </Border>
+                <!-- Recent WoL history -->
+                <Border Grid.Row="3" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView>
+                        <Label Text="{Binding WolHistory}" FontFamily="Consolas" FontSize="12"
+                               LineBreakMode="CharacterWrap"/>
                     </ScrollView>
                 </Border>
             </Grid>
