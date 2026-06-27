@@ -58,6 +58,14 @@
                 <Button Text="Port Tester"  x:Name="TabPorts"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Ping Sweep"   x:Name="TabPingSweep" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="DNS"          x:Name="TabDns"       Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Flush DNS"    x:Name="TabFlushDns"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="NetStat"      x:Name="TabNetStat"    Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Traceroute"   x:Name="TabTrace"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="WiFi Profiles" x:Name="TabWifi"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Proxy"        x:Name="TabProxy"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Reset NIC"    x:Name="TabResetNic"   Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Ping"         x:Name="TabPing"       Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="WiFi Setup"   x:Name="TabWifiSetup"  Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <!-- Remote -->
                 <Button Text="Pending Reboot" x:Name="TabReboot"       Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Remote Reboot"  x:Name="TabRebootAction" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
@@ -1467,6 +1475,154 @@
                         <Label Text="{Binding WolHistory}" FontFamily="Consolas" FontSize="12"
                                LineBreakMode="CharacterWrap"/>
                     </ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Flush DNS ──────────────────────────────────────────────── -->
+            <Grid x:Name="PanelFlushDns" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Flushes the DNS resolver cache on the target machine. Fixes many name resolution issues." TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Flush DNS Cache" Command="{Binding FlushDnsCommand}"
+                            BackgroundColor="#0078D4" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding FlushDnsLoading}"
+                                       IsVisible="{Binding FlushDnsLoading}" Color="#0078D4"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="2" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView><Label Text="{Binding FlushDnsOutput}" FontFamily="Courier New" FontSize="12" LineBreakMode="NoWrap"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── NetStat ──────────────────────────────────────────────────── -->
+            <Grid x:Name="PanelNetStat" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Shows active TCP/UDP connections and listening ports (netstat -ano)." TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Run NetStat" Command="{Binding NetStatCommand}"
+                            BackgroundColor="#0078D4" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding NetStatLoading}"
+                                       IsVisible="{Binding NetStatLoading}" Color="#0078D4"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="2" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView><Label Text="{Binding NetStatOutput}" FontFamily="Courier New" FontSize="11" LineBreakMode="NoWrap"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Traceroute ───────────────────────────────────────────────── -->
+            <Grid x:Name="PanelTrace" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Traces the network path to a host (tracert -d -h 20). May take up to 60 seconds." TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto,*" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding TraceTarget}" Placeholder="hostname or IP to trace"/>
+                    <Button Grid.Column="1" Text="Trace" Command="{Binding TraceRouteCommand}"
+                            BackgroundColor="#0078D4" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="2" IsRunning="{Binding TraceLoading}"
+                                       IsVisible="{Binding TraceLoading}" Color="#0078D4"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="2" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView><Label Text="{Binding TraceOutput}" FontFamily="Courier New" FontSize="12" LineBreakMode="NoWrap"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── WiFi Profiles ─────────────────────────────────────────────── -->
+            <Grid x:Name="PanelWifi" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Lists saved WiFi profiles. Works on local machine only." TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load WiFi Profiles" Command="{Binding LoadWifiCommand}"
+                            BackgroundColor="#0078D4" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding WifiLoading}"
+                                       IsVisible="{Binding WifiLoading}" Color="#0078D4"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                    <Picker Grid.Column="0" ItemsSource="{Binding WifiProfileNames}"
+                            SelectedItem="{Binding SelectedWifiProfile}" Title="Select profile to connect..."/>
+                    <CheckBox Grid.Column="1" IsChecked="{Binding WifiAutoConnect}" VerticalOptions="Center"/>
+                    <Label Grid.Column="2" Text="Auto" VerticalOptions="Center" FontSize="12"/>
+                    <Button Grid.Column="3" Text="Connect" Command="{Binding ConnectWifiCommand}"
+                            BackgroundColor="#228B22" TextColor="White" Padding="14,8"/>
+                </Grid>
+                <Border Grid.Row="3" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView><Label Text="{Binding WifiOutput}" FontFamily="Courier New" FontSize="12" LineBreakMode="NoWrap"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Proxy Settings ────────────────────────────────────────────── -->
+            <Grid x:Name="PanelProxy" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Reads current WinInet proxy settings from the user registry (HKCU)." TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Read Proxy Settings" Command="{Binding LoadProxyCommand}"
+                            BackgroundColor="#0078D4" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding ProxyLoading}"
+                                       IsVisible="{Binding ProxyLoading}" Color="#0078D4"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="2" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView><Label Text="{Binding ProxyOutput}" FontFamily="Courier New" FontSize="13"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Reset NIC ─────────────────────────────────────────────────── -->
+            <Grid x:Name="PanelResetNic" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Disables then re-enables the selected adapter. Connection drops for ~5 seconds. Fixes many driver/DHCP issues." TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Adapters" Command="{Binding LoadNicsCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding ResetNicLoading}"
+                                       IsVisible="{Binding ResetNicLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Picker Grid.Column="0" ItemsSource="{Binding NicList}" SelectedItem="{Binding SelectedNic}"
+                            Title="Select adapter..."/>
+                    <Button Grid.Column="1" Text="Reset Adapter" Command="{Binding ResetNicCommand}"
+                            BackgroundColor="#8B0000" TextColor="White" Padding="16,8"/>
+                </Grid>
+                <Border Grid.Row="3" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView><Label Text="{Binding ResetNicOutput}" FontFamily="Courier New" FontSize="12"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- Ping -->
+            <Grid x:Name="PanelPing" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Issues a ping FROM the target machine to any host or IP." TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="*,80,Auto,*" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding PingTarget}" Placeholder="hostname or IP to ping"/>
+                    <Entry Grid.Column="1" Text="{Binding PingCount}" Placeholder="4" Keyboard="Numeric"/>
+                    <Button Grid.Column="2" Text="Ping" Command="{Binding PingCommand}" BackgroundColor="#0078D4" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="3" IsRunning="{Binding PingLoading}" IsVisible="{Binding PingLoading}"
+                                       Color="#0078D4" HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="2" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView><Label Text="{Binding PingOutput}" FontFamily="Courier New" FontSize="12" LineBreakMode="NoWrap"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- WiFi Setup -->
+            <Grid x:Name="PanelWifiSetup" RowDefinitions="Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Create and install a WiFi profile on the target machine." TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="90,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="SSID:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding WifiSetupSsid}" Placeholder="Network name"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="90,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Password:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding WifiSetupPassword}" IsPassword="True"/>
+                </Grid>
+                <Grid Grid.Row="3" ColumnDefinitions="90,*,Auto,Auto" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Security:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Picker Grid.Column="1" ItemsSource="{Binding WifiSecurityTypes}" SelectedItem="{Binding WifiSetupSecurity}"/>
+                    <CheckBox Grid.Column="2" IsChecked="{Binding WifiSetupAutoConnect}" VerticalOptions="Center"/>
+                    <Label Grid.Column="3" Text="Auto-connect" VerticalOptions="Center" FontSize="12"/>
+                </Grid>
+                <Grid Grid.Row="4" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Add Profile" Command="{Binding AddWifiProfileCommand}"
+                            BackgroundColor="#228B22" TextColor="White" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding WifiSetupLoading}" IsVisible="{Binding WifiSetupLoading}"
+                                       Color="#228B22" HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="5" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView><Label Text="{Binding WifiSetupOutput}" FontFamily="Courier New" FontSize="12"/></ScrollView>
                 </Border>
             </Grid>
 

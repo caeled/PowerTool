@@ -481,6 +481,86 @@ public class ToolsViewModel : BaseViewModel
     public ICommand DnsLookupCommand { get; }
     public ICommand DnsFlushCommand { get; }
 
+    // ── Flush DNS ────────────────────────────────────────────────────────
+    private string _flushDnsOutput = "";
+    private bool _flushDnsLoading;
+    public string FlushDnsOutput { get => _flushDnsOutput; set => SetProperty(ref _flushDnsOutput, value); }
+    public bool FlushDnsLoading  { get => _flushDnsLoading; set => SetProperty(ref _flushDnsLoading, value); }
+    public ICommand FlushDnsCommand { get; }
+
+    // ── NetStat ──────────────────────────────────────────────────────────
+    private string _netStatOutput = "";
+    private bool _netStatLoading;
+    public string NetStatOutput { get => _netStatOutput; set => SetProperty(ref _netStatOutput, value); }
+    public bool NetStatLoading  { get => _netStatLoading; set => SetProperty(ref _netStatLoading, value); }
+    public ICommand NetStatCommand { get; }
+
+    // ── Traceroute ───────────────────────────────────────────────────────
+    private string _traceTarget = "", _traceOutput = "";
+    private bool _traceLoading;
+    public string TraceTarget { get => _traceTarget; set => SetProperty(ref _traceTarget, value); }
+    public string TraceOutput { get => _traceOutput; set => SetProperty(ref _traceOutput, value); }
+    public bool TraceLoading  { get => _traceLoading; set => SetProperty(ref _traceLoading, value); }
+    public ICommand TraceRouteCommand { get; }
+
+    // ── WiFi Profiles ────────────────────────────────────────────────────
+    private string _wifiOutput = "";
+    private bool _wifiLoading;
+    public string WifiOutput { get => _wifiOutput; set => SetProperty(ref _wifiOutput, value); }
+    public bool WifiLoading  { get => _wifiLoading; set => SetProperty(ref _wifiLoading, value); }
+    public ICommand LoadWifiCommand { get; }
+
+    // ── WiFi Connect ──────────────────────────────────────────────────────────
+    private string _selectedWifiProfile = "";
+    private bool _wifiAutoConnect;
+    private bool _wifiConnecting;
+    public string SelectedWifiProfile { get => _selectedWifiProfile; set => SetProperty(ref _selectedWifiProfile, value); }
+    public bool WifiAutoConnect { get => _wifiAutoConnect; set => SetProperty(ref _wifiAutoConnect, value); }
+    public bool WifiConnecting  { get => _wifiConnecting;  set => SetProperty(ref _wifiConnecting, value); }
+    public ObservableCollection<string> WifiProfileNames { get; } = [];
+    public ICommand ConnectWifiCommand { get; }
+
+    // ── WiFi Setup ────────────────────────────────────────────────────────────
+    private string _wifiSetupSsid = "", _wifiSetupPassword = "", _wifiSetupOutput = "";
+    private string _wifiSetupSecurity = "WPA2PSK";
+    private bool _wifiSetupAutoConnect = true, _wifiSetupLoading;
+    public string WifiSetupSsid     { get => _wifiSetupSsid;     set => SetProperty(ref _wifiSetupSsid, value); }
+    public string WifiSetupPassword { get => _wifiSetupPassword; set => SetProperty(ref _wifiSetupPassword, value); }
+    public string WifiSetupSecurity { get => _wifiSetupSecurity; set => SetProperty(ref _wifiSetupSecurity, value); }
+    public string WifiSetupOutput   { get => _wifiSetupOutput;   set => SetProperty(ref _wifiSetupOutput, value); }
+    public bool WifiSetupAutoConnect { get => _wifiSetupAutoConnect; set => SetProperty(ref _wifiSetupAutoConnect, value); }
+    public bool WifiSetupLoading    { get => _wifiSetupLoading;  set => SetProperty(ref _wifiSetupLoading, value); }
+    public List<string> WifiSecurityTypes { get; } = ["WPA2PSK", "WPA3SAE", "open"];
+    public ICommand AddWifiProfileCommand { get; }
+
+    // ── Ping ─────────────────────────────────────────────────────────────────
+    private string _pingTarget = "", _pingOutput = "";
+    private string _pingCount = "4";
+    private bool _pingLoading;
+    public string PingTarget { get => _pingTarget; set => SetProperty(ref _pingTarget, value); }
+    public string PingOutput { get => _pingOutput; set => SetProperty(ref _pingOutput, value); }
+    public string PingCount  { get => _pingCount;  set => SetProperty(ref _pingCount, value); }
+    public bool PingLoading  { get => _pingLoading; set => SetProperty(ref _pingLoading, value); }
+    public ICommand PingCommand { get; }
+
+    // ── Proxy Settings ───────────────────────────────────────────────────
+    private string _proxyOutput = "";
+    private bool _proxyLoading;
+    public string ProxyOutput { get => _proxyOutput; set => SetProperty(ref _proxyOutput, value); }
+    public bool ProxyLoading  { get => _proxyLoading; set => SetProperty(ref _proxyLoading, value); }
+    public ICommand LoadProxyCommand { get; }
+
+    // ── Reset NIC ────────────────────────────────────────────────────────
+    private string _resetNicOutput = "";
+    private bool _resetNicLoading;
+    private string _selectedNic = "";
+    public string ResetNicOutput { get => _resetNicOutput; set => SetProperty(ref _resetNicOutput, value); }
+    public bool ResetNicLoading  { get => _resetNicLoading; set => SetProperty(ref _resetNicLoading, value); }
+    public ObservableCollection<string> NicList { get; } = [];
+    public string SelectedNic    { get => _selectedNic; set => SetProperty(ref _selectedNic, value); }
+    public ICommand LoadNicsCommand { get; }
+    public ICommand ResetNicCommand { get; }
+
     // ── Remote Registry ──────────────────────────────────────────────────
     private string _regHive = "HKLM";
     private string _regKey = "";
@@ -2032,6 +2112,123 @@ Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
             WolHistory = $"[{DateTime.Now:HH:mm:ss}] Sent WoL to {formatted} → {WolBroadcast.Trim()}\n" + WolHistory;
         });
 
+        // ── Flush DNS ────────────────────────────────────────────────────
+        FlushDnsCommand = new Command(async () => await RunTool(
+            "Flush DNS", () => FlushDnsLoading = true, () => FlushDnsLoading = false,
+            async target =>
+            {
+                var result = await Task.Run(() => RunPsSync(PsScripts.FlushDns(target)));
+                FlushDnsOutput = string.IsNullOrWhiteSpace(result) ? "DNS cache flushed (no output)." : result.Trim();
+            }));
+
+        // ── NetStat ──────────────────────────────────────────────────────
+        NetStatCommand = new Command(async () => await RunTool(
+            "NetStat", () => NetStatLoading = true, () => NetStatLoading = false,
+            async target =>
+            {
+                var result = await Task.Run(() => RunPsSync(PsScripts.NetStat(target)));
+                NetStatOutput = string.IsNullOrWhiteSpace(result) ? "No output." : result.Trim();
+            }));
+
+        // ── Traceroute ───────────────────────────────────────────────────
+        TraceRouteCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(TraceTarget)) { StatusMessage = "Enter a hostname or IP to trace."; return; }
+            await RunTool(
+                "Traceroute", () => TraceLoading = true, () => TraceLoading = false,
+                async target =>
+                {
+                    var result = await Task.Run(() => RunPsSync(PsScripts.TraceRoute(target, TraceTarget)));
+                    TraceOutput = string.IsNullOrWhiteSpace(result) ? "No output." : result.Trim();
+                });
+        });
+
+        // ── WiFi Profiles ────────────────────────────────────────────────
+        LoadWifiCommand = new Command(async () => await RunTool(
+            "WiFi Profiles", () => WifiLoading = true, () => WifiLoading = false,
+            async target =>
+            {
+                var result = await Task.Run(() => RunPsSync(PsScripts.WifiProfiles(target)));
+                WifiOutput = string.IsNullOrWhiteSpace(result) ? "No output." : result.Trim();
+                // parse "All User Profile     : ProfileName" lines
+                WifiProfileNames.Clear();
+                foreach (var line in (result ?? "").Split('\n'))
+                {
+                    var idx = line.IndexOf(':');
+                    if (idx >= 0 && line.Contains("Profile", StringComparison.OrdinalIgnoreCase))
+                    {
+                        var name = line[(idx + 1)..].Trim();
+                        if (!string.IsNullOrWhiteSpace(name)) WifiProfileNames.Add(name);
+                    }
+                }
+                if (WifiProfileNames.Count > 0) SelectedWifiProfile = WifiProfileNames[0];
+            }));
+
+        ConnectWifiCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(SelectedWifiProfile)) { WifiOutput = "Select a profile first."; return; }
+            WifiConnecting = true;
+            try
+            {
+                var target = TargetComputer.Trim();
+                if (string.IsNullOrWhiteSpace(target)) target = "localhost";
+                var result = await Task.Run(() => RunPsSync(PsScripts.ConnectWifi(target, SelectedWifiProfile, WifiAutoConnect)));
+                WifiOutput = string.IsNullOrWhiteSpace(result) ? "Done." : result.Trim();
+            }
+            finally { WifiConnecting = false; }
+        });
+
+        AddWifiProfileCommand = new Command(async () => await RunTool(
+            "WiFi Setup", () => WifiSetupLoading = true, () => WifiSetupLoading = false,
+            async target =>
+            {
+                if (string.IsNullOrWhiteSpace(WifiSetupSsid)) { WifiSetupOutput = "SSID is required."; return; }
+                var result = await Task.Run(() => RunPsSync(PsScripts.AddWifiProfile(target, WifiSetupSsid, WifiSetupPassword, WifiSetupSecurity, WifiSetupAutoConnect)));
+                WifiSetupOutput = string.IsNullOrWhiteSpace(result) ? "Done." : result.Trim();
+            }));
+
+        PingCommand = new Command(async () => await RunTool(
+            "Ping", () => PingLoading = true, () => PingLoading = false,
+            async target =>
+            {
+                if (string.IsNullOrWhiteSpace(PingTarget)) { PingOutput = "Enter a hostname or IP to ping."; return; }
+                if (!int.TryParse(PingCount, out var count) || count < 1) count = 4;
+                var result = await Task.Run(() => RunPsSync(PsScripts.Ping(target, PingTarget, count)));
+                PingOutput = string.IsNullOrWhiteSpace(result) ? "No response." : result.Trim();
+            }));
+
+        // ── Proxy Settings ───────────────────────────────────────────────
+        LoadProxyCommand = new Command(async () => await RunTool(
+            "Proxy Settings", () => ProxyLoading = true, () => ProxyLoading = false,
+            async target =>
+            {
+                var result = await Task.Run(() => RunPsSync(PsScripts.ProxySettings(target)));
+                ProxyOutput = string.IsNullOrWhiteSpace(result) ? "No proxy settings found." : result.Trim();
+            }));
+
+        // ── Reset NIC ────────────────────────────────────────────────────
+        LoadNicsCommand = new Command(async () => await RunTool(
+            "NIC List", () => ResetNicLoading = true, () => ResetNicLoading = false,
+            async target =>
+            {
+                var entries = await RunPsJson<List<string>>(target, PsScripts.ListNics(target));
+                NicList.Clear();
+                foreach (var n in entries ?? []) NicList.Add(n);
+                SelectedNic = NicList.Count > 0 ? NicList[0] : "";
+            }));
+
+        ResetNicCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(SelectedNic)) { StatusMessage = "Select a NIC first."; return; }
+            await RunTool(
+                "Reset NIC", () => ResetNicLoading = true, () => ResetNicLoading = false,
+                async target =>
+                {
+                    var result = await Task.Run(() => RunPsSync(PsScripts.ResetNic(target, SelectedNic)));
+                    ResetNicOutput = string.IsNullOrWhiteSpace(result) ? "Reset complete." : result.Trim();
+                });
+        });
+
         // Pre-fill credential fields from the shared service on startup
         ApplyCredentials();
     }
@@ -3139,6 +3336,118 @@ internal static class PsScripts
         if ($isLocal) { (& $sb) | ConvertTo-Json -Depth 2 }
         else { (Invoke-Command -ComputerName '{{target}}' -ScriptBlock $sb) | ConvertTo-Json -Depth 2 }
         """;
+
+    public static string FlushDns(string target) => TextScriptWithTarget(target, """
+            ipconfig /flushdns
+        """);
+
+    public static string NetStat(string target) => TextScriptWithTarget(target, """
+            netstat -ano
+        """);
+
+    public static string TraceRoute(string target, string host) =>
+        "$ErrorActionPreference = 'SilentlyContinue'\n" +
+        $"$isLocal = ('{target}' -eq 'localhost' -or '{target}' -eq $env:COMPUTERNAME)\n" +
+        $"$sb = {{ tracert -d -h 20 '{host}' }}\n" +
+        $"if ($isLocal) {{ & $sb }}\n" +
+        $"else {{ Invoke-Command -ComputerName '{target}' -ScriptBlock $sb | ForEach-Object {{ \"$_\" }} }}\n";
+
+    public static string WifiProfiles(string target) => TextScriptWithTarget(target, """
+            netsh wlan show profiles
+        """);
+
+    public static string ProxySettings(string target) => TextScriptWithTarget(target, """
+            $r = Get-ItemProperty 'HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings' -ErrorAction SilentlyContinue
+            "Proxy Enabled : $(if ($r.ProxyEnable -eq 1) { 'YES' } else { 'NO' })"
+            "Proxy Server  : $($r.ProxyServer)"
+            "Bypass List   : $($r.ProxyOverride)"
+            "Auto Config   : $($r.AutoConfigURL)"
+        """);
+
+    public static string ListNics(string target) => ScriptWithTarget(target, """
+            Get-NetAdapter | Where-Object { $_.Status -ne 'Not Present' } |
+                ForEach-Object { [string]"$($_.Name) [$($_.Status)]" }
+        """, 1);
+
+    public static string ResetNic(string target, string nicName) =>
+        "$ErrorActionPreference = 'Stop'\n" +
+        $"$isLocal = ('{target}' -eq 'localhost' -or '{target}' -eq $env:COMPUTERNAME)\n" +
+        $"$sb = {{\n" +
+        $"    $a = Get-NetAdapter -Name '{nicName}' -ErrorAction Stop\n" +
+        $"    Write-Output \"Disabling '$($a.Name)'...\"\n" +
+        $"    Disable-NetAdapter -Name '{nicName}' -Confirm:$false\n" +
+        $"    Start-Sleep -Seconds 3\n" +
+        $"    Enable-NetAdapter -Name '{nicName}' -Confirm:$false\n" +
+        $"    Start-Sleep -Seconds 2\n" +
+        $"    $a2 = Get-NetAdapter -Name '{nicName}'\n" +
+        $"    Write-Output \"Done. Status: $($a2.Status)\"\n" +
+        $"}}\n" +
+        $"if ($isLocal) {{ & $sb }}\n" +
+        $"else {{ Invoke-Command -ComputerName '{target}' -ScriptBlock $sb | ForEach-Object {{ \"$_\" }} }}\n";
+
+    public static string Ping(string target, string pingHost, int count) =>
+        "$ErrorActionPreference = 'SilentlyContinue'\n" +
+        $"$isLocal = ('{target}' -eq 'localhost' -or '{target}' -eq $env:COMPUTERNAME)\n" +
+        $"$sb = {{ ping -n {count} '{pingHost}' }}\n" +
+        $"if ($isLocal) {{ & $sb }}\n" +
+        $"else {{ Invoke-Command -ComputerName '{target}' -ScriptBlock $sb | ForEach-Object {{ \"$_\" }} }}\n";
+
+    public static string ConnectWifi(string target, string profile, bool autoConnect) =>
+        "$ErrorActionPreference = 'SilentlyContinue'\n" +
+        $"$isLocal = ('{target}' -eq 'localhost' -or '{target}' -eq $env:COMPUTERNAME)\n" +
+        $"$sb = {{\n" +
+        $"    netsh wlan connect name='{profile}'\n" +
+        (autoConnect ? $"    netsh wlan set profileparameter name='{profile}' connectionmode=auto\n" : "") +
+        $"    'Connect command sent for profile: {profile}'\n" +
+        $"}}\n" +
+        $"if ($isLocal) {{ & $sb }}\n" +
+        $"else {{ Invoke-Command -ComputerName '{target}' -ScriptBlock $sb | ForEach-Object {{ \"$_\" }} }}\n";
+
+    public static string AddWifiProfile(string target, string ssid, string password, string security, bool autoConnect)
+    {
+        var connMode = autoConnect ? "auto" : "manual";
+        var (auth, enc) = security switch
+        {
+            "WPA3SAE" => ("WPA3SAE", "AES"),
+            "open"    => ("open", "none"),
+            _         => ("WPA2PSK", "AES"),
+        };
+        var keyXml = security != "open"
+            ? $"<sharedKey><keyType>passPhrase</keyType><protected>false</protected><keyMaterial>{password}</keyMaterial></sharedKey>"
+            : "";
+        var xml = $@"<?xml version=""1.0""?>
+<WLANProfile xmlns=""http://www.microsoft.com/networking/WLAN/profile/v1"">
+    <name>{ssid}</name>
+    <SSIDConfig><SSID><name>{ssid}</name></SSID></SSIDConfig>
+    <connectionType>ESS</connectionType>
+    <connectionMode>{connMode}</connectionMode>
+    <MSM><security><authEncryption>
+        <authentication>{auth}</authentication>
+        <encryption>{enc}</encryption>
+        <useOneX>false</useOneX>
+    </authEncryption>{keyXml}</security></MSM>
+</WLANProfile>";
+
+        // Pass XML as ArgumentList — no admin share or temp-file copy needed
+        return
+            "$ErrorActionPreference = 'SilentlyContinue'\n" +
+            $"$isLocal = ('{target}' -eq 'localhost' -or '{target}' -eq $env:COMPUTERNAME)\n" +
+            "$xml = @'\n" + xml + "\n'@\n" +
+            "$tmp = [System.IO.Path]::GetTempFileName() + '.xml'\n" +
+            "[System.IO.File]::WriteAllText($tmp, $xml)\n" +
+            $"if ($isLocal) {{\n" +
+            $"    netsh wlan add profile filename=$tmp user=all\n" +
+            $"    Remove-Item $tmp -ErrorAction SilentlyContinue\n" +
+            $"}} else {{\n" +
+            $"    Invoke-Command -ComputerName '{target}' -ArgumentList $xml -ScriptBlock {{\n" +
+            $"        param($x)\n" +
+            $"        $f = \"$env:TEMP\\wlan_$([System.IO.Path]::GetRandomFileName()).xml\"\n" +
+            $"        [System.IO.File]::WriteAllText($f, $x)\n" +
+            $"        netsh wlan add profile filename=$f user=all\n" +
+            $"        Remove-Item $f -ErrorAction SilentlyContinue\n" +
+            $"    }} | ForEach-Object {{ \"$_\" }}\n" +
+            $"}}\n";
+    }
 }
 
 internal static class JsonElementExtensions2

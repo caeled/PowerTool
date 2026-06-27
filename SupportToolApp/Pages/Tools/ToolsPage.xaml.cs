@@ -49,6 +49,12 @@ public partial class ToolsPage : ContentPage
             { TabPwdExpiry,       PanelPwdExpiry },
             { TabUserMgmt,        PanelUserMgmt },
             { TabDns,             PanelDns },
+            { TabFlushDns,        PanelFlushDns },
+            { TabNetStat,         PanelNetStat },
+            { TabTrace,           PanelTrace },
+            { TabWifi,            PanelWifi },
+            { TabProxy,           PanelProxy },
+            { TabResetNic,        PanelResetNic },
             { TabRegistry,        PanelRegistry },
             { TabGpUpdate,        PanelGpUpdate },
             { TabCopyFile,        PanelCopyFile },
@@ -60,13 +66,15 @@ public partial class ToolsPage : ContentPage
             { TabProcKill,        PanelProcKill },
             { TabWinRmToggle,     PanelWinRmToggle },
             { TabWakeOnLan,       PanelWakeOnLan },
+            { TabPing,            PanelPing },
+            { TabWifiSetup,       PanelWifiSetup },
         };
 
         _categories = new()
         {
             { CatSystem,  [TabApps, TabServices, TabUpdates, TabPatches, TabProcesses, TabPrinters, TabDiskSpace, TabSchedTasks, TabActivation, TabTempClean, TabStartup, TabRemotePsSystem, TabPsRunSystem] },
             { CatUsers,   [TabLocalUsers, TabLoggedOn, TabLocalAdmins, TabRunAs, TabGroupMembership, TabAcctLockout, TabRdpSessions, TabPwdExpiry, TabUserMgmt] },
-            { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns] },
+            { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns, TabFlushDns, TabNetStat, TabTrace, TabWifi, TabProxy, TabResetNic, TabPing, TabWifiSetup] },
             { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate, TabRemotePsRemote, TabPsRunRemote, TabDirBrowser, TabProcKill, TabWinRmToggle, TabWakeOnLan] },
             { CatDeploy,  [TabDeploy, TabCopyFile] },
         };
