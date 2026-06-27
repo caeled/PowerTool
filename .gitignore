@@ -1,0 +1,11 @@
+# MAUI / .NET build output
+SupportToolApp/bin/
+SupportToolApp/obj/
+*.user
+
+# Claude Code session data
+.claude/
+
+# Windows
+Thumbs.db
+Desktop.ini

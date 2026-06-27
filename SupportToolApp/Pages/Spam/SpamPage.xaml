@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SupportToolApp.Pages.Spam.SpamPage"
+             Title="Spam &amp; Breach Response">
+    <ScrollView Padding="16">
+        <VerticalStackLayout Spacing="14">
+            <Label Text="Spam &amp; Breach Response" FontSize="20" FontAttributes="Bold"/>
+            <Border Padding="12,8" BackgroundColor="#FFF3E0" StrokeShape="RoundRectangle 6" Stroke="#FFB74D">
+                <Label Text="⚠  These are destructive, irreversible actions. Use only during confirmed security incidents." TextColor="#E65100"/>
+            </Border>
+
+            <!-- Email Purge -->
+            <Border Stroke="#CC4400" StrokeThickness="1" Padding="12">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Purge Emails" FontAttributes="Bold" FontSize="15" TextColor="#CC4400"/>
+                    <Label Text="Mailbox (or leave blank for all mailboxes):" FontSize="12" TextColor="Gray"/>
+                    <Entry Text="{Binding PurgeMailbox}" Placeholder="user@contoso.com  (blank = all)"/>
+                    <Label Text="From sender (optional):" FontSize="12" TextColor="Gray"/>
+                    <Entry Text="{Binding PurgeSender}" Placeholder="phisher@evil.com"/>
+                    <Label Text="Subject contains (optional):" FontSize="12" TextColor="Gray"/>
+                    <Entry Text="{Binding PurgeSubject}" Placeholder="Wire transfer request"/>
+                    <Button Text="Purge Matching Emails" Command="{Binding PurgeCommand}" BackgroundColor="#CC4400" HorizontalOptions="Start"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Inbox Rules -->
+            <Border Stroke="#CC4400" StrokeThickness="1" Padding="12">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Revoke Inbox Rules" FontAttributes="Bold" FontSize="15" TextColor="#CC4400"/>
+                    <Label Text="Attackers create inbox rules to hide replies to phishing emails and hide alerts." FontSize="12" TextColor="Gray"/>
+                    <Entry Text="{Binding RulesMailbox}" Placeholder="compromised@contoso.com"/>
+                    <Button Text="Remove All Inbox Rules" Command="{Binding RevokeRulesCommand}" BackgroundColor="#CC4400" HorizontalOptions="Start"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Session Revocation -->
+            <Border Stroke="#8B0000" StrokeThickness="1" Padding="12">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Revoke O365 Sessions" FontAttributes="Bold" FontSize="15" TextColor="#8B0000"/>
+                    <Label Text="Forces sign-out from ALL Office 365 apps and devices globally, immediately." FontSize="12" TextColor="Gray"/>
+                    <Entry Text="{Binding SessionUpn}" Placeholder="compromised@contoso.com"/>
+                    <Button Text="Revoke All Sessions" Command="{Binding RevokeSessionsCommand}" BackgroundColor="#8B0000" HorizontalOptions="Start"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Nuclear -->
+            <Border Stroke="Black" StrokeThickness="2" Padding="12">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Full Breach Remediation" FontAttributes="Bold" FontSize="15"/>
+                    <Label Text="One-click remediation: purge phishing emails + remove inbox rules + revoke all sessions." FontSize="12" TextColor="Gray"/>
+                    <Entry Text="{Binding BreachUpn}" Placeholder="compromised@contoso.com"/>
+                    <Button Text="Full Remediation (All Three Steps)" Command="{Binding NuclearCommand}" BackgroundColor="Black" HorizontalOptions="Start"/>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Status -->
+            <Border Padding="12,8" BackgroundColor="#E8F5E9" StrokeShape="RoundRectangle 6"
+                    IsVisible="{Binding HasStatus}" Stroke="#A5D6A7">
+                <Label Text="{Binding StatusMessage}" TextColor="#2E7D32" FontAttributes="Bold"/>
+            </Border>
+            <Border Padding="12,8" BackgroundColor="#FFEBEE" StrokeShape="RoundRectangle 6"
+                    IsVisible="{Binding HasError}" Stroke="#EF9A9A">
+                <Label Text="{Binding ErrorMessage}" TextColor="#C62828" FontAttributes="Bold"/>
+            </Border>
+
+            <BoxView HeightRequest="20"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

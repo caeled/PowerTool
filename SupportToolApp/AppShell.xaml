@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<Shell xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+       xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+       xmlns:um="clr-namespace:SupportToolApp.Pages.UserManager"
+       xmlns:em="clr-namespace:SupportToolApp.Pages.Email"
+       xmlns:sp="clr-namespace:SupportToolApp.Pages.Spam"
+       xmlns:ra="clr-namespace:SupportToolApp.Pages.RemoteAccess"
+       xmlns:rp="clr-namespace:SupportToolApp.Pages.Reporting"
+       xmlns:si="clr-namespace:SupportToolApp.Pages.SystemInfo"
+       xmlns:sc="clr-namespace:SupportToolApp.Pages.Search"
+       xmlns:st="clr-namespace:SupportToolApp.Pages.Settings"
+       xmlns:tl="clr-namespace:SupportToolApp.Pages.Tools"
+       xmlns:cr="clr-namespace:SupportToolApp.Pages.Credentials"
+       x:Class="SupportToolApp.AppShell"
+       Shell.FlyoutBehavior="Flyout"
+       Title="IT Support Tool">
+
+    <Shell.FlyoutHeader>
+        <VerticalStackLayout BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}" Padding="16,32,16,16">
+            <Label Text="IT Support Tool" FontSize="18" FontAttributes="Bold" TextColor="White"/>
+            <Label Text="Champion Labs Edition" FontSize="12" TextColor="#CCFFFFFF"/>
+        </VerticalStackLayout>
+    </Shell.FlyoutHeader>
+
+    <FlyoutItem Title="User Manager">
+        <ShellContent ContentTemplate="{DataTemplate um:UserManagerPage}" Route="UserManager"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="Email &amp; Mailbox">
+        <ShellContent ContentTemplate="{DataTemplate em:EmailPage}" Route="Email"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="Spam / Breach Response">
+        <ShellContent ContentTemplate="{DataTemplate sp:SpamPage}" Route="Spam"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="Tools">
+        <ShellContent ContentTemplate="{DataTemplate tl:ToolsPage}" Route="Tools"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="Remote Access">
+        <ShellContent ContentTemplate="{DataTemplate ra:RemoteAccessPage}" Route="RemoteAccess"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="Reporting">
+        <ShellContent ContentTemplate="{DataTemplate rp:ReportingPage}" Route="Reporting"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="System Info">
+        <ShellContent ContentTemplate="{DataTemplate si:SystemInfoPage}" Route="SystemInfo"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="Search &amp; Lookup">
+        <ShellContent ContentTemplate="{DataTemplate sc:SearchPage}" Route="Search"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="Settings">
+        <ShellContent ContentTemplate="{DataTemplate st:SettingsPage}" Route="Settings"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="🔑 Set Credentials">
+        <ShellContent ContentTemplate="{DataTemplate cr:SetCredentialsPage}" Route="SetCredentials"/>
+    </FlyoutItem>
+
+</Shell>

@@ -1,0 +1,92 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SupportToolApp.Pages.SystemInfo.SystemInfoPage"
+             Title="System Info">
+    <ScrollView Padding="16">
+        <VerticalStackLayout Spacing="16">
+            <Label Text="System Info &amp; Inventory" FontSize="20" FontAttributes="Bold"/>
+
+            <!-- Query bar -->
+            <Border Stroke="LightGray" StrokeThickness="1" Padding="12" StrokeShape="RoundRectangle 6">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Target Computer" FontAttributes="Bold" FontSize="15"/>
+                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                        <Entry Grid.Column="0" x:Name="TargetEntry"
+                               Placeholder="Computer name or IP — leave blank for this machine"/>
+                        <Button Grid.Column="1" Text="Query" Command="{Binding QueryCommand}"
+                                CommandParameter="{Binding Text, Source={x:Reference TargetEntry}}"
+                                BackgroundColor="DodgerBlue" Padding="16,0"/>
+                        <ActivityIndicator Grid.Column="2" IsRunning="{Binding IsBusy}"
+                                           IsVisible="{Binding IsBusy}" Color="DodgerBlue"
+                                           VerticalOptions="Center"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Error -->
+            <Border Padding="12,8" BackgroundColor="#FFEBEE" StrokeShape="RoundRectangle 6"
+                    Stroke="#EF9A9A" IsVisible="{Binding HasError}">
+                <Label Text="{Binding ErrorMessage}" TextColor="#C62828" FontSize="13"/>
+            </Border>
+
+            <!-- Info grid -->
+            <Border Stroke="LightGray" StrokeThickness="1" Padding="12"
+                    StrokeShape="RoundRectangle 6" IsVisible="{Binding HasInfo}">
+                <VerticalStackLayout Spacing="0">
+                    <Label Text="{Binding Info.ComputerName}" FontSize="18" FontAttributes="Bold" Margin="0,0,0,10"/>
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                          ColumnDefinitions="160,*" RowSpacing="8">
+                        <Label Grid.Row="0" Grid.Column="0" Text="OS" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding Info.OperatingSystem}"/>
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="Last Boot" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Info.LastBootTime}"/>
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="Manufacturer" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Info.Manufacturer}"/>
+
+                        <Label Grid.Row="3" Grid.Column="0" Text="Model" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding Info.Model}"/>
+
+                        <Label Grid.Row="4" Grid.Column="0" Text="Serial Number" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="4" Grid.Column="1" Text="{Binding Info.SerialNumber}"/>
+
+                        <Label Grid.Row="5" Grid.Column="0" Text="RAM" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="5" Grid.Column="1" Text="{Binding Info.TotalRamDisplay}"/>
+
+                        <Label Grid.Row="6" Grid.Column="0" Text="Processor" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="6" Grid.Column="1" Text="{Binding Info.Processor}"/>
+
+                        <Label Grid.Row="7" Grid.Column="0" Text="IP Address" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="7" Grid.Column="1" Text="{Binding Info.IpAddress}"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Disk space -->
+            <Border Stroke="LightGray" StrokeThickness="1" Padding="12"
+                    StrokeShape="RoundRectangle 6" IsVisible="{Binding HasInfo}">
+                <VerticalStackLayout Spacing="10">
+                    <Label Text="Disk Space" FontAttributes="Bold" FontSize="15"/>
+                    <CollectionView ItemsSource="{Binding Info.Disks}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="50,*,110" Padding="4,6" ColumnSpacing="12">
+                                    <Label Grid.Column="0" Text="{Binding Drive}" FontAttributes="Bold"
+                                           VerticalOptions="Center"/>
+                                    <ProgressBar Grid.Column="1" Progress="{Binding UsedPercent}"
+                                                 VerticalOptions="Center"/>
+                                    <Label Grid.Column="2" Text="{Binding SummaryDisplay}"
+                                           FontSize="12" TextColor="Gray" VerticalOptions="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </VerticalStackLayout>
+            </Border>
+
+            <BoxView HeightRequest="20"/>
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>

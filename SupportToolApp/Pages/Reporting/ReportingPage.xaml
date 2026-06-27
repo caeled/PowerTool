@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SupportToolApp.Pages.Reporting.ReportingPage"
+             Title="Reporting">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="12">
+        <Label Grid.Row="0" Text="Reporting" FontSize="20" FontAttributes="Bold"/>
+
+        <FlexLayout Grid.Row="1" Wrap="Wrap" JustifyContent="Start" AlignItems="Center">
+            <Button Text="License Report" Command="{Binding LicenseReportCommand}" Margin="4" BackgroundColor="SteelBlue"/>
+            <Button Text="Locked Out Users" Command="{Binding LockedUsersCommand}" Margin="4" BackgroundColor="OrangeRed"/>
+            <Button Text="Last Logon Report" Command="{Binding LastLogonCommand}" Margin="4" BackgroundColor="SteelBlue"/>
+            <Button Text="Shared Mailboxes" Command="{Binding SharedMailboxesCommand}" Margin="4" BackgroundColor="SteelBlue"/>
+            <Button Text="Export to CSV" Command="{Binding ExportCsvCommand}" Margin="4" BackgroundColor="ForestGreen"/>
+        </FlexLayout>
+
+        <Frame Grid.Row="2" BorderColor="LightGray" Padding="0">
+            <CollectionView ItemsSource="{Binding ReportRows}">
+                <CollectionView.Header>
+                    <Grid ColumnDefinitions="*,*,*" BackgroundColor="LightGray" Padding="8,4">
+                        <Label Grid.Column="0" Text="{Binding Col1Header}" FontAttributes="Bold"/>
+                        <Label Grid.Column="1" Text="{Binding Col2Header}" FontAttributes="Bold"/>
+                        <Label Grid.Column="2" Text="{Binding Col3Header}" FontAttributes="Bold"/>
+                    </Grid>
+                </CollectionView.Header>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid ColumnDefinitions="*,*,*" Padding="8,4">
+                            <Label Grid.Column="0" Text="{Binding Col1}"/>
+                            <Label Grid.Column="1" Text="{Binding Col2}"/>
+                            <Label Grid.Column="2" Text="{Binding Col3}"/>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </Frame>
+    </Grid>
+</ContentPage>

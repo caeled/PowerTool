@@ -1,0 +1,24 @@
+﻿<?xml version = "1.0" encoding = "UTF-8" ?>
+<Application xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:local="clr-namespace:SupportToolApp"
+             xmlns:conv="clr-namespace:SupportToolApp.Converters"
+             x:Class="SupportToolApp.App">
+    <Application.Resources>
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Resources/Styles/Colors.xaml" />
+                <ResourceDictionary Source="Resources/Styles/Styles.xaml" />
+            </ResourceDictionary.MergedDictionaries>
+
+            <conv:BoolToColorConverter x:Key="BoolToColorConverter"/>
+            <conv:BoolToGreenRedConverter x:Key="BoolToGreenRedConverter"/>
+            <conv:BoolToRedGreenConverter x:Key="BoolToRedGreenConverter"/>
+            <conv:BoolToGreenGrayConverter x:Key="BoolToGreenGrayConverter"/>
+            <conv:BoolToEnabledConverter x:Key="BoolToEnabledConverter"/>
+            <conv:BoolToLockedConverter x:Key="BoolToLockedConverter"/>
+            <conv:BoolToLicensedConverter x:Key="BoolToLicensedConverter"/>
+            <conv:UserStatusColorConverter x:Key="UserStatusColorConverter"/>
+        </ResourceDictionary>
+    </Application.Resources>
+</Application>

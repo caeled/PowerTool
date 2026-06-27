@@ -1,0 +1,951 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SupportToolApp.Pages.Tools.ToolsPage"
+             Title="Tools">
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Padding="12" RowSpacing="8">
+
+        <!-- Target Computer Bar -->
+        <Border Grid.Row="0" Stroke="#0078D4" StrokeThickness="2" Padding="10"
+                StrokeShape="RoundRectangle 6" BackgroundColor="#F0F7FF">
+            <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                <Label Grid.Column="0" Text="Target Computer:" FontAttributes="Bold" VerticalOptions="Center"/>
+                <Entry Grid.Column="1" Text="{Binding TargetComputer}"
+                       Placeholder="hostname or IP — blank = this machine" VerticalOptions="Center"/>
+                <Button Grid.Column="2" Text="Clear" Padding="10,6" BackgroundColor="Gray"
+                        Command="{Binding ClearTargetCommand}"/>
+            </Grid>
+        </Border>
+
+        <!-- Category Bar -->
+        <HorizontalStackLayout Grid.Row="1" Spacing="4">
+            <Button Text="System"  x:Name="CatSystem"  Clicked="OnCategoryClicked" BackgroundColor="#0078D4" Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+            <Button Text="Users"   x:Name="CatUsers"   Clicked="OnCategoryClicked" BackgroundColor="#555"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+            <Button Text="Network" x:Name="CatNetwork" Clicked="OnCategoryClicked" BackgroundColor="#555"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+            <Button Text="Remote"  x:Name="CatRemote"  Clicked="OnCategoryClicked" BackgroundColor="#555"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+            <Button Text="Deploy"  x:Name="CatDeploy"  Clicked="OnCategoryClicked" BackgroundColor="#555"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+        </HorizontalStackLayout>
+
+        <!-- Tool Bar — filtered by category -->
+        <ScrollView Grid.Row="2" Orientation="Horizontal">
+            <HorizontalStackLayout Spacing="4">
+                <!-- System -->
+                <Button Text="Installed Apps"   x:Name="TabApps"         Clicked="OnTabClicked" BackgroundColor="#0078D4" Padding="14,7" FontSize="12"/>
+                <Button Text="Services"         x:Name="TabServices"      Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
+                <Button Text="Updates"          x:Name="TabUpdates"       Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
+                <Button Text="Security Patches" x:Name="TabPatches"       Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
+                <Button Text="Processes"        x:Name="TabProcesses"     Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
+                <Button Text="Printers"         x:Name="TabPrinters"      Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
+                <Button Text="Disk Space"       x:Name="TabDiskSpace"     Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
+                <!-- Users -->
+                <Button Text="Local Users &amp; Groups" x:Name="TabLocalUsers"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Logged On User"           x:Name="TabLoggedOn"         Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Local Admins"             x:Name="TabLocalAdmins"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Run As"                   x:Name="TabRunAs"            Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Group Membership"         x:Name="TabGroupMembership"  Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <!-- Network -->
+                <Button Text="Network Info" x:Name="TabNetwork"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Port Tester"  x:Name="TabPorts"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Ping Sweep"   x:Name="TabPingSweep" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="DNS"          x:Name="TabDns"       Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <!-- Remote -->
+                <Button Text="Pending Reboot" x:Name="TabReboot"       Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Remote Reboot"  x:Name="TabRebootAction" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Event Log"      x:Name="TabEventLog"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Shared Folders" x:Name="TabShares"       Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Registry"       x:Name="TabRegistry"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="GP Update"      x:Name="TabGpUpdate"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <!-- Deploy -->
+                <Button Text="File Drop &amp; Run" x:Name="TabDeploy"    Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Copy File"           x:Name="TabCopyFile"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
+            </HorizontalStackLayout>
+        </ScrollView>
+
+        <!-- Status -->
+        <Border Grid.Row="3" Padding="10,7" BackgroundColor="#E8F5E9" StrokeShape="RoundRectangle 4"
+                Stroke="#A5D6A7" IsVisible="{Binding HasStatus}">
+            <Label Text="{Binding StatusMessage}" TextColor="#2E7D32" FontSize="12"/>
+        </Border>
+
+        <!-- Tab Content -->
+        <Grid Grid.Row="4">
+
+            <!-- ── Installed Apps ──────────────────────────────────────────── -->
+            <Grid x:Name="PanelApps" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4">
+                <Button Grid.Row="0" Text="Load Installed Apps" Command="{Binding LoadAppsCommand}"
+                        BackgroundColor="SteelBlue" HorizontalOptions="Start" Padding="16,8"/>
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding AppSearch}" Placeholder="Filter by name or publisher..."/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding AppsLoading}"
+                                       IsVisible="{Binding AppsLoading}" Color="SteelBlue"/>
+                </Grid>
+                <Border Grid.Row="2" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding Apps}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="*,180,100,100" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="Name" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Publisher" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Version" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="3" Text="Installed" FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,180,100,100" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding Name}" FontSize="12"/>
+                                    <Label Grid.Column="1" Text="{Binding Publisher}" FontSize="12" TextColor="Gray"/>
+                                    <Label Grid.Column="2" Text="{Binding Version}" FontSize="12" TextColor="Gray"/>
+                                    <Label Grid.Column="3" Text="{Binding InstallDate}" FontSize="12" TextColor="Gray"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Services ───────────────────────────────────────────────── -->
+            <Grid x:Name="PanelServices" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Services" Command="{Binding LoadServicesCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding ServicesLoading}"
+                                       IsVisible="{Binding ServicesLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Entry Grid.Row="1" Text="{Binding ServiceSearch}" Placeholder="Filter services..."/>
+                <HorizontalStackLayout Grid.Row="2" Spacing="8">
+                    <Button Text="▶ Start" Command="{Binding StartServiceCommand}" BackgroundColor="#228B22" Padding="16,6"/>
+                    <Button Text="■ Stop" Command="{Binding StopServiceCommand}" BackgroundColor="#CC4400" Padding="16,6"/>
+                    <Button Text="↺ Restart" Command="{Binding RestartServiceCommand}" BackgroundColor="#1565C0" Padding="16,6"/>
+                    <Label Text="{Binding SelectedService.DisplayName, StringFormat='Selected: {0}'}"
+                           VerticalOptions="Center" TextColor="Gray" FontSize="12"/>
+                </HorizontalStackLayout>
+                <Border Grid.Row="3" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding Services}" SelectionMode="Single"
+                                    SelectedItem="{Binding SelectedService}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="140,*,90,110" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="Name" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Display Name" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Status" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="3" Text="Start Type" FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="140,*,90,110" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding Name}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="1" Text="{Binding DisplayName}" FontSize="12"/>
+                                    <Label Grid.Column="2" Text="{Binding Status}" FontSize="12"
+                                           TextColor="{Binding IsRunning, Converter={StaticResource BoolToGreenRedConverter}}"/>
+                                    <Label Grid.Column="3" Text="{Binding StartType}" FontSize="11" TextColor="Gray"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Local Users & Groups ───────────────────────────────────── -->
+            <Grid x:Name="PanelLocalUsers" RowDefinitions="Auto,*,Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Users &amp; Groups" Command="{Binding LoadLocalUsersCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding LocalUsersLoading}"
+                                       IsVisible="{Binding LocalUsersLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding LocalUsers}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="140,*,70,*" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="Username" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Full Name" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Enabled" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="3" Text="Last Logon" FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="140,*,70,*" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding Name}" FontSize="12" FontAttributes="Bold"/>
+                                    <Label Grid.Column="1" Text="{Binding FullName}" FontSize="12"/>
+                                    <Label Grid.Column="2" Text="{Binding Enabled, Converter={StaticResource BoolToEnabledConverter}}"
+                                           FontSize="12" TextColor="{Binding Enabled, Converter={StaticResource BoolToGreenRedConverter}}"/>
+                                    <Label Grid.Column="3" Text="{Binding LastLogon}" FontSize="12" TextColor="Gray"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+                <Label Grid.Row="2" Text="Local Groups" FontAttributes="Bold" FontSize="14"/>
+                <Border Grid.Row="3" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding LocalGroups}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="180,*" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding Name}" FontSize="12" FontAttributes="Bold"/>
+                                    <Label Grid.Column="1" Text="{Binding MemberSummary}" FontSize="12" TextColor="Gray"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Printers ───────────────────────────────────────────────── -->
+            <Grid x:Name="PanelPrinters" RowDefinitions="Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <!-- Add + Load row -->
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding NewPrinterPath}" Placeholder="\\printserver\sharename"/>
+                    <Button Grid.Column="1" Text="Add" Command="{Binding AddPrinterCommand}"
+                            BackgroundColor="#228B22" Padding="16,8"/>
+                    <Button Grid.Column="2" Text="Load Printers" Command="{Binding LoadPrintersCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="3" IsRunning="{Binding PrintersLoading}"
+                                       IsVisible="{Binding PrintersLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding Printers}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="*,160,160,70,80" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="Name" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Driver" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Port" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="3" Text="Default" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="4" Text="Status" FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,160,160,70,80" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding Name}" FontSize="12" FontAttributes="Bold"/>
+                                    <Label Grid.Column="1" Text="{Binding DriverName}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="2" Text="{Binding PortName}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="3" Text="{Binding IsDefault, Converter={StaticResource BoolToEnabledConverter}}" FontSize="12"/>
+                                    <Label Grid.Column="4" Text="{Binding Status}" FontSize="12"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Pending Reboot ─────────────────────────────────────────── -->
+            <Grid x:Name="PanelReboot" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Enter computer names (one per line or comma-separated). Leave blank to check Target Computer."
+                       TextColor="Gray" FontSize="12"/>
+                <Editor Grid.Row="1" Text="{Binding RebootCheckList}" HeightRequest="80"
+                        Placeholder="DESKTOP-01&#x0a;DESKTOP-02&#x0a;SERVER01"/>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Check Reboot Status" Command="{Binding CheckRebootCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding RebootLoading}"
+                                       IsVisible="{Binding RebootLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="3" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding RebootResults}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="200,130,*" Padding="10,8" ColumnSpacing="12">
+                                    <Label Grid.Column="0" Text="{Binding Computer}" FontSize="13"
+                                           FontAttributes="Bold" VerticalOptions="Center"/>
+                                    <Border Grid.Column="1" Padding="8,4" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8"
+                                            BackgroundColor="{Binding StatusColor}"
+                                            VerticalOptions="Center" HorizontalOptions="Start">
+                                        <Label Text="{Binding StatusText}" TextColor="White"
+                                               FontSize="11" FontAttributes="Bold"/>
+                                    </Border>
+                                    <Label Grid.Column="2" Text="{Binding Reason}" FontSize="12"
+                                           TextColor="Gray" VerticalOptions="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── TCP Port Tester ────────────────────────────────────────── -->
+            <Grid x:Name="PanelPorts" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Host:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding PortHost}"
+                           Placeholder="hostname or IP (defaults to Target Computer)"/>
+                </Grid>
+                <Grid Grid.Row="1" ColumnDefinitions="80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Ports:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding PortList}" Placeholder="80,443,3389,445,135,22"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Test Ports" Command="{Binding TestPortsCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding PortsLoading}"
+                                       IsVisible="{Binding PortsLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="3" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding PortResults}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="100,120" Padding="12,8" ColumnSpacing="16">
+                                    <Label Grid.Column="0" Text="{Binding Port, StringFormat='Port {0}'}"
+                                           FontSize="14" FontAttributes="Bold" VerticalOptions="Center"/>
+                                    <Border Grid.Column="1" Padding="10,5" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8"
+                                            BackgroundColor="{Binding StatusColor}"
+                                            HorizontalOptions="Start" VerticalOptions="Center">
+                                        <Label Text="{Binding StatusText}" TextColor="White"
+                                               FontAttributes="Bold" FontSize="12"/>
+                                    </Border>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Windows Updates ────────────────────────────────────────── -->
+            <Grid x:Name="PanelUpdates" RowDefinitions="Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Update History" Command="{Binding LoadUpdatesCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding UpdatesLoading}"
+                                       IsVisible="{Binding UpdatesLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding Updates}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="*,140,110" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="Update" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Category" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Installed On" FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,140,110" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding Title}" FontSize="12"/>
+                                    <Label Grid.Column="1" Text="{Binding Severity}" FontSize="12" TextColor="Gray"/>
+                                    <Label Grid.Column="2" Text="{Binding InstalledOn}" FontSize="12" TextColor="Gray"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Network Info ───────────────────────────────────────────── -->
+            <Grid x:Name="PanelNetwork" RowDefinitions="Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Network Info" Command="{Binding LoadNetworkCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding NetworkLoading}"
+                                       IsVisible="{Binding NetworkLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding NetworkAdapters}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Border Margin="4,4" Padding="12,10" StrokeShape="RoundRectangle 6"
+                                        Stroke="#DDDDDD" BackgroundColor="#FAFAFA">
+                                    <Grid ColumnDefinitions="140,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" RowSpacing="4" ColumnSpacing="12">
+                                        <Label Grid.Row="0" Grid.Column="0" Grid.ColumnSpan="2"
+                                               Text="{Binding Name}" FontAttributes="Bold" FontSize="13"/>
+                                        <Label Grid.Row="1" Grid.Column="0" Text="Description:" TextColor="Gray" FontSize="11"/>
+                                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Description}" FontSize="11"/>
+                                        <Label Grid.Row="2" Grid.Column="0" Text="IP Address:" TextColor="Gray" FontSize="11"/>
+                                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding IPAddress}" FontSize="11"/>
+                                        <Label Grid.Row="3" Grid.Column="0" Text="Gateway:" TextColor="Gray" FontSize="11"/>
+                                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding DefaultGateway}" FontSize="11"/>
+                                        <Label Grid.Row="4" Grid.Column="0" Text="MAC:" TextColor="Gray" FontSize="11"/>
+                                        <Label Grid.Row="4" Grid.Column="1" Text="{Binding MacAddress}" FontSize="11"/>
+                                        <Label Grid.Row="5" Grid.Column="0" Text="DNS:" TextColor="Gray" FontSize="11"/>
+                                        <Label Grid.Row="5" Grid.Column="1" Text="{Binding DnsServers}" FontSize="11"/>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Logged On User ─────────────────────────────────────────── -->
+            <Grid x:Name="PanelLoggedOn" RowDefinitions="Auto,Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Get Logged On User" Command="{Binding GetLoggedOnUserCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding LoggedOnLoading}"
+                                       IsVisible="{Binding LoggedOnLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Padding="20,16" StrokeShape="RoundRectangle 8"
+                        BackgroundColor="#F0F7FF" Stroke="#0078D4">
+                    <Label Text="{Binding LoggedOnResult}" FontSize="16" FontAttributes="Bold"
+                           TextColor="#0078D4" HorizontalTextAlignment="Center"/>
+                </Border>
+                <Label Grid.Row="2" Text="Queries Win32_ComputerSystem.UserName — shows the interactively logged-on user for the target machine."
+                       TextColor="Gray" FontSize="11" Padding="4"/>
+            </Grid>
+
+            <!-- ── Local Admins ───────────────────────────────────────────── -->
+            <Grid x:Name="PanelLocalAdmins" RowDefinitions="Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Local Admins" Command="{Binding LoadLocalAdminsCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding LocalAdminsLoading}"
+                                       IsVisible="{Binding LocalAdminsLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding LocalAdmins}">
+                        <CollectionView.Header>
+                            <Grid Padding="12,8" BackgroundColor="#FFF3E0">
+                                <Label Text="Members of local Administrators group" FontAttributes="Bold"
+                                       FontSize="12" TextColor="#E65100"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="Auto,*" Padding="14,8" ColumnSpacing="10">
+                                    <Label Grid.Column="0" Text="🔑" FontSize="14"/>
+                                    <Label Grid.Column="1" Text="{Binding .}" FontSize="13" VerticalOptions="Center"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Security Patches ───────────────────────────────────────── -->
+            <Grid x:Name="PanelPatches" RowDefinitions="Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Security Patches" Command="{Binding LoadPatchesCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding PatchesLoading}"
+                                       IsVisible="{Binding PatchesLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding Patches}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="100,*,120,*" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="KB Article" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Description" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Installed On" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="3" Text="Installed By" FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="100,*,120,*" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding HotFixId}" FontSize="12" FontAttributes="Bold"
+                                           TextColor="#0078D4"/>
+                                    <Label Grid.Column="1" Text="{Binding Description}" FontSize="12"/>
+                                    <Label Grid.Column="2" Text="{Binding InstalledOn}" FontSize="12" TextColor="Gray"/>
+                                    <Label Grid.Column="3" Text="{Binding InstalledBy}" FontSize="11" TextColor="Gray"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Process Manager ────────────────────────────────────────── -->
+            <Grid x:Name="PanelProcesses" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Processes" Command="{Binding LoadProcessesCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <Button Grid.Column="1" Text="⚡ Kill Process" Command="{Binding KillProcessCommand}"
+                            BackgroundColor="#CC4400" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="2" IsRunning="{Binding ProcessesLoading}"
+                                       IsVisible="{Binding ProcessesLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Entry Grid.Row="1" Text="{Binding ProcessSearch}" Placeholder="Filter processes..."/>
+                <Label Grid.Row="2" Text="{Binding SelectedProcess.Name, StringFormat='Selected: {0}'}"
+                       FontSize="12" TextColor="Gray" Padding="4,0"/>
+                <Border Grid.Row="3" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding Processes}" SelectionMode="Single"
+                                    SelectedItem="{Binding SelectedProcess}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="60,180,80,100,120,*" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="PID" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Name" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="CPU (s)" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="3" Text="Memory" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="4" Text="Start Time" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="5" Text="Owner" FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="60,180,80,100,120,*" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding Id}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="1" Text="{Binding Name}" FontSize="12"/>
+                                    <Label Grid.Column="2" Text="{Binding CPU}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="3" Text="{Binding WorkingSet}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="4" Text="{Binding StartTime}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="5" Text="{Binding Owner}" FontSize="11" TextColor="Gray"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Remote Reboot ──────────────────────────────────────────── -->
+            <Grid x:Name="PanelRebootAction" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12"
+                  Padding="4" IsVisible="False">
+                <Label Grid.Row="0"
+                       Text="Use the Target Computer field above to set the machine. Actions are confirmed before executing."
+                       TextColor="Gray" FontSize="12"/>
+                <HorizontalStackLayout Grid.Row="1" Spacing="10">
+                    <Button Text="🔄 Reboot Now" Command="{Binding RebootNowCommand}"
+                            BackgroundColor="#CC4400" Padding="18,10" FontAttributes="Bold"/>
+                    <Button Text="❌ Cancel Pending Reboot" Command="{Binding CancelRebootCommand}"
+                            BackgroundColor="#555" Padding="18,10"/>
+                    <Button Text="🖥 Enable RDP" Command="{Binding EnableRdpCommand}"
+                            BackgroundColor="#1565C0" Padding="18,10"/>
+                    <ActivityIndicator IsRunning="{Binding RebootActionLoading}"
+                                       IsVisible="{Binding RebootActionLoading}" Color="SteelBlue"
+                                       VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+                <Border Grid.Row="2" Padding="14,10" StrokeShape="RoundRectangle 6"
+                        BackgroundColor="#1A1A1A" Stroke="#333">
+                    <Label Text="{Binding RebootOutput}" FontFamily="Courier New" FontSize="12"
+                           TextColor="#00FF41"/>
+                </Border>
+                <Label Grid.Row="3"
+                       Text="Reboot schedules a 30-second countdown (users see a warning). Cancel aborts any pending shutdown. Enable RDP sets the registry key and opens the firewall rule remotely."
+                       TextColor="Gray" FontSize="11" Padding="4"/>
+            </Grid>
+
+            <!-- ── Ping Sweep ─────────────────────────────────────────────── -->
+            <Grid x:Name="PanelPingSweep" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Enter a subnet prefix (e.g. 192.168.1) — sweeps .1 through .254 in parallel."
+                       TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="80,*,Auto,Auto" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Subnet:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding SweepSubnet}" Placeholder="192.168.1"/>
+                    <Button Grid.Column="2" Text="Sweep" Command="{Binding PingSweepCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="3" IsRunning="{Binding SweepLoading}"
+                                       IsVisible="{Binding SweepLoading}" Color="SteelBlue"
+                                       VerticalOptions="Center"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="*,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="{Binding SweepResults.Count, StringFormat='{0} results'}"
+                           FontSize="12" TextColor="Gray" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="3" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding SweepResults}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="140,120,*" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="IP Address" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Status" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Hostname" FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="140,120,*" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding IPAddress}" FontSize="12"/>
+                                    <Border Grid.Column="1" Padding="8,4" StrokeThickness="0"
+                                            StrokeShape="RoundRectangle 8"
+                                            BackgroundColor="{Binding StatusColor}"
+                                            HorizontalOptions="Start" VerticalOptions="Center">
+                                        <Label Text="{Binding StatusText}" TextColor="White"
+                                               FontSize="11" FontAttributes="Bold"/>
+                                    </Border>
+                                    <Label Grid.Column="2" Text="{Binding Hostname}" FontSize="12" TextColor="Gray"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Run As ─────────────────────────────────────────────────── -->
+            <Grid x:Name="PanelRunAs" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Label Grid.Row="0"
+                       Text="Run a command or manage a service using alternate credentials. Password is passed to PowerShell SecureString — not stored."
+                       TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="80,120,80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Domain:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding RunAsDomain}" Placeholder=". or DOMAIN"/>
+                    <Label Grid.Column="2" Text="Username:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="3" Text="{Binding RunAsUsername}" Placeholder="username"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Password:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding RunAsPassword}" IsPassword="True" Placeholder="password"/>
+                </Grid>
+                <Grid Grid.Row="3" ColumnDefinitions="80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Command:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding RunAsCommand}" Placeholder="notepad.exe  — or service name for Start/Stop"/>
+                </Grid>
+                <Grid Grid.Row="4" ColumnDefinitions="80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Arguments:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding RunAsArgs}" Placeholder="optional arguments"/>
+                </Grid>
+                <HorizontalStackLayout Grid.Row="5" Spacing="10">
+                    <Button Text="▶ Run / Launch" Command="{Binding RunAsExecuteCommand}"
+                            BackgroundColor="#228B22" Padding="16,8" FontAttributes="Bold"/>
+                    <Button Text="▶ Start Service" Command="{Binding RunAsStartServiceCommand}"
+                            BackgroundColor="#1565C0" Padding="16,8"/>
+                    <Button Text="■ Stop Service" Command="{Binding RunAsStopServiceCommand}"
+                            BackgroundColor="#CC4400" Padding="16,8"/>
+                    <ActivityIndicator IsRunning="{Binding RunAsLoading}" IsVisible="{Binding RunAsLoading}"
+                                       Color="SteelBlue" VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+                <Border Grid.Row="6" Padding="14,10" StrokeShape="RoundRectangle 6"
+                        BackgroundColor="#1A1A1A" Stroke="#333">
+                    <Label Text="{Binding RunAsOutput}" FontFamily="Courier New" FontSize="12"
+                           TextColor="#00FF41"/>
+                </Border>
+            </Grid>
+
+            <!-- ── Event Log ──────────────────────────────────────────────── -->
+            <Grid x:Name="PanelEventLog" RowDefinitions="Auto,Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="70,140,70,80,Auto,Auto,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Log:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding EventLogName}" Placeholder="System"/>
+                    <Label Grid.Column="2" Text="Count:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="3" Text="{Binding EventLogCount}" Placeholder="50"/>
+                    <Button Grid.Column="4" Text="System" Padding="10,6" FontSize="11"
+                            BackgroundColor="#555" Clicked="OnEventLogPreset"/>
+                    <Button Grid.Column="5" Text="Application" Padding="10,6" FontSize="11"
+                            BackgroundColor="#555" Clicked="OnEventLogPreset"/>
+                    <Button Grid.Column="6" Text="Security" Padding="10,6" FontSize="11"
+                            BackgroundColor="#555" Clicked="OnEventLogPreset" HorizontalOptions="Start"/>
+                </Grid>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Events" Command="{Binding LoadEventLogCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding EventLogLoading}"
+                                       IsVisible="{Binding EventLogLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="2" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding EventLogEntries}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="130,70,160,60,*" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="Time" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Type" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Source" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="3" Text="ID" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="4" Text="Message" FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="130,70,160,60,*" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding TimeGenerated}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="1" Text="{Binding EntryType}" FontSize="11"
+                                           TextColor="{Binding TypeColor}" FontAttributes="Bold"/>
+                                    <Label Grid.Column="2" Text="{Binding Source}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="3" Text="{Binding EventId}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="4" Text="{Binding Message}" FontSize="11"
+                                           LineBreakMode="TailTruncation"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Shared Folders ─────────────────────────────────────────── -->
+            <Grid x:Name="PanelShares" RowDefinitions="Auto,*,Auto" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Shares" Command="{Binding LoadSharesCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding SharesLoading}"
+                                       IsVisible="{Binding SharesLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding Shares}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="140,*,200,80" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="Share Name" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Path" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Description" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="3" Text="Type" FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="140,*,200,80" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding Name}" FontSize="12" FontAttributes="Bold"/>
+                                    <Label Grid.Column="1" Text="{Binding Path}" FontSize="12"/>
+                                    <Label Grid.Column="2" Text="{Binding Description}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="3" Text="{Binding Type}" FontSize="11" TextColor="Gray"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+                <Grid Grid.Row="2" ColumnDefinitions="120,*,*,Auto" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding NewShareName}" Placeholder="ShareName"/>
+                    <Entry Grid.Column="1" Text="{Binding NewSharePath}" Placeholder="C:\Path\To\Folder"/>
+                    <Entry Grid.Column="2" Text="{Binding NewShareDesc}" Placeholder="Description (optional)"/>
+                    <Button Grid.Column="3" Text="Add Share" Command="{Binding AddShareCommand}"
+                            BackgroundColor="#228B22" Padding="12,6"/>
+                </Grid>
+            </Grid>
+
+            <!-- ── File Drop & Execute ────────────────────────────────────── -->
+            <Grid x:Name="PanelDeploy" RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Border Grid.Row="0" Padding="10,8" BackgroundColor="#FFF8E1" Stroke="#FFB300"
+                        StrokeShape="RoundRectangle 4">
+                    <Label FontSize="12" TextColor="#5D4037">
+                        <Label.Text>Workflow: Creates a temp share on the remote machine → maps it locally → copies your script → removes share → executes remotely. Credentials must have admin rights on the target.</Label.Text>
+                    </Label>
+                </Border>
+                <Grid Grid.Row="1" ColumnDefinitions="80,120,80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Domain:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding DeployDomain}" Placeholder=". or DOMAIN"/>
+                    <Label Grid.Column="2" Text="Username:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="3" Text="{Binding DeployUsername}" Placeholder="admin username"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="80,*,120,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Password:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding DeployPassword}" IsPassword="True"/>
+                    <Label Grid.Column="2" Text="Remote Path:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="3" Text="{Binding DeployRemotePath}" Placeholder="C:\Windows\Temp"/>
+                </Grid>
+                <Grid Grid.Row="3" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding DeployScriptName}" Placeholder="script.ps1"/>
+                    <Button Grid.Column="1" Text="📂 Browse" Command="{Binding DeployBrowseCommand}"
+                            BackgroundColor="#555" Padding="12,6"/>
+                    <CheckBox Grid.Column="2" IsChecked="{Binding DeployExecute}" VerticalOptions="Center"/>
+                    <Label Grid.Column="3" Text="Execute after drop" VerticalOptions="Center" FontSize="12"/>
+                    <ActivityIndicator Grid.Column="4" IsRunning="{Binding DeployLoading}"
+                                       IsVisible="{Binding DeployLoading}" Color="SteelBlue"
+                                       VerticalOptions="Center"/>
+                </Grid>
+                <Grid Grid.Row="4" RowDefinitions="*,200" RowSpacing="4">
+                    <Border Grid.Row="0" Stroke="#333" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                        <Editor Text="{Binding DeployScriptContent}" FontFamily="Courier New" FontSize="11"
+                                Placeholder="Paste script content here, or use Browse to load a file..."
+                                BackgroundColor="#1E1E1E" TextColor="#D4D4D4"/>
+                    </Border>
+                    <Border Grid.Row="1" Padding="10,8" StrokeShape="RoundRectangle 4"
+                            BackgroundColor="#0D0D0D" Stroke="#333">
+                        <CollectionView ItemsSource="{Binding DeployLog}">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Label FontFamily="Courier New" FontSize="11" TextColor="#00FF41"
+                                           Text="{Binding Message}" Padding="0,1"/>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Border>
+                </Grid>
+                <Button Grid.Row="5" Text="🚀 Deploy &amp; Run" Command="{Binding DeployRunCommand}"
+                        BackgroundColor="#8B0000" TextColor="White" FontAttributes="Bold"
+                        Padding="20,10" HorizontalOptions="Start"/>
+            </Grid>
+
+            <!-- ── Disk Space ──────────────────────────────────────────────── -->
+            <Grid x:Name="PanelDiskSpace" RowDefinitions="Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Disk Space" Command="{Binding LoadDiskSpaceCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding DiskSpaceLoading}"
+                                       IsVisible="{Binding DiskSpaceLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding DriveEntries}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="60,120,80,80,80,80" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="Drive" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Label" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Size GB" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="3" Text="Used GB" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="4" Text="Free GB" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="5" Text="% Used" FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="60,120,80,80,80,80" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding Drive}" FontSize="12" FontAttributes="Bold"/>
+                                    <Label Grid.Column="1" Text="{Binding Label}" FontSize="12" TextColor="Gray"/>
+                                    <Label Grid.Column="2" Text="{Binding SizeGB}" FontSize="12" TextColor="Gray"/>
+                                    <Label Grid.Column="3" Text="{Binding UsedGB}" FontSize="12" TextColor="Gray"/>
+                                    <Label Grid.Column="4" Text="{Binding FreeGB}" FontSize="12" TextColor="Gray"/>
+                                    <Label Grid.Column="5" Text="{Binding PctUsed, StringFormat='{0}%'}"
+                                           FontSize="12" FontAttributes="Bold"
+                                           TextColor="{Binding PctColor}"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Group Membership ───────────────────────────────────────── -->
+            <Grid x:Name="PanelGroupMembership" RowDefinitions="Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="60,140,60,140,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Group:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding GrpMemberGroup}" Placeholder="Administrators"/>
+                    <Label Grid.Column="2" Text="User:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="3" Text="{Binding GrpMemberUser}" Placeholder="username"/>
+                    <Button Grid.Column="4" Text="Add" Command="{Binding AddToGroupCommand}"
+                            BackgroundColor="#228B22" Padding="14,8"/>
+                    <Button Grid.Column="5" Text="Remove" Command="{Binding RemoveFromGroupCommand}"
+                            BackgroundColor="#CC4400" Padding="14,8"/>
+                    <Button Grid.Column="6" Text="List Members" Command="{Binding ListGroupMembersCommand}"
+                            BackgroundColor="SteelBlue" Padding="14,8"/>
+                    <ActivityIndicator Grid.Column="7" IsRunning="{Binding GroupMemberLoading}"
+                                       IsVisible="{Binding GroupMemberLoading}" Color="SteelBlue"
+                                       VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
+                    <CollectionView ItemsSource="{Binding GroupMembers}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding .}" FontSize="12" Padding="12,6"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── DNS ───────────────────────────────────────────────────── -->
+            <Grid x:Name="PanelDns" RowDefinitions="Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding DnsQuery}" Placeholder="hostname or IP to look up"/>
+                    <Button Grid.Column="1" Text="Lookup" Command="{Binding DnsLookupCommand}"
+                            BackgroundColor="SteelBlue" Padding="14,8"/>
+                    <Button Grid.Column="2" Text="Flush Cache" Command="{Binding DnsFlushCommand}"
+                            BackgroundColor="#1565C0" Padding="14,8"/>
+                    <ActivityIndicator Grid.Column="3" IsRunning="{Binding DnsLoading}"
+                                       IsVisible="{Binding DnsLoading}" Color="SteelBlue"
+                                       VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Padding="14,10" StrokeShape="RoundRectangle 6"
+                        BackgroundColor="#1A1A1A" Stroke="#333">
+                    <Label Text="{Binding DnsOutput}" FontFamily="Courier New" FontSize="12"
+                           TextColor="#00FF41"/>
+                </Border>
+            </Grid>
+
+            <!-- ── Remote Registry ────────────────────────────────────────── -->
+            <Grid x:Name="PanelRegistry" RowDefinitions="Auto,Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="70,160,140,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding RegHive}" Placeholder="HKLM"/>
+                    <Entry Grid.Column="1" Text="{Binding RegKey}" Placeholder="SOFTWARE\Microsoft\Windows"/>
+                    <Entry Grid.Column="2" Text="{Binding RegValueName}" Placeholder="ValueName"/>
+                    <Button Grid.Column="3" Text="Get" Command="{Binding RegGetCommand}"
+                            BackgroundColor="SteelBlue" Padding="14,8"/>
+                    <Button Grid.Column="4" Text="Set" Command="{Binding RegSetCommand}"
+                            BackgroundColor="#228B22" Padding="14,8"/>
+                    <Button Grid.Column="5" Text="Delete" Command="{Binding RegDeleteCommand}"
+                            BackgroundColor="#CC4400" Padding="14,8"/>
+                    <ActivityIndicator Grid.Column="6" IsRunning="{Binding RegistryLoading}"
+                                       IsVisible="{Binding RegistryLoading}" Color="SteelBlue"
+                                       VerticalOptions="Center"/>
+                </Grid>
+                <Grid Grid.Row="1" ColumnDefinitions="80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Value Data:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding RegValueData}" Placeholder="data for Set operation"/>
+                </Grid>
+                <Border Grid.Row="2" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
+                    <Editor Text="{Binding RegOutput}" FontFamily="Courier New" FontSize="12"
+                            TextColor="#00FF41" BackgroundColor="Transparent"
+                            IsReadOnly="True" AutoSize="TextChanges" MinimumHeightRequest="200"/>
+                </Border>
+            </Grid>
+
+            <!-- ── GP Update ──────────────────────────────────────────────── -->
+            <Grid x:Name="PanelGpUpdate" RowDefinitions="Auto,Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Label Grid.Row="0"
+                       Text="Forces an immediate Group Policy refresh on the target machine (or locally if no target is set)."
+                       TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Run gpupdate /force" Command="{Binding GpUpdateCommand}"
+                            BackgroundColor="#1565C0" TextColor="White" FontAttributes="Bold" Padding="18,10"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding GpUpdateLoading}"
+                                       IsVisible="{Binding GpUpdateLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="2" Padding="14,10" StrokeShape="RoundRectangle 6"
+                        BackgroundColor="#1A1A1A" Stroke="#333">
+                    <Label Text="{Binding GpUpdateOutput}" FontFamily="Courier New" FontSize="12"
+                           TextColor="#00FF41"/>
+                </Border>
+            </Grid>
+
+            <!-- ── Copy File ──────────────────────────────────────────────── -->
+            <Grid x:Name="PanelCopyFile" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="8"
+                  Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="60,100,80,*,80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Domain:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="1" Text="{Binding CopyDomain}" Placeholder="."/>
+                    <Label Grid.Column="2" Text="Username:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="3" Text="{Binding CopyUsername}" Placeholder="admin"/>
+                    <Label Grid.Column="4" Text="Password:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="5" Text="{Binding CopyPassword}" IsPassword="True"/>
+                </Grid>
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding CopyLocalPath}" Placeholder="Local file path"/>
+                    <Button Grid.Column="1" Text="Browse" Command="{Binding CopyBrowseCommand}"
+                            BackgroundColor="#555" Padding="12,8"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding CopyRemoteDest}" Placeholder="C:\Windows\Temp"/>
+                    <CheckBox Grid.Column="1" IsChecked="{Binding CopyCreateDir}" VerticalOptions="Center"/>
+                    <Label Grid.Column="2" Text="Create dir if missing" VerticalOptions="Center" FontSize="12"/>
+                </Grid>
+                <Grid Grid.Row="3" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Copy File" Command="{Binding CopyRunCommand}"
+                            BackgroundColor="#8B0000" TextColor="White" FontAttributes="Bold" Padding="18,10"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding CopyLoading}"
+                                       IsVisible="{Binding CopyLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="4" Padding="10,8" StrokeShape="RoundRectangle 4"
+                        BackgroundColor="#0D0D0D" Stroke="#333">
+                    <CollectionView ItemsSource="{Binding CopyLog}">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label FontFamily="Courier New" FontSize="11" TextColor="#00FF41"
+                                       Text="{Binding Message}" Padding="0,1"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+        </Grid>
+    </Grid>
+</ContentPage>

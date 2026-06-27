@@ -1,0 +1,163 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SupportToolApp.Pages.UserManager.UserManagerPage"
+             Title="User Manager">
+    <Grid RowDefinitions="Auto,*" ColumnDefinitions="300,*" Padding="12">
+
+        <!-- Search Bar -->
+        <Grid Grid.Row="0" Grid.ColumnSpan="2" ColumnDefinitions="*,Auto" Margin="0,0,0,8">
+            <Entry x:Name="SearchEntry" Placeholder="Search by name, username, or email..."
+                   ReturnCommand="{Binding SearchCommand}"
+                   ReturnCommandParameter="{Binding Text, Source={x:Reference SearchEntry}}"/>
+            <Button Grid.Column="1" Text="Search" Command="{Binding SearchCommand}"
+                    CommandParameter="{Binding Text, Source={x:Reference SearchEntry}}" Margin="4,0,0,0"/>
+        </Grid>
+
+        <!-- User List -->
+        <Border Grid.Row="1" Grid.Column="0" Stroke="LightGray" StrokeThickness="1">
+            <CollectionView ItemsSource="{Binding Users}" SelectionMode="Single"
+                            SelectedItem="{Binding SelectedUser}">
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Grid Padding="10,8" ColumnDefinitions="12,*">
+                            <Ellipse Grid.Column="0" WidthRequest="10" HeightRequest="10" Margin="0,0,10,0"
+                                     VerticalOptions="Center"
+                                     Fill="{Binding ., Converter={StaticResource UserStatusColorConverter}}"/>
+                            <VerticalStackLayout Grid.Column="1" Spacing="1">
+                                <Label Text="{Binding DisplayName}" FontAttributes="Bold" FontSize="13"/>
+                                <Label Text="{Binding SamAccountName}" FontSize="11" TextColor="Gray"/>
+                                <Label Text="{Binding Department}" FontSize="11" TextColor="SlateGray"/>
+                            </VerticalStackLayout>
+                        </Grid>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+                <CollectionView.EmptyView>
+                    <Label Text="No users found." HorizontalOptions="Center" VerticalOptions="Center" TextColor="Gray" Padding="20"/>
+                </CollectionView.EmptyView>
+            </CollectionView>
+        </Border>
+
+        <!-- No Selection Placeholder -->
+        <VerticalStackLayout Grid.Row="1" Grid.Column="1" VerticalOptions="Center" HorizontalOptions="Center"
+                             IsVisible="{Binding NoUserSelected}" Spacing="8">
+            <Label Text="👤" FontSize="48" HorizontalOptions="Center"/>
+            <Label Text="Select a user to view details" FontSize="16" TextColor="Gray" HorizontalOptions="Center"/>
+        </VerticalStackLayout>
+
+        <!-- Detail Panel -->
+        <ScrollView Grid.Row="1" Grid.Column="1" Margin="10,0,0,0" IsVisible="{Binding HasSelectedUser}">
+            <VerticalStackLayout Spacing="12">
+
+                <!-- Header -->
+                <Grid ColumnDefinitions="*,Auto">
+                    <VerticalStackLayout Grid.Column="0" Spacing="2">
+                        <Label Text="{Binding SelectedUser.DisplayName}" FontSize="22" FontAttributes="Bold"/>
+                        <Label Text="{Binding SelectedUser.Title}" FontSize="13" TextColor="Gray"/>
+                    </VerticalStackLayout>
+                    <!-- Status Pills -->
+                    <HorizontalStackLayout Grid.Column="1" Spacing="6" VerticalOptions="Center">
+                        <Border Padding="8,4" BackgroundColor="{Binding EnabledBadgeColor}" StrokeShape="RoundRectangle 12">
+                            <Label Text="{Binding EnabledBadgeText}" TextColor="White" FontSize="11" FontAttributes="Bold"/>
+                        </Border>
+                        <Border Padding="8,4" BackgroundColor="{Binding LockedBadgeColor}" StrokeShape="RoundRectangle 12">
+                            <Label Text="{Binding LockedBadgeText}" TextColor="White" FontSize="11" FontAttributes="Bold"/>
+                        </Border>
+                        <Border Padding="8,4" BackgroundColor="{Binding LicenseBadgeColor}" StrokeShape="RoundRectangle 12">
+                            <Label Text="{Binding LicenseBadgeText}" TextColor="White" FontSize="11" FontAttributes="Bold"/>
+                        </Border>
+                    </HorizontalStackLayout>
+                </Grid>
+
+                <!-- User Details Grid -->
+                <Border Stroke="LightGray" StrokeThickness="1" Padding="12">
+                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="150,*" RowSpacing="8">
+                        <Label Grid.Row="0" Grid.Column="0" Text="Username" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding SelectedUser.SamAccountName}"/>
+
+                        <Label Grid.Row="1" Grid.Column="0" Text="Email / UPN" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding SelectedUser.UserPrincipalName}"/>
+
+                        <Label Grid.Row="2" Grid.Column="0" Text="Department" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding SelectedUser.Department}"/>
+
+                        <Label Grid.Row="3" Grid.Column="0" Text="Manager" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding SelectedUser.Manager}"/>
+
+                        <Label Grid.Row="4" Grid.Column="0" Text="Phone" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="4" Grid.Column="1" Text="{Binding SelectedUser.OfficePhone}"/>
+
+                        <Label Grid.Row="5" Grid.Column="0" Text="Last Logon" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="5" Grid.Column="1" Text="{Binding SelectedUser.LastLogon, StringFormat='{0:g}'}"/>
+
+                        <Label Grid.Row="6" Grid.Column="0" Text="Password Set" FontAttributes="Bold" TextColor="Gray"/>
+                        <Label Grid.Row="6" Grid.Column="1" Text="{Binding SelectedUser.PasswordLastSet, StringFormat='{0:g}'}"/>
+                    </Grid>
+                </Border>
+
+                <!-- Quick Actions -->
+                <Label Text="Account Actions" FontAttributes="Bold" FontSize="14" TextColor="Gray"/>
+                <FlexLayout Wrap="Wrap" JustifyContent="Start">
+                    <Button Text="Enable Account" Command="{Binding EnableCommand}" Margin="0,0,6,6" BackgroundColor="#228B22"/>
+                    <Button Text="Disable Account" Command="{Binding DisableCommand}" Margin="0,0,6,6" BackgroundColor="#CC4400"/>
+                    <Button Text="Unlock Account" Command="{Binding UnlockCommand}" Margin="0,0,6,6" BackgroundColor="#1565C0"/>
+                    <Button Text="Reset Password" Command="{Binding ResetPasswordCommand}" Margin="0,0,6,6"/>
+                    <Button Text="Revoke O365 Sessions" Command="{Binding RevokeSessionsCommand}" Margin="0,0,6,6" BackgroundColor="#E65100"/>
+                </FlexLayout>
+
+                <!-- Group Membership -->
+                <Label Text="Group Memberships" FontAttributes="Bold" FontSize="14" TextColor="Gray"/>
+                <Border Stroke="LightGray" StrokeThickness="1" Padding="8">
+                    <CollectionView ItemsSource="{Binding SelectedUser.MemberOf}" HeightRequest="80">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding .}" Padding="4,2" FontSize="12"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+
+                <!-- Email Aliases -->
+                <Label Text="Email Aliases (Proxy Addresses)" FontAttributes="Bold" FontSize="14" TextColor="Gray"/>
+                <Border Stroke="LightGray" StrokeThickness="1" Padding="8">
+                    <CollectionView ItemsSource="{Binding SelectedUser.ProxyAddresses}" HeightRequest="80">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding .}" Padding="4,2" FontSize="12" FontFamily="Courier New"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+                <Grid ColumnDefinitions="*,Auto,Auto" Margin="0,0,4,0">
+                    <Entry Grid.Column="0" x:Name="AliasEntry" Placeholder="newaddress@contoso.com"/>
+                    <Button Grid.Column="1" Text="Add Alias" Command="{Binding AddAliasCommand}"
+                            CommandParameter="{Binding Text, Source={x:Reference AliasEntry}}" Margin="4,0,0,0" BackgroundColor="#228B22"/>
+                    <Button Grid.Column="2" Text="Remove" Command="{Binding RemoveAliasCommand}"
+                            CommandParameter="{Binding Text, Source={x:Reference AliasEntry}}" Margin="4,0,0,0" BackgroundColor="#CC4400"/>
+                </Grid>
+
+                <!-- Out of Office -->
+                <Label Text="Out of Office" FontAttributes="Bold" FontSize="14" TextColor="Gray"/>
+                <Border Stroke="LightGray" StrokeThickness="1" Padding="12">
+                    <VerticalStackLayout Spacing="8">
+                        <Grid ColumnDefinitions="Auto,*">
+                            <Switch Grid.Column="0" IsToggled="{Binding OutOfOfficeEnabled}"/>
+                            <Label Grid.Column="1" Text="Enable Out of Office reply" VerticalOptions="Center" Margin="8,0,0,0"/>
+                        </Grid>
+                        <Editor Placeholder="Out of office message..." HeightRequest="80"
+                                Text="{Binding OutOfOfficeMessage}" IsEnabled="{Binding OutOfOfficeEnabled}"/>
+                        <Button Text="Save Out of Office" Command="{Binding SaveOutOfOfficeCommand}" HorizontalOptions="Start"/>
+                    </VerticalStackLayout>
+                </Border>
+
+                <!-- Status Message -->
+                <Border Padding="12,8" BackgroundColor="#E8F5E9" StrokeShape="RoundRectangle 6"
+                        IsVisible="{Binding HasStatus}" Stroke="#A5D6A7">
+                    <Label Text="{Binding StatusMessage}" TextColor="#2E7D32" FontAttributes="Bold"/>
+                </Border>
+
+                <BoxView HeightRequest="20"/>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
