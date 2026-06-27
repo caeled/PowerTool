@@ -121,4 +121,5 @@ public partial class ToolsPage : ContentPage
         if (_vm == null || sender is not Button btn) return;
         _vm.EventLogName = btn.Text;
     }
+
 }

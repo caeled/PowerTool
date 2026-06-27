@@ -15,12 +15,66 @@
        Shell.FlyoutBehavior="Flyout"
        Title="IT Support Tool">
 
+    <Shell.TitleView>
+        <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalOptions="Fill">
+            <!-- Logo badge: image if configured, else initials tile -->
+            <Border x:Name="LogoBadge" Grid.Column="0"
+                    StrokeShape="RoundRectangle 8" Stroke="Transparent"
+                    BackgroundColor="#0078D4"
+                    WidthRequest="120" HeightRequest="72"
+                    VerticalOptions="Center">
+                <Grid>
+                    <Image x:Name="LogoImage" IsVisible="False"
+                           Aspect="AspectFit" WidthRequest="120" HeightRequest="72"/>
+                    <Label x:Name="LogoInitialsLabel" Text="IT"
+                           FontSize="22" FontAttributes="Bold" TextColor="White"
+                           HorizontalOptions="Center" VerticalOptions="Center"/>
+                </Grid>
+            </Border>
+        <ScrollView Grid.Column="1" Orientation="Horizontal" HorizontalScrollBarVisibility="Never" VerticalOptions="Center">
+            <HorizontalStackLayout Spacing="4" Padding="0,2">
+                <Button x:Name="BtnFolder" Text="Folder" Clicked="OnFolderClicked"
+                        BackgroundColor="#D4500A" Padding="14,6" FontSize="12" FontAttributes="Bold"
+                        IsVisible="False" TextColor="White"/>
+                <Button x:Name="BtnLibrary" Text="Library" Clicked="OnLibraryClicked"
+                        BackgroundColor="#7B2FBE" Padding="14,6" FontSize="12" FontAttributes="Bold" TextColor="White"/>
+                <Button x:Name="BtnO365" Text="Office 365" Clicked="OnO365Clicked"
+                        BackgroundColor="#0078D4" Padding="14,6" FontSize="12" FontAttributes="Bold" TextColor="White"/>
+                <Button x:Name="BtnGoogle" Text="Google" Clicked="OnGoogleClicked"
+                        BackgroundColor="#4285F4" Padding="14,6" FontSize="12" FontAttributes="Bold" TextColor="White"/>
+                <Button x:Name="BtnQuickLink1" Clicked="OnQuickLink1Clicked"
+                        BackgroundColor="#228B22" Padding="14,6" FontSize="12" FontAttributes="Bold"
+                        IsVisible="False" TextColor="White"/>
+                <Button x:Name="BtnQuickLink2" Clicked="OnQuickLink2Clicked"
+                        BackgroundColor="#228B22" Padding="14,6" FontSize="12" FontAttributes="Bold"
+                        IsVisible="False" TextColor="White"/>
+                <Button x:Name="BtnQuickLink3" Clicked="OnQuickLink3Clicked"
+                        BackgroundColor="#228B22" Padding="14,6" FontSize="12" FontAttributes="Bold"
+                        IsVisible="False" TextColor="White"/>
+                <Button x:Name="BtnQuickLink4" Clicked="OnQuickLink4Clicked"
+                        BackgroundColor="#228B22" Padding="14,6" FontSize="12" FontAttributes="Bold"
+                        IsVisible="False" TextColor="White"/>
+                <!-- LO placeholder — reserved for future Local Only feature -->
+                <Button Text="LO" IsEnabled="False" BackgroundColor="#555" TextColor="#888"
+                        Padding="14,6" FontSize="12" FontAttributes="Bold"/>
+            </HorizontalStackLayout>
+        </ScrollView>
+        </Grid>
+    </Shell.TitleView>
+
     <Shell.FlyoutHeader>
         <VerticalStackLayout BackgroundColor="{AppThemeBinding Light={StaticResource Primary}, Dark={StaticResource Primary}}" Padding="16,32,16,16">
             <Label Text="IT Support Tool" FontSize="18" FontAttributes="Bold" TextColor="White"/>
-            <Label Text="Champion Labs Edition" FontSize="12" TextColor="#CCFFFFFF"/>
+            <Label Text="Steven Powell" FontSize="12" TextColor="#CCFFFFFF"/>
         </VerticalStackLayout>
     </Shell.FlyoutHeader>
+
+    <Shell.FlyoutFooter>
+        <Label Text="Developed by Steven Powell  ·  2026"
+               FontSize="10" TextColor="#44FFFFFF"
+               HorizontalTextAlignment="Center"
+               Padding="0,8"/>
+    </Shell.FlyoutFooter>
 
     <FlyoutItem Title="User Manager">
         <ShellContent ContentTemplate="{DataTemplate um:UserManagerPage}" Route="UserManager"/>
