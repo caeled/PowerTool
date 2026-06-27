@@ -58,6 +58,11 @@ public partial class ToolsPage : ContentPage
             { TabRegistry,        PanelRegistry },
             { TabGpUpdate,        PanelGpUpdate },
             { TabCopyFile,        PanelCopyFile },
+            { TabWinget,         PanelWinget },
+            { TabRegPush,        PanelRegPush },
+            { TabPendingUpdates, PanelPendingUpdates },
+            { TabRunUpdates,     PanelRunUpdates },
+            { TabUpdateLog,      PanelUpdateLog },
             { TabRemotePsSystem,  PanelRemotePs },
             { TabRemotePsRemote,  PanelRemotePs },
             { TabPsRunSystem,     PanelPsRun },
@@ -76,7 +81,7 @@ public partial class ToolsPage : ContentPage
             { CatUsers,   [TabLocalUsers, TabLoggedOn, TabLocalAdmins, TabRunAs, TabGroupMembership, TabAcctLockout, TabRdpSessions, TabPwdExpiry, TabUserMgmt] },
             { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns, TabFlushDns, TabNetStat, TabTrace, TabWifi, TabProxy, TabResetNic, TabPing, TabWifiSetup] },
             { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate, TabRemotePsRemote, TabPsRunRemote, TabDirBrowser, TabProcKill, TabWinRmToggle, TabWakeOnLan] },
-            { CatDeploy,  [TabDeploy, TabCopyFile] },
+            { CatDeploy,  [TabDeploy, TabCopyFile, TabWinget, TabRegPush, TabPendingUpdates, TabRunUpdates, TabUpdateLog] },
         };
 
         SelectCategory(CatSystem, TabApps);

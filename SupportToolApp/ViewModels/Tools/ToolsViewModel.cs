@@ -533,6 +533,52 @@ public class ToolsViewModel : BaseViewModel
     public List<string> WifiSecurityTypes { get; } = ["WPA2PSK", "WPA3SAE", "open"];
     public ICommand AddWifiProfileCommand { get; }
 
+    // ── Winget Install ───────────────────────────────────────────────────────
+    private string _wingetSearch = "", _wingetOutput = "";
+    private bool _wingetLoading;
+    public string WingetSearch { get => _wingetSearch; set => SetProperty(ref _wingetSearch, value); }
+    public string WingetOutput { get => _wingetOutput; set => SetProperty(ref _wingetOutput, value); }
+    public bool WingetLoading  { get => _wingetLoading; set => SetProperty(ref _wingetLoading, value); }
+    public ICommand WingetSearchCommand { get; }
+    public ICommand WingetInstallCommand { get; }
+
+    // ── Registry Push ────────────────────────────────────────────────────────
+    private string _regPushPath = "", _regPushName = "", _regPushValue = "", _regPushOutput = "";
+    private string _regPushType = "String";
+    private bool _regPushLoading;
+    public string RegPushPath   { get => _regPushPath;   set => SetProperty(ref _regPushPath, value); }
+    public string RegPushName   { get => _regPushName;   set => SetProperty(ref _regPushName, value); }
+    public string RegPushValue  { get => _regPushValue;  set => SetProperty(ref _regPushValue, value); }
+    public string RegPushType   { get => _regPushType;   set => SetProperty(ref _regPushType, value); }
+    public string RegPushOutput { get => _regPushOutput; set => SetProperty(ref _regPushOutput, value); }
+    public bool RegPushLoading  { get => _regPushLoading; set => SetProperty(ref _regPushLoading, value); }
+    public List<string> RegTypes { get; } = ["String", "DWord", "QWord", "ExpandString", "MultiString", "Binary"];
+    public ICommand RegPushCommand { get; }
+    public ICommand RegReadCommand { get; }
+
+    // ── Pending Updates ──────────────────────────────────────────────────────
+    private string _pendingUpdatesOutput = "";
+    private bool _pendingUpdatesLoading;
+    public string PendingUpdatesOutput { get => _pendingUpdatesOutput; set => SetProperty(ref _pendingUpdatesOutput, value); }
+    public bool PendingUpdatesLoading  { get => _pendingUpdatesLoading; set => SetProperty(ref _pendingUpdatesLoading, value); }
+    public ICommand CheckPendingUpdatesCommand { get; }
+
+    // ── Run Updates ──────────────────────────────────────────────────────────
+    private string _runUpdatesOutput = "";
+    private bool _runUpdatesLoading;
+    public string RunUpdatesOutput { get => _runUpdatesOutput; set => SetProperty(ref _runUpdatesOutput, value); }
+    public bool RunUpdatesLoading  { get => _runUpdatesLoading; set => SetProperty(ref _runUpdatesLoading, value); }
+    public ICommand UpdateScanCommand { get; }
+    public ICommand UpdateDownloadCommand { get; }
+    public ICommand UpdateInstallCommand { get; }
+
+    // ── Update Log ───────────────────────────────────────────────────────────
+    private string _updateLogOutput = "";
+    private bool _updateLogLoading;
+    public string UpdateLogOutput { get => _updateLogOutput; set => SetProperty(ref _updateLogOutput, value); }
+    public bool UpdateLogLoading  { get => _updateLogLoading; set => SetProperty(ref _updateLogLoading, value); }
+    public ICommand LoadUpdateLogCommand { get; }
+
     // ── Ping ─────────────────────────────────────────────────────────────────
     private string _pingTarget = "", _pingOutput = "";
     private string _pingCount = "4";
@@ -2229,6 +2275,87 @@ Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
                 });
         });
 
+        WingetSearchCommand = new Command(async () => await RunTool(
+            "Winget Search", () => WingetLoading = true, () => WingetLoading = false,
+            async target =>
+            {
+                if (string.IsNullOrWhiteSpace(WingetSearch)) { WingetOutput = "Enter a package name to search."; return; }
+                var result = await Task.Run(() => RunPsSync(PsScripts.WingetSearch(target, WingetSearch)));
+                WingetOutput = string.IsNullOrWhiteSpace(result) ? "No results." : result.Trim();
+            }));
+
+        WingetInstallCommand = new Command(async () => await RunTool(
+            "Winget Install", () => WingetLoading = true, () => WingetLoading = false,
+            async target =>
+            {
+                if (string.IsNullOrWhiteSpace(WingetSearch)) { WingetOutput = "Enter a package ID or name to install."; return; }
+                var result = await Task.Run(() => RunPsSync(PsScripts.WingetInstall(target, WingetSearch)));
+                WingetOutput = string.IsNullOrWhiteSpace(result) ? "Done." : result.Trim();
+            }));
+
+        RegPushCommand = new Command(async () => await RunTool(
+            "Registry Push", () => RegPushLoading = true, () => RegPushLoading = false,
+            async target =>
+            {
+                if (string.IsNullOrWhiteSpace(RegPushPath) || string.IsNullOrWhiteSpace(RegPushName))
+                { RegPushOutput = "Path and Name are required."; return; }
+                var result = await Task.Run(() => RunPsSync(PsScripts.RegPush(target, RegPushPath, RegPushName, RegPushValue, RegPushType)));
+                RegPushOutput = string.IsNullOrWhiteSpace(result) ? "Done." : result.Trim();
+            }));
+
+        RegReadCommand = new Command(async () => await RunTool(
+            "Registry Read", () => RegPushLoading = true, () => RegPushLoading = false,
+            async target =>
+            {
+                if (string.IsNullOrWhiteSpace(RegPushPath)) { RegPushOutput = "Path is required."; return; }
+                var result = await Task.Run(() => RunPsSync(PsScripts.RegRead(target, RegPushPath)));
+                RegPushOutput = string.IsNullOrWhiteSpace(result) ? "No values found." : result.Trim();
+            }));
+
+        CheckPendingUpdatesCommand = new Command(async () => await RunTool(
+            "Pending Updates", () => PendingUpdatesLoading = true, () => PendingUpdatesLoading = false,
+            async target =>
+            {
+                PendingUpdatesOutput = "Querying Windows Update... this may take 30-60 seconds.";
+                var result = await Task.Run(() => RunPsSync(PsScripts.PendingUpdates(target)));
+                PendingUpdatesOutput = string.IsNullOrWhiteSpace(result) ? "No pending updates found." : result.Trim();
+            }));
+
+        UpdateScanCommand = new Command(async () => await RunTool(
+            "Update Scan", () => RunUpdatesLoading = true, () => RunUpdatesLoading = false,
+            async target =>
+            {
+                RunUpdatesOutput = "Starting update scan...";
+                var result = await Task.Run(() => RunPsSync(PsScripts.RunUpdateStage(target, "StartScan")));
+                RunUpdatesOutput = "Scan initiated.\n" + (result?.Trim() ?? "");
+            }));
+
+        UpdateDownloadCommand = new Command(async () => await RunTool(
+            "Update Download", () => RunUpdatesLoading = true, () => RunUpdatesLoading = false,
+            async target =>
+            {
+                RunUpdatesOutput = "Starting update download...";
+                var result = await Task.Run(() => RunPsSync(PsScripts.RunUpdateStage(target, "StartDownload")));
+                RunUpdatesOutput = "Download initiated.\n" + (result?.Trim() ?? "");
+            }));
+
+        UpdateInstallCommand = new Command(async () => await RunTool(
+            "Update Install", () => RunUpdatesLoading = true, () => RunUpdatesLoading = false,
+            async target =>
+            {
+                RunUpdatesOutput = "Starting update installation...";
+                var result = await Task.Run(() => RunPsSync(PsScripts.RunUpdateStage(target, "StartInstall")));
+                RunUpdatesOutput = "Install initiated. Machine may reboot if required.\n" + (result?.Trim() ?? "");
+            }));
+
+        LoadUpdateLogCommand = new Command(async () => await RunTool(
+            "Update Log", () => UpdateLogLoading = true, () => UpdateLogLoading = false,
+            async target =>
+            {
+                var result = await Task.Run(() => RunPsSync(PsScripts.UpdateLog(target)));
+                UpdateLogOutput = string.IsNullOrWhiteSpace(result) ? "No update log entries found." : result.Trim();
+            }));
+
         // Pre-fill credential fields from the shared service on startup
         ApplyCredentials();
     }
@@ -3402,6 +3529,69 @@ internal static class PsScripts
         $"}}\n" +
         $"if ($isLocal) {{ & $sb }}\n" +
         $"else {{ Invoke-Command -ComputerName '{target}' -ScriptBlock $sb | ForEach-Object {{ \"$_\" }} }}\n";
+
+    public static string WingetSearch(string target, string query) => TextScriptWithTarget(target, $"""
+            winget search "{query}" --accept-source-agreements 2>&1
+        """);
+
+    public static string WingetInstall(string target, string packageId) => TextScriptWithTarget(target, $"""
+            winget install --id "{packageId}" --silent --accept-package-agreements --accept-source-agreements 2>&1
+        """);
+
+    public static string RegPush(string target, string path, string name, string value, string type) =>
+        TextScriptWithTarget(target, $$"""
+            $regPath = '{{path}}'
+            if (-not (Test-Path $regPath)) { New-Item -Path $regPath -Force | Out-Null }
+            Set-ItemProperty -Path $regPath -Name '{{name}}' -Value '{{value}}' -Type {{type}}
+            $v = (Get-ItemProperty -Path $regPath -Name '{{name}}' -ErrorAction SilentlyContinue).'{{name}}'
+            "Set: $regPath\{{name}} = $v [{{type}}]"
+        """);
+
+    public static string RegRead(string target, string path) =>
+        TextScriptWithTarget(target, $$"""
+            $props = Get-ItemProperty -Path '{{path}}' -ErrorAction SilentlyContinue
+            if (-not $props) { "Path not found: {{path}}"; return }
+            $props.PSObject.Properties |
+                Where-Object { $_.Name -notmatch '^PS' } |
+                ForEach-Object { "$($_.Name) = $($_.Value)" }
+        """);
+
+    public static string PendingUpdates(string target) => TextScriptWithTarget(target, """
+            try {
+                $s = New-Object -ComObject Microsoft.Update.Session
+                $q = $s.CreateUpdateSearcher()
+                $r = $q.Search("IsInstalled=0 and Type='Software' and IsHidden=0")
+                if ($r.Updates.Count -eq 0) { "No pending updates."; return }
+                "Found $($r.Updates.Count) pending update(s):`n"
+                $r.Updates | ForEach-Object {
+                    $sz = if ($_.MaxDownloadSize -gt 0) { " [{0:N1} MB]" -f ($_.MaxDownloadSize/1MB) } else { "" }
+                    $sev = if ($_.MsrcSeverity) { " [$($_.MsrcSeverity)]" } else { "" }
+                    "  - $($_.Title)$sev$sz"
+                }
+            } catch {
+                "Error querying Windows Update: $_"
+            }
+        """);
+
+    public static string RunUpdateStage(string target, string stage) => TextScriptWithTarget(target, $"""
+            UsoClient {stage}
+            "UsoClient {stage} command sent."
+            Start-Sleep -Seconds 3
+            $wuStatus = Get-Service -Name wuauserv -ErrorAction SilentlyContinue
+            "Windows Update service status: $($wuStatus.Status)"
+        """);
+
+    public static string UpdateLog(string target) => TextScriptWithTarget(target, """
+            try {
+                Get-WinEvent -FilterHashtable @{ LogName='System'; ProviderName='Microsoft-Windows-WindowsUpdateClient' } -MaxEvents 50 -ErrorAction Stop |
+                    Sort-Object TimeCreated -Descending |
+                    ForEach-Object {
+                        "$($_.TimeCreated.ToString('yyyy-MM-dd HH:mm'))  [$($_.Id)]  $($_.Message -replace '\r?\n',' ')"
+                    }
+            } catch {
+                "Could not read Windows Update event log: $_"
+            }
+        """);
 
     public static string AddWifiProfile(string target, string ssid, string password, string security, bool autoConnect)
     {

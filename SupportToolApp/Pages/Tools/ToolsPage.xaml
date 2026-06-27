@@ -82,6 +82,11 @@
                 <!-- Deploy -->
                 <Button Text="File Drop &amp; Run" x:Name="TabDeploy"    Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Copy File"           x:Name="TabCopyFile"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Winget"          x:Name="TabWinget"          Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Registry Push"   x:Name="TabRegPush"         Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Pending Updates" x:Name="TabPendingUpdates"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Run Updates"     x:Name="TabRunUpdates"      Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Update Log"      x:Name="TabUpdateLog"       Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
             </HorizontalStackLayout>
         </ScrollView>
 
@@ -1151,6 +1156,97 @@
                 </Border>
             </Grid>
 
+
+            <!-- Winget Install -->
+            <Grid x:Name="PanelWinget" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Search for or install a package via winget on the target machine. Search first, then use the exact ID to install." TextColor="Gray" FontSize="12" LineBreakMode="WordWrap"/>
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,*" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding WingetSearch}" Placeholder="package name or ID"/>
+                    <Button Grid.Column="1" Text="Search" Command="{Binding WingetSearchCommand}"
+                            BackgroundColor="SteelBlue" Padding="14,8"/>
+                    <Button Grid.Column="2" Text="Install" Command="{Binding WingetInstallCommand}"
+                            BackgroundColor="#228B22" TextColor="White" Padding="14,8"/>
+                    <ActivityIndicator Grid.Column="3" IsRunning="{Binding WingetLoading}" IsVisible="{Binding WingetLoading}"
+                                       Color="SteelBlue" HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="2" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView><Label Text="{Binding WingetOutput}" FontFamily="Courier New" FontSize="11" LineBreakMode="NoWrap"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- Registry Push -->
+            <Grid x:Name="PanelRegPush" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Read or write registry values on the target machine. Use full path e.g. HKLM:\SOFTWARE\MyApp" TextColor="Gray" FontSize="12" LineBreakMode="WordWrap"/>
+                <Grid Grid.Row="1" ColumnDefinitions="60,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Path:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding RegPushPath}" Placeholder="HKLM:\SOFTWARE\Company\App"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="60,*,80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Name:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding RegPushName}" Placeholder="ValueName"/>
+                    <Label Grid.Column="2" Text="Type:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Picker Grid.Column="3" ItemsSource="{Binding RegTypes}" SelectedItem="{Binding RegPushType}"/>
+                </Grid>
+                <Grid Grid.Row="3" ColumnDefinitions="60,*,Auto,Auto,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Value:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding RegPushValue}" Placeholder="value data"/>
+                    <Button Grid.Column="2" Text="Write" Command="{Binding RegPushCommand}"
+                            BackgroundColor="#8B0000" TextColor="White" Padding="14,8"/>
+                    <Button Grid.Column="3" Text="Read" Command="{Binding RegReadCommand}"
+                            BackgroundColor="SteelBlue" Padding="14,8"/>
+                    <ActivityIndicator Grid.Column="4" IsRunning="{Binding RegPushLoading}" IsVisible="{Binding RegPushLoading}"
+                                       Color="SteelBlue" HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="4" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView><Label Text="{Binding RegPushOutput}" FontFamily="Courier New" FontSize="12"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- Pending Updates -->
+            <Grid x:Name="PanelPendingUpdates" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Queries Windows Update for updates that are available but not yet installed. May take 30-60 seconds on first run." TextColor="Gray" FontSize="12" LineBreakMode="WordWrap"/>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Check for Pending Updates" Command="{Binding CheckPendingUpdatesCommand}"
+                            BackgroundColor="#0078D4" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding PendingUpdatesLoading}" IsVisible="{Binding PendingUpdatesLoading}"
+                                       Color="#0078D4" HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="2" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView><Label Text="{Binding PendingUpdatesOutput}" FontFamily="Courier New" FontSize="12"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- Run Updates -->
+            <Grid x:Name="PanelRunUpdates" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Trigger Windows Update stages on the target. Scan first, then Download, then Install. Install may cause a reboot." TextColor="Gray" FontSize="12" LineBreakMode="WordWrap"/>
+                <HorizontalStackLayout Grid.Row="1" Spacing="8">
+                    <Button Text="1. Scan" Command="{Binding UpdateScanCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <Button Text="2. Download" Command="{Binding UpdateDownloadCommand}"
+                            BackgroundColor="#CC7700" TextColor="White" Padding="16,8"/>
+                    <Button Text="3. Install" Command="{Binding UpdateInstallCommand}"
+                            BackgroundColor="#8B0000" TextColor="White" Padding="16,8"/>
+                    <ActivityIndicator IsRunning="{Binding RunUpdatesLoading}" IsVisible="{Binding RunUpdatesLoading}"
+                                       Color="SteelBlue" VerticalOptions="Center"/>
+                </HorizontalStackLayout>
+                <Border Grid.Row="2" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView><Label Text="{Binding RunUpdatesOutput}" FontFamily="Courier New" FontSize="12"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- Update Log -->
+            <Grid x:Name="PanelUpdateLog" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Shows the last 50 Windows Update events from the System event log, newest first." TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Update Log" Command="{Binding LoadUpdateLogCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding UpdateLogLoading}" IsVisible="{Binding UpdateLogLoading}"
+                                       Color="SteelBlue" HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="2" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
+                    <ScrollView><Label Text="{Binding UpdateLogOutput}" FontFamily="Courier New" FontSize="11" LineBreakMode="NoWrap"/></ScrollView>
+                </Border>
+            </Grid>
 
             <!-- ── Scheduled Tasks ────────────────────────────────────────────── -->
             <Grid x:Name="PanelSchedTasks" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
