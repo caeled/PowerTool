@@ -41,6 +41,8 @@
                 <Button Text="Activation"       x:Name="TabActivation"    Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
                 <Button Text="Temp Cleanup"     x:Name="TabTempClean"     Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
                 <Button Text="Startup Programs" x:Name="TabStartup"       Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
+                <Button Text="Remote PS" x:Name="TabRemotePsSystem" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
+                <Button Text="PS Runner" x:Name="TabPsRunSystem"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
                 <!-- Users -->
                 <Button Text="Local Users &amp; Groups" x:Name="TabLocalUsers"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Logged On User"           x:Name="TabLoggedOn"         Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
@@ -59,6 +61,8 @@
                 <Button Text="Shared Folders" x:Name="TabShares"       Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Registry"       x:Name="TabRegistry"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="GP Update"      x:Name="TabGpUpdate"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Remote PS" x:Name="TabRemotePsRemote" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="PS Runner" x:Name="TabPsRunRemote"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <!-- Deploy -->
                 <Button Text="File Drop &amp; Run" x:Name="TabDeploy"    Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Copy File"           x:Name="TabCopyFile"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
@@ -1077,6 +1081,68 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- ── Remote PowerShell ──────────────────────────────────────────── -->
+            <Grid x:Name="PanelRemotePs" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12"
+                  Padding="4" IsVisible="False">
+                <Border Grid.Row="0" Padding="12,10" BackgroundColor="#FFF8E1" Stroke="#FFB300"
+                        StrokeShape="RoundRectangle 4">
+                    <Label FontSize="12" TextColor="#5D4037">
+                        <Label.Text>Opens a new PowerShell console window and connects to the target computer via Enter-PSSession. Admin credentials are required. The session runs interactively in the console — close it when done.</Label.Text>
+                    </Label>
+                </Border>
+                <Grid Grid.Row="1" ColumnDefinitions="60,120,80,*,80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Domain:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="1" Text="{Binding RemotePsDomain}" Placeholder=". or DOMAIN"/>
+                    <Label Grid.Column="2" Text="Username:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="3" Text="{Binding RemotePsUsername}" Placeholder="admin username"/>
+                    <Label Grid.Column="4" Text="Password:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="5" Text="{Binding RemotePsPassword}" IsPassword="True"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                    <Button Grid.Column="0" Text="Connect Remote PS" Command="{Binding ConnectRemotePsCommand}"
+                            BackgroundColor="#1565C0" TextColor="White" FontAttributes="Bold" Padding="20,10"/>
+                    <Label Grid.Column="1" Text="{Binding RemotePsStatus}" VerticalOptions="Center"
+                           TextColor="#228B22" FontSize="12"/>
+                </Grid>
+            </Grid>
+
+            <!-- ── PS Runner ─────────────────────────────────────────────────── -->
+            <Grid x:Name="PanelPsRun" RowDefinitions="Auto,*,Auto,200" RowSpacing="10"
+                  Padding="4" IsVisible="False">
+                <!-- Creds row -->
+                <Grid Grid.Row="0" ColumnDefinitions="60,120,80,*,80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Domain:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="1" Text="{Binding PsRunDomain}" Placeholder=". or DOMAIN"/>
+                    <Label Grid.Column="2" Text="Username:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="3" Text="{Binding PsRunUsername}" Placeholder="admin username"/>
+                    <Label Grid.Column="4" Text="Password:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="5" Text="{Binding PsRunPassword}" IsPassword="True"/>
+                </Grid>
+                <!-- Script editor -->
+                <Border Grid.Row="1" Stroke="#444" StrokeShape="RoundRectangle 4" Padding="2">
+                    <Editor x:Name="PsRunEditor" Text="{Binding PsRunScript}"
+                            Placeholder="Paste or type PowerShell here — runs on the remote machine via Invoke-Command"
+                            FontFamily="Consolas" FontSize="13" BackgroundColor="#1E1E1E"
+                            TextColor="White" AutoSize="TextChanges"/>
+                </Border>
+                <!-- Run button row -->
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="10">
+                    <Button Grid.Column="0" Text="Run on Remote" Command="{Binding RunPsOnRemoteCommand}"
+                            BackgroundColor="#1565C0" TextColor="White" FontAttributes="Bold" Padding="20,10"/>
+                    <Button Grid.Column="1" Text="Clear" Command="{Binding ClearPsRunCommand}"
+                            BackgroundColor="#555" TextColor="White" Padding="14,10"/>
+                    <Label  Grid.Column="2" Text="{Binding PsRunStatus}" VerticalOptions="Center"
+                            TextColor="#228B22" FontSize="12"/>
+                </Grid>
+                <!-- Output -->
+                <Border Grid.Row="3" Stroke="#444" StrokeShape="RoundRectangle 4" Padding="8">
+                    <ScrollView>
+                        <Label Text="{Binding PsRunOutput}" FontFamily="Consolas" FontSize="12"
+                               TextColor="#D4D4D4" BackgroundColor="#1E1E1E" LineBreakMode="CharacterWrap"/>
+                    </ScrollView>
                 </Border>
             </Grid>
 

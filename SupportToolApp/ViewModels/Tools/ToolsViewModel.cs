@@ -450,6 +450,33 @@ public class ToolsViewModel : BaseViewModel
     public ObservableCollection<StartupEntry> StartupItems { get; } = [];
     public ICommand LoadStartupCommand { get; private set; } = null!;
 
+    // ── Remote PowerShell ────────────────────────────────────────────────
+    private string _remotePsDomain = ".";
+    private string _remotePsUsername = "";
+    private string _remotePsPassword = "";
+    private string _remotePsStatus = "";
+    public string RemotePsDomain   { get => _remotePsDomain;   set => SetProperty(ref _remotePsDomain, value); }
+    public string RemotePsUsername { get => _remotePsUsername; set => SetProperty(ref _remotePsUsername, value); }
+    public string RemotePsPassword { get => _remotePsPassword; set => SetProperty(ref _remotePsPassword, value); }
+    public string RemotePsStatus   { get => _remotePsStatus;   set => SetProperty(ref _remotePsStatus, value); }
+    public ICommand ConnectRemotePsCommand { get; private set; } = null!;
+
+    // ── PS Runner ────────────────────────────────────────────────────────
+    private string _psRunDomain = ".";
+    private string _psRunUsername = "";
+    private string _psRunPassword = "";
+    private string _psRunScript = "";
+    private string _psRunOutput = "";
+    private string _psRunStatus = "";
+    public string PsRunDomain   { get => _psRunDomain;   set => SetProperty(ref _psRunDomain, value); }
+    public string PsRunUsername { get => _psRunUsername; set => SetProperty(ref _psRunUsername, value); }
+    public string PsRunPassword { get => _psRunPassword; set => SetProperty(ref _psRunPassword, value); }
+    public string PsRunScript   { get => _psRunScript;   set => SetProperty(ref _psRunScript, value); }
+    public string PsRunOutput   { get => _psRunOutput;   set => SetProperty(ref _psRunOutput, value); }
+    public string PsRunStatus   { get => _psRunStatus;   set => SetProperty(ref _psRunStatus, value); }
+    public ICommand RunPsOnRemoteCommand { get; private set; } = null!;
+    public ICommand ClearPsRunCommand    { get; private set; } = null!;
+
     // ── Copy File ────────────────────────────────────────────────────────
     private string _copyLocalPath = "";
     private string _copyRemoteDest = "C:\\Windows\\Temp";
@@ -1273,6 +1300,101 @@ public class ToolsViewModel : BaseViewModel
             StartupLoading = false;
         });
 
+        ConnectRemotePsCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(RemotePsUsername) || string.IsNullOrWhiteSpace(RemotePsPassword))
+            { RemotePsStatus = "Admin credentials are required for PSRemoting."; return; }
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+            if (IsLocal(target)) { RemotePsStatus = "Target must be a remote computer."; return; }
+
+            var userFull = string.IsNullOrWhiteSpace(RemotePsDomain) || RemotePsDomain == "."
+                ? RemotePsUsername
+                : $"{RemotePsDomain}\\{RemotePsUsername}";
+
+            // Write a temp script that builds creds and enters the PS session
+            var script =
+                $"$secpw = ConvertTo-SecureString '{RemotePsPassword}' -AsPlainText -Force\n" +
+                $"$cred = New-Object System.Management.Automation.PSCredential('{userFull}', $secpw)\n" +
+                $"Write-Host 'Connecting to {target} as {userFull}...' -ForegroundColor Cyan\n" +
+                $"Enter-PSSession -ComputerName '{target}' -Credential $cred\n";
+
+            var temp = Path.Combine(Path.GetTempPath(), $"psremote_{Guid.NewGuid().ToString("N")[..8]}.ps1");
+            File.WriteAllText(temp, script, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
+
+            var psi = new System.Diagnostics.ProcessStartInfo("powershell.exe")
+            {
+                Arguments = $"-NoExit -File \"{temp}\"",
+                UseShellExecute = true
+            };
+            System.Diagnostics.Process.Start(psi);
+            RemotePsStatus = $"Launched PS session to {target} as {userFull}.";
+        });
+
+        ClearPsRunCommand = new Command(() =>
+        {
+            PsRunScript = "";
+            PsRunOutput = "";
+            PsRunStatus = "";
+        });
+
+        RunPsOnRemoteCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(PsRunScript))
+            { PsRunStatus = "Nothing to run — paste some PowerShell first."; return; }
+            var target = await ResolveTargetAsync();
+            if (target == null) return;
+
+            PsRunStatus = "Running...";
+            PsRunOutput = "";
+
+            string result;
+            if (IsLocal(target))
+            {
+                // Wrap in a scriptblock so Out-String captures all output like a console
+                var localScript = $"& {{\n{PsRunScript}\n}} | Out-String -Stream";
+                result = await Task.Run(() => RunPsSync(localScript));
+            }
+            else
+            {
+                // Wrap in Invoke-Command with optional credentials
+                var hasCreds = !string.IsNullOrWhiteSpace(PsRunUsername) && !string.IsNullOrWhiteSpace(PsRunPassword);
+                string script;
+                if (hasCreds)
+                {
+                    var userFull = string.IsNullOrWhiteSpace(PsRunDomain) || PsRunDomain == "."
+                        ? PsRunUsername
+                        : $"{PsRunDomain}\\{PsRunUsername}";
+                    // Escape single-quotes in password
+                    var pw = PsRunPassword.Replace("'", "''");
+                    // Embed the user's script as a ScriptBlock
+                    script =
+                        $"$secpw = ConvertTo-SecureString '{pw}' -AsPlainText -Force\n" +
+                        $"$cred = New-Object System.Management.Automation.PSCredential('{userFull}', $secpw)\n" +
+                        $"$ErrorActionPreference = 'Stop'\n" +
+                        $"try {{\n" +
+                        $"  Invoke-Command -ComputerName '{target}' -Credential $cred -ScriptBlock {{\n" +
+                        $"{PsRunScript}\n" +
+                        $"  }} | Out-String -Stream\n" +
+                        $"}} catch {{ \"ERROR: $_\" }}";
+                }
+                else
+                {
+                    script =
+                        $"$ErrorActionPreference = 'Stop'\n" +
+                        $"try {{\n" +
+                        $"  Invoke-Command -ComputerName '{target}' -ScriptBlock {{\n" +
+                        $"{PsRunScript}\n" +
+                        $"  }} | Out-String -Stream\n" +
+                        $"}} catch {{ \"ERROR: $_\" }}";
+                }
+                result = await Task.Run(() => RunPsSync(script));
+            }
+
+            PsRunOutput = result;
+            PsRunStatus = "Done.";
+        });
+
         // Pre-fill credential fields from the shared service on startup
         ApplyCredentials();
     }
@@ -1293,6 +1415,12 @@ public class ToolsViewModel : BaseViewModel
             TempCleanDomain   = _creds.UserDomain;
             TempCleanUsername = _creds.UserUsername;
             TempCleanPassword = _creds.UserPassword;
+            RemotePsDomain   = _creds.UserDomain;
+            RemotePsUsername = _creds.UserUsername;
+            RemotePsPassword = _creds.UserPassword;
+            PsRunDomain   = _creds.UserDomain;
+            PsRunUsername = _creds.UserUsername;
+            PsRunPassword = _creds.UserPassword;
         }
     }
 

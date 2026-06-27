@@ -48,14 +48,18 @@ public partial class ToolsPage : ContentPage
             { TabRegistry,        PanelRegistry },
             { TabGpUpdate,        PanelGpUpdate },
             { TabCopyFile,        PanelCopyFile },
+            { TabRemotePsSystem,  PanelRemotePs },
+            { TabRemotePsRemote,  PanelRemotePs },
+            { TabPsRunSystem,     PanelPsRun },
+            { TabPsRunRemote,     PanelPsRun },
         };
 
         _categories = new()
         {
-            { CatSystem,  [TabApps, TabServices, TabUpdates, TabPatches, TabProcesses, TabPrinters, TabDiskSpace, TabSchedTasks, TabActivation, TabTempClean, TabStartup] },
+            { CatSystem,  [TabApps, TabServices, TabUpdates, TabPatches, TabProcesses, TabPrinters, TabDiskSpace, TabSchedTasks, TabActivation, TabTempClean, TabStartup, TabRemotePsSystem, TabPsRunSystem] },
             { CatUsers,   [TabLocalUsers, TabLoggedOn, TabLocalAdmins, TabRunAs, TabGroupMembership] },
             { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns] },
-            { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate] },
+            { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate, TabRemotePsRemote, TabPsRunRemote] },
             { CatDeploy,  [TabDeploy, TabCopyFile] },
         };
 
@@ -90,12 +94,16 @@ public partial class ToolsPage : ContentPage
 
     private void SelectTab(Button tab)
     {
+        // Hide all panels first — handles shared-panel case where two tabs map to the same panel
+        foreach (var panel in _tabs.Values.Distinct())
+            panel.IsVisible = false;
+
         foreach (var (btn, panel) in _tabs)
         {
             var isActive = btn == tab;
             if (btn.IsVisible)
                 btn.BackgroundColor = isActive ? Color.FromArgb("#0078D4") : Color.FromArgb("#555555");
-            panel.IsVisible = isActive;
+            if (isActive) panel.IsVisible = true;
         }
         _activeTab = tab;
     }
