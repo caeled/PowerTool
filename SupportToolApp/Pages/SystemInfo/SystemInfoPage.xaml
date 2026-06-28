@@ -3,90 +3,294 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="SupportToolApp.Pages.SystemInfo.SystemInfoPage"
              Title="System Info">
-    <ScrollView Padding="16">
-        <VerticalStackLayout Spacing="16">
-            <Label Text="System Info &amp; Inventory" FontSize="20" FontAttributes="Bold"/>
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Padding="16" RowSpacing="10">
 
-            <!-- Query bar -->
-            <Border Stroke="LightGray" StrokeThickness="1" Padding="12" StrokeShape="RoundRectangle 6">
-                <VerticalStackLayout Spacing="8">
-                    <Label Text="Target Computer" FontAttributes="Bold" FontSize="15"/>
-                    <Grid ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
-                        <Entry Grid.Column="0" x:Name="TargetEntry"
-                               Placeholder="Computer name or IP — leave blank for this machine"/>
-                        <Button Grid.Column="1" Text="Query" Command="{Binding QueryCommand}"
-                                CommandParameter="{Binding Text, Source={x:Reference TargetEntry}}"
-                                BackgroundColor="DodgerBlue" Padding="16,0"/>
-                        <ActivityIndicator Grid.Column="2" IsRunning="{Binding IsBusy}"
-                                           IsVisible="{Binding IsBusy}" Color="DodgerBlue"
-                                           VerticalOptions="Center"/>
-                    </Grid>
+        <!-- Target bar -->
+        <Border Grid.Row="0" Stroke="#0078D4" StrokeThickness="2" Padding="12"
+                StrokeShape="RoundRectangle 6" BackgroundColor="#F0F7FF">
+            <Grid ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="10">
+                <Label Grid.Column="0" Text="Target:" FontAttributes="Bold" VerticalOptions="Center"/>
+                <Entry Grid.Column="1" Text="{Binding Target}"
+                       Placeholder="Computer name or IP — leave blank for this machine"
+                       VerticalOptions="Center"/>
+                <Button Grid.Column="2" Text="Query" Command="{Binding QueryCommand}"
+                        BackgroundColor="DodgerBlue" Padding="20,0"/>
+                <ActivityIndicator Grid.Column="3" IsRunning="{Binding IsBusy}"
+                                   IsVisible="{Binding IsBusy}" Color="DodgerBlue"
+                                   VerticalOptions="Center"/>
+            </Grid>
+        </Border>
+
+        <!-- Status / credential row -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="12">
+            <Label Grid.Column="0" Text="{Binding StatusMessage}" TextColor="Gray" FontSize="12"
+                   VerticalOptions="Center"/>
+            <Label Grid.Column="1" Text="{Binding CredentialStatus}" TextColor="#0078D4"
+                   FontSize="11" VerticalOptions="Center"/>
+        </Grid>
+
+        <!-- Error banner -->
+        <Border Grid.Row="2" Padding="12,8" BackgroundColor="#FFEBEE" StrokeShape="RoundRectangle 6"
+                Stroke="#EF9A9A" IsVisible="{Binding HasError}">
+            <Label Text="{Binding ErrorMessage}" TextColor="#C62828" FontSize="13"/>
+        </Border>
+
+        <!-- Tab bar + Export -->
+        <Grid Grid.Row="3" ColumnDefinitions="*,Auto" IsVisible="{Binding HasData}">
+            <ScrollView Grid.Column="0" Orientation="Horizontal" HorizontalScrollBarVisibility="Never">
+                <HorizontalStackLayout Spacing="4">
+                    <Button x:Name="TabOverview"  Text="Overview"  Clicked="OnTabClicked"
+                            BackgroundColor="#0078D4" TextColor="White" Padding="14,6" FontSize="12"/>
+                    <Button x:Name="TabHardware"  Text="Hardware"  Clicked="OnTabClicked"
+                            BackgroundColor="#555" TextColor="White" Padding="14,6" FontSize="12"/>
+                    <Button x:Name="TabDisks"     Text="Disks"     Clicked="OnTabClicked"
+                            BackgroundColor="#555" TextColor="White" Padding="14,6" FontSize="12"/>
+                    <Button x:Name="TabNetwork"   Text="Network"   Clicked="OnTabClicked"
+                            BackgroundColor="#555" TextColor="White" Padding="14,6" FontSize="12"/>
+                    <Button x:Name="TabSoftware"  Text="Software"  Clicked="OnTabClicked"
+                            BackgroundColor="#555" TextColor="White" Padding="14,6" FontSize="12"/>
+                    <Button x:Name="TabSecurity"  Text="Security"  Clicked="OnTabClicked"
+                            BackgroundColor="#555" TextColor="White" Padding="14,6" FontSize="12"/>
+                </HorizontalStackLayout>
+            </ScrollView>
+            <Button Grid.Column="1" Text="Export ↗" Command="{Binding ExportCommand}"
+                    BackgroundColor="#228B22" TextColor="White" Padding="14,6" FontSize="12"/>
+        </Grid>
+
+        <!-- Content panels -->
+        <Grid Grid.Row="4" IsVisible="{Binding HasData}">
+
+            <!-- Overview -->
+            <ScrollView x:Name="PanelOverview">
+                <VerticalStackLayout Spacing="12" Padding="0,4">
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="16" StrokeShape="RoundRectangle 6">
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                              ColumnDefinitions="160,*" RowSpacing="8">
+                            <Label Grid.Row="0" Grid.ColumnSpan="2"
+                                   Text="{Binding Overview.ComputerName}"
+                                   FontSize="18" FontAttributes="Bold" Margin="0,0,0,6"/>
+
+                            <Label Grid.Row="1"  Grid.Column="0" Text="OS"            FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="1"  Grid.Column="1" Text="{Binding Overview.OS}"/>
+                            <Label Grid.Row="2"  Grid.Column="0" Text="Last Boot"     FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="2"  Grid.Column="1" Text="{Binding Overview.LastBoot}"/>
+                            <Label Grid.Row="3"  Grid.Column="0" Text="Uptime"        FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="3"  Grid.Column="1" Text="{Binding Overview.Uptime}"/>
+                            <Label Grid.Row="4"  Grid.Column="0" Text="Manufacturer"  FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="4"  Grid.Column="1" Text="{Binding Overview.Manufacturer}"/>
+                            <Label Grid.Row="5"  Grid.Column="0" Text="Model"         FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="5"  Grid.Column="1" Text="{Binding Overview.Model}"/>
+                            <Label Grid.Row="6"  Grid.Column="0" Text="Serial Number" FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="6"  Grid.Column="1" Text="{Binding Overview.Serial}"/>
+                            <Label Grid.Row="7"  Grid.Column="0" Text="BIOS"          FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="7"  Grid.Column="1" Text="{Binding Overview.BiosVersion}"/>
+                            <Label Grid.Row="8"  Grid.Column="0" Text="Domain"        FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="8"  Grid.Column="1" Text="{Binding Overview.DomainOrWorkgroup}"/>
+                            <Label Grid.Row="9"  Grid.Column="0" Text="Logged On"     FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="9"  Grid.Column="1" Text="{Binding Overview.LoggedOnUser}"/>
+                            <Label Grid.Row="10" Grid.Column="0" Text="RAM / CPU"     FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="10" Grid.Column="1"
+                                   Text="{Binding Overview.RamGB, StringFormat='{0}  |  '}"/>
+                        </Grid>
+                    </Border>
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="16" StrokeShape="RoundRectangle 6">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="{Binding Overview.Processor}" FontAttributes="Bold" FontSize="14"/>
+                            <Label Text="{Binding Overview.CpuCores, StringFormat='{0} cores'}"
+                                   TextColor="Gray" FontSize="12"/>
+                            <Label Text="{Binding Overview.IpAddress, StringFormat='IP: {0}'}"
+                                   TextColor="Gray" FontSize="12"/>
+                        </VerticalStackLayout>
+                    </Border>
                 </VerticalStackLayout>
-            </Border>
+            </ScrollView>
 
-            <!-- Error -->
-            <Border Padding="12,8" BackgroundColor="#FFEBEE" StrokeShape="RoundRectangle 6"
-                    Stroke="#EF9A9A" IsVisible="{Binding HasError}">
-                <Label Text="{Binding ErrorMessage}" TextColor="#C62828" FontSize="13"/>
-            </Border>
-
-            <!-- Info grid -->
-            <Border Stroke="LightGray" StrokeThickness="1" Padding="12"
-                    StrokeShape="RoundRectangle 6" IsVisible="{Binding HasInfo}">
-                <VerticalStackLayout Spacing="0">
-                    <Label Text="{Binding Info.ComputerName}" FontSize="18" FontAttributes="Bold" Margin="0,0,0,10"/>
-                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
-                          ColumnDefinitions="160,*" RowSpacing="8">
-                        <Label Grid.Row="0" Grid.Column="0" Text="OS" FontAttributes="Bold" TextColor="Gray"/>
-                        <Label Grid.Row="0" Grid.Column="1" Text="{Binding Info.OperatingSystem}"/>
-
-                        <Label Grid.Row="1" Grid.Column="0" Text="Last Boot" FontAttributes="Bold" TextColor="Gray"/>
-                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding Info.LastBootTime}"/>
-
-                        <Label Grid.Row="2" Grid.Column="0" Text="Manufacturer" FontAttributes="Bold" TextColor="Gray"/>
-                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Info.Manufacturer}"/>
-
-                        <Label Grid.Row="3" Grid.Column="0" Text="Model" FontAttributes="Bold" TextColor="Gray"/>
-                        <Label Grid.Row="3" Grid.Column="1" Text="{Binding Info.Model}"/>
-
-                        <Label Grid.Row="4" Grid.Column="0" Text="Serial Number" FontAttributes="Bold" TextColor="Gray"/>
-                        <Label Grid.Row="4" Grid.Column="1" Text="{Binding Info.SerialNumber}"/>
-
-                        <Label Grid.Row="5" Grid.Column="0" Text="RAM" FontAttributes="Bold" TextColor="Gray"/>
-                        <Label Grid.Row="5" Grid.Column="1" Text="{Binding Info.TotalRamDisplay}"/>
-
-                        <Label Grid.Row="6" Grid.Column="0" Text="Processor" FontAttributes="Bold" TextColor="Gray"/>
-                        <Label Grid.Row="6" Grid.Column="1" Text="{Binding Info.Processor}"/>
-
-                        <Label Grid.Row="7" Grid.Column="0" Text="IP Address" FontAttributes="Bold" TextColor="Gray"/>
-                        <Label Grid.Row="7" Grid.Column="1" Text="{Binding Info.IpAddress}"/>
-                    </Grid>
+            <!-- Hardware -->
+            <ScrollView x:Name="PanelHardware" IsVisible="False">
+                <VerticalStackLayout Spacing="12" Padding="0,4">
+                    <!-- CPU -->
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="16" StrokeShape="RoundRectangle 6">
+                        <VerticalStackLayout Spacing="6">
+                            <Label Text="Processor" FontAttributes="Bold" FontSize="14" TextColor="#0078D4"/>
+                            <Label Text="{Binding Hardware.CpuSummary}" FontSize="13"/>
+                        </VerticalStackLayout>
+                    </Border>
+                    <!-- GPU -->
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="16" StrokeShape="RoundRectangle 6">
+                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="120,*" RowSpacing="6">
+                            <Label Grid.Row="0" Grid.ColumnSpan="2" Text="Graphics" FontAttributes="Bold" FontSize="14" TextColor="#0078D4" Margin="0,0,0,4"/>
+                            <Label Grid.Row="1" Grid.Column="0" Text="GPU" FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Hardware.GpuName}"/>
+                            <Label Grid.Row="2" Grid.Column="0" Text="VRAM / Driver" FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding Hardware.GpuRam, StringFormat='{0}  —  '}"/>
+                        </Grid>
+                    </Border>
+                    <!-- BIOS -->
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="16" StrokeShape="RoundRectangle 6">
+                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="120,*" RowSpacing="6">
+                            <Label Grid.Row="0" Grid.ColumnSpan="2" Text="BIOS" FontAttributes="Bold" FontSize="14" TextColor="#0078D4" Margin="0,0,0,4"/>
+                            <Label Grid.Row="1" Grid.Column="0" Text="Version" FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Hardware.BiosVersion}"/>
+                            <Label Grid.Row="2" Grid.Column="0" Text="Date / Vendor" FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="2" Grid.Column="1"
+                                   Text="{Binding Hardware.BiosDate, StringFormat='{0}  '}"/>
+                        </Grid>
+                    </Border>
+                    <!-- RAM modules -->
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="16" StrokeShape="RoundRectangle 6">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="{Binding Hardware.RamSlotCount, StringFormat='RAM  ({0} modules)'}"
+                                   FontAttributes="Bold" FontSize="14" TextColor="#0078D4"/>
+                            <CollectionView ItemsSource="{Binding Hardware.RamModules}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Label Text="{Binding Summary}" FontSize="13" Padding="0,2"/>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </Border>
+                    <!-- Battery (conditional) -->
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="16" StrokeShape="RoundRectangle 6"
+                            IsVisible="{Binding Hardware.HasBattery}">
+                        <Grid ColumnDefinitions="120,*">
+                            <Label Grid.Column="0" Text="Battery" FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Column="1" Text="{Binding Hardware.BatteryPct}"/>
+                        </Grid>
+                    </Border>
                 </VerticalStackLayout>
-            </Border>
+            </ScrollView>
 
-            <!-- Disk space -->
-            <Border Stroke="LightGray" StrokeThickness="1" Padding="12"
-                    StrokeShape="RoundRectangle 6" IsVisible="{Binding HasInfo}">
-                <VerticalStackLayout Spacing="10">
-                    <Label Text="Disk Space" FontAttributes="Bold" FontSize="15"/>
-                    <CollectionView ItemsSource="{Binding Info.Disks}">
+            <!-- Disks -->
+            <ScrollView x:Name="PanelDisks" IsVisible="False">
+                <VerticalStackLayout Spacing="12" Padding="0,4">
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="16" StrokeShape="RoundRectangle 6">
+                        <VerticalStackLayout Spacing="14">
+                            <Label Text="Disk Space" FontAttributes="Bold" FontSize="15"/>
+                            <CollectionView ItemsSource="{Binding Disks}">
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <VerticalStackLayout Padding="0,4" Spacing="4">
+                                            <Grid ColumnDefinitions="*,Auto">
+                                                <Label Grid.Column="0" Text="{Binding DriveLabel}"
+                                                       FontAttributes="Bold" FontSize="13"/>
+                                                <Label Grid.Column="1" Text="{Binding SummaryDisplay}"
+                                                       TextColor="Gray" FontSize="12"/>
+                                            </Grid>
+                                            <ProgressBar Progress="{Binding UsedPercent}" HeightRequest="8"/>
+                                        </VerticalStackLayout>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </Border>
+                </VerticalStackLayout>
+            </ScrollView>
+
+            <!-- Network -->
+            <ScrollView x:Name="PanelNetwork" IsVisible="False">
+                <VerticalStackLayout Spacing="10" Padding="0,4">
+                    <CollectionView ItemsSource="{Binding Adapters}">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
-                                <Grid ColumnDefinitions="50,*,110" Padding="4,6" ColumnSpacing="12">
-                                    <Label Grid.Column="0" Text="{Binding Drive}" FontAttributes="Bold"
-                                           VerticalOptions="Center"/>
-                                    <ProgressBar Grid.Column="1" Progress="{Binding UsedPercent}"
-                                                 VerticalOptions="Center"/>
-                                    <Label Grid.Column="2" Text="{Binding SummaryDisplay}"
-                                           FontSize="12" TextColor="Gray" VerticalOptions="Center"/>
-                                </Grid>
+                                <Border Stroke="LightGray" StrokeThickness="1" Padding="14"
+                                        StrokeShape="RoundRectangle 6" Margin="0,0,0,8">
+                                    <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto"
+                                          ColumnDefinitions="120,*" RowSpacing="6">
+                                        <Label Grid.Row="0" Grid.ColumnSpan="2" Text="{Binding Name}"
+                                               FontAttributes="Bold" FontSize="14" Margin="0,0,0,4"/>
+                                        <Label Grid.Row="1" Grid.Column="0" Text="IP Address"    FontAttributes="Bold" TextColor="Gray"/>
+                                        <Label Grid.Row="1" Grid.Column="1" Text="{Binding IPs}"/>
+                                        <Label Grid.Row="2" Grid.Column="0" Text="MAC Address"   FontAttributes="Bold" TextColor="Gray"/>
+                                        <Label Grid.Row="2" Grid.Column="1" Text="{Binding Mac}"  FontFamily="Courier New" FontSize="12"/>
+                                        <Label Grid.Row="3" Grid.Column="0" Text="Gateway / DNS" FontAttributes="Bold" TextColor="Gray"/>
+                                        <Label Grid.Row="3" Grid.Column="1"
+                                               Text="{Binding Gateway, StringFormat='GW: {0}  '}"/>
+                                        <Label Grid.Row="4" Grid.Column="0" Text="DHCP"          FontAttributes="Bold" TextColor="Gray"/>
+                                        <Label Grid.Row="4" Grid.Column="1" Text="{Binding IpMode}"/>
+                                    </Grid>
+                                </Border>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
                 </VerticalStackLayout>
-            </Border>
+            </ScrollView>
 
-            <BoxView HeightRequest="20"/>
-        </VerticalStackLayout>
-    </ScrollView>
+            <!-- Software -->
+            <Grid x:Name="PanelSoftware" RowDefinitions="Auto,*" IsVisible="False" RowSpacing="8">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <Entry Grid.Column="0" Text="{Binding SoftwareSearch}"
+                           Placeholder="Search by name or publisher…"/>
+                    <Label Grid.Column="1" Text="{Binding AppCount}"
+                           TextColor="Gray" FontSize="12" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" Padding="0"
+                        StrokeShape="RoundRectangle 6">
+                    <CollectionView ItemsSource="{Binding FilteredApps}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="*,120,150" Padding="12,8" BackgroundColor="#F5F5F5"
+                                  ColumnSpacing="12">
+                                <Label Grid.Column="0" Text="Application" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Version"     FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Publisher"   FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="*,120,150" Padding="12,6" ColumnSpacing="12">
+                                    <Label Grid.Column="0" Text="{Binding Name}"      FontSize="12" LineBreakMode="TailTruncation"/>
+                                    <Label Grid.Column="1" Text="{Binding Version}"   FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="2" Text="{Binding Publisher}" FontSize="11" TextColor="Gray" LineBreakMode="TailTruncation"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- Security -->
+            <ScrollView x:Name="PanelSecurity" IsVisible="False">
+                <VerticalStackLayout Spacing="12" Padding="0,4">
+                    <!-- Firewall -->
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="16" StrokeShape="RoundRectangle 6">
+                        <VerticalStackLayout Spacing="8">
+                            <Label Text="Windows Firewall" FontAttributes="Bold" FontSize="14" TextColor="#0078D4"/>
+                            <Grid ColumnDefinitions="120,*,120,*,120,*" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="Domain"  FontAttributes="Bold" TextColor="Gray" VerticalOptions="Center"/>
+                                <Label Grid.Column="1" Text="{Binding Security.FirewallDomain}"  FontSize="13"/>
+                                <Label Grid.Column="2" Text="Private" FontAttributes="Bold" TextColor="Gray" VerticalOptions="Center"/>
+                                <Label Grid.Column="3" Text="{Binding Security.FirewallPrivate}" FontSize="13"/>
+                                <Label Grid.Column="4" Text="Public"  FontAttributes="Bold" TextColor="Gray" VerticalOptions="Center"/>
+                                <Label Grid.Column="5" Text="{Binding Security.FirewallPublic}"  FontSize="13"/>
+                            </Grid>
+                        </VerticalStackLayout>
+                    </Border>
+                    <!-- Antivirus + BitLocker -->
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="16" StrokeShape="RoundRectangle 6">
+                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="150,*" RowSpacing="8">
+                            <Label Grid.Row="0" Grid.ColumnSpan="2" Text="Protection" FontAttributes="Bold" FontSize="14" TextColor="#0078D4" Margin="0,0,0,4"/>
+                            <Label Grid.Row="1" Grid.Column="0" Text="Antivirus"     FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Security.AntiVirus}"/>
+                            <Label Grid.Row="2" Grid.Column="0" Text="BitLocker (C:)" FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Security.BitLocker}"/>
+                        </Grid>
+                    </Border>
+                    <!-- UAC + Windows Update -->
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="16" StrokeShape="RoundRectangle 6">
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto" ColumnDefinitions="150,*" RowSpacing="8">
+                            <Label Grid.Row="0" Grid.ColumnSpan="2" Text="System Policy" FontAttributes="Bold" FontSize="14" TextColor="#0078D4" Margin="0,0,0,4"/>
+                            <Label Grid.Row="1" Grid.Column="0" Text="UAC"           FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Security.UAC}"/>
+                            <Label Grid.Row="2" Grid.Column="0" Text="Auto Update"   FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Security.WUAutoUpdate}"/>
+                            <Label Grid.Row="3" Grid.Column="0" Text="Last Hotfix"   FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="3" Grid.Column="1" Text="{Binding Security.LastHotfix}"/>
+                        </Grid>
+                    </Border>
+                </VerticalStackLayout>
+            </ScrollView>
+
+        </Grid>
+    </Grid>
 </ContentPage>
