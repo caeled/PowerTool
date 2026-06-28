@@ -22,6 +22,7 @@ public class OverviewData
     public string Domain        { get; set; } = "";
     public bool   PartOfDomain  { get; set; }
     public string LoggedOnUser  { get; set; } = "";
+    public string LastLogon     { get; set; } = "";
     public string RamGB         { get; set; } = "";
     public string Processor     { get; set; } = "";
     public int    CpuCores      { get; set; }
@@ -108,6 +109,8 @@ public class SecurityData
     public string LastHotfix      { get; set; } = "";
     public string UAC             { get; set; } = "";
     public string WUAutoUpdate    { get; set; } = "";
+    public string ProductKey      { get; set; } = "";
+    public string LocalAdmins     { get; set; } = "";
 }
 
 public class SharedFolder
@@ -289,12 +292,14 @@ public class SystemInfoViewModel : BaseViewModel
     {
         const string body = """
             $ErrorActionPreference = 'SilentlyContinue'
-            $os  = Get-CimInstance Win32_OperatingSystem
-            $cs  = Get-CimInstance Win32_ComputerSystem
-            $bio = Get-CimInstance Win32_BIOS
-            $cpu = Get-CimInstance Win32_Processor | Select-Object -First 1
-            $net = Get-CimInstance Win32_NetworkAdapterConfiguration | Where-Object { $_.IPEnabled } | Select-Object -First 1
-            $up  = (Get-Date) - $os.LastBootUpTime
+            $os   = Get-CimInstance Win32_OperatingSystem
+            $cs   = Get-CimInstance Win32_ComputerSystem
+            $bio  = Get-CimInstance Win32_BIOS
+            $cpu  = Get-CimInstance Win32_Processor | Select-Object -First 1
+            $net  = Get-CimInstance Win32_NetworkAdapterConfiguration | Where-Object { $_.IPEnabled } | Select-Object -First 1
+            $up   = (Get-Date) - $os.LastBootUpTime
+            $prof = try { Get-CimInstance Win32_UserProfile -ErrorAction Stop | Where-Object { -not $_.Special } | Sort-Object LastUseTime -Descending | Select-Object -First 1 } catch { $null }
+            $lastLogon = if ($prof -and $prof.LastUseTime) { "$($prof.LocalPath.Split('\')[-1]) ($($prof.LastUseTime.ToString('yyyy-MM-dd HH:mm')))" } else { '' }
             [ordered]@{
                 ComputerName = [string]$cs.Name
                 OS           = [string]"$($os.Caption) (Build $($os.BuildNumber))"
@@ -307,6 +312,7 @@ public class SystemInfoViewModel : BaseViewModel
                 Domain       = [string]$cs.Domain
                 PartOfDomain = [bool]$cs.PartOfDomain
                 LoggedOnUser = [string]$cs.UserName
+                LastLogon    = [string]$lastLogon
                 RamGB        = [string]('{0:F1} GB' -f ($cs.TotalPhysicalMemory / 1GB))
                 Processor    = [string]$cpu.Name
                 CpuCores     = [int]$cpu.NumberOfCores
@@ -324,7 +330,8 @@ public class SystemInfoViewModel : BaseViewModel
             Manufacturer = Str(r, "Manufacturer"), Model        = Str(r, "Model"),
             Serial       = Str(r, "Serial"),       BiosVersion  = Str(r, "BiosVersion"),
             Domain       = Str(r, "Domain"),       PartOfDomain = Bool(r, "PartOfDomain"),
-            LoggedOnUser = Str(r, "LoggedOnUser"), RamGB        = Str(r, "RamGB"),
+            LoggedOnUser = Str(r, "LoggedOnUser"), LastLogon    = Str(r, "LastLogon"),
+            RamGB        = Str(r, "RamGB"),
             Processor    = Str(r, "Processor"),    CpuCores     = Int(r, "CpuCores"),
             IpAddress    = Str(r, "IpAddress"),
         };
@@ -534,6 +541,9 @@ public class SystemInfoViewModel : BaseViewModel
             $lastHf  = if ($wu -and $wu.InstalledOn) { "$($wu.HotFixID) ($($wu.InstalledOn.ToString('yyyy-MM-dd')))" } elseif ($wu) { $wu.HotFixID } else { 'Unknown' }
             $uacStr  = if ($uac -eq 1) { 'Enabled' } elseif ($uac -eq 0) { 'Disabled' } else { 'Unknown' }
             $wuaStr  = if ($wua -eq 2) { 'Notify only' } elseif ($wua -eq 3) { 'Auto Download' } elseif ($wua -eq 4) { 'Auto Install' } else { 'Not configured' }
+            $pk      = try { (Get-CimInstance SoftwareLicensingService -ErrorAction Stop).OA3xOriginalProductKey } catch { '' }
+            $pkStr   = if ($pk) { $pk } else { 'Not available' }
+            $admins  = try { @(Get-LocalGroupMember -Group 'Administrators' -ErrorAction Stop | ForEach-Object { $_.Name }) -join ', ' } catch { 'N/A' }
             [ordered]@{
                 FirewallDomain  = [string]$fwD
                 FirewallPrivate = [string]$fwPr
@@ -543,6 +553,8 @@ public class SystemInfoViewModel : BaseViewModel
                 LastHotfix      = [string]$lastHf
                 UAC             = [string]$uacStr
                 WUAutoUpdate    = [string]$wuaStr
+                ProductKey      = [string]$pkStr
+                LocalAdmins     = [string]$admins
             } | ConvertTo-Json
             """;
         var json = await Task.Run(() => RunPs(WrapScript(target, body)));
@@ -555,6 +567,7 @@ public class SystemInfoViewModel : BaseViewModel
             FirewallPublic  = Str(r, "FirewallPublic"),  AntiVirus       = Str(r, "AntiVirus"),
             BitLocker       = Str(r, "BitLocker"),        LastHotfix      = Str(r, "LastHotfix"),
             UAC             = Str(r, "UAC"),              WUAutoUpdate    = Str(r, "WUAutoUpdate"),
+            ProductKey      = Str(r, "ProductKey"),       LocalAdmins     = Str(r, "LocalAdmins"),
         };
     }
 
@@ -671,6 +684,8 @@ public class SystemInfoViewModel : BaseViewModel
             sb.AppendLine($"  Serial:       {Overview.Serial}");
             sb.AppendLine($"  BIOS:         {Overview.BiosVersion}");
             sb.AppendLine($"  {Overview.DomainOrWorkgroup}  |  Logged on: {Overview.LoggedOnUser}");
+            if (!string.IsNullOrWhiteSpace(Overview.LastLogon))
+                sb.AppendLine($"  Last Logon:   {Overview.LastLogon}");
             sb.AppendLine($"  RAM: {Overview.RamGB}  |  CPU: {Overview.Processor} ({Overview.CpuCores} cores)");
             sb.AppendLine($"  IP: {Overview.IpAddress}");
         }
@@ -712,6 +727,8 @@ public class SystemInfoViewModel : BaseViewModel
             sb.AppendLine($"  BitLocker (C:): {Security.BitLocker}");
             sb.AppendLine($"  UAC: {Security.UAC}  |  Auto Update: {Security.WUAutoUpdate}");
             sb.AppendLine($"  Last Hotfix: {Security.LastHotfix}");
+            sb.AppendLine($"  Product Key: {Security.ProductKey}");
+            sb.AppendLine($"  Local Admins: {Security.LocalAdmins}");
         }
         if (AllApps.Any())
         {

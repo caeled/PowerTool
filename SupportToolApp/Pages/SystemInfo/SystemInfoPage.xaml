@@ -66,7 +66,7 @@
             <ScrollView x:Name="PanelOverview">
                 <VerticalStackLayout Spacing="12" Padding="0,4">
                     <Border Stroke="LightGray" StrokeThickness="1" Padding="16" StrokeShape="RoundRectangle 6">
-                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
+                        <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto,Auto"
                               ColumnDefinitions="160,*" RowSpacing="8">
                             <Label Grid.Row="0" Grid.ColumnSpan="2"
                                    Text="{Binding Overview.ComputerName}"
@@ -90,8 +90,10 @@
                             <Label Grid.Row="8"  Grid.Column="1" Text="{Binding Overview.DomainOrWorkgroup}"/>
                             <Label Grid.Row="9"  Grid.Column="0" Text="Logged On"     FontAttributes="Bold" TextColor="Gray"/>
                             <Label Grid.Row="9"  Grid.Column="1" Text="{Binding Overview.LoggedOnUser}"/>
-                            <Label Grid.Row="10" Grid.Column="0" Text="RAM / CPU"     FontAttributes="Bold" TextColor="Gray"/>
-                            <Label Grid.Row="10" Grid.Column="1"
+                            <Label Grid.Row="10" Grid.Column="0" Text="Last Logon"    FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="10" Grid.Column="1" Text="{Binding Overview.LastLogon}"/>
+                            <Label Grid.Row="11" Grid.Column="0" Text="RAM / CPU"     FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="11" Grid.Column="1"
                                    Text="{Binding Overview.RamGB, StringFormat='{0}  |  '}"/>
                         </Grid>
                     </Border>
@@ -312,6 +314,16 @@
                             <Label Grid.Row="2" Grid.Column="1" Text="{Binding Security.WUAutoUpdate}"/>
                             <Label Grid.Row="3" Grid.Column="0" Text="Last Hotfix"   FontAttributes="Bold" TextColor="Gray"/>
                             <Label Grid.Row="3" Grid.Column="1" Text="{Binding Security.LastHotfix}"/>
+                        </Grid>
+                    </Border>
+                    <!-- Product Key + Local Admins -->
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="16" StrokeShape="RoundRectangle 6">
+                        <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="150,*" RowSpacing="8">
+                            <Label Grid.Row="0" Grid.ColumnSpan="2" Text="Licensing &amp; Access" FontAttributes="Bold" FontSize="14" TextColor="#0078D4" Margin="0,0,0,4"/>
+                            <Label Grid.Row="1" Grid.Column="0" Text="Product Key"   FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="1" Grid.Column="1" Text="{Binding Security.ProductKey}" FontFamily="Courier New" FontSize="12"/>
+                            <Label Grid.Row="2" Grid.Column="0" Text="Local Admins"  FontAttributes="Bold" TextColor="Gray"/>
+                            <Label Grid.Row="2" Grid.Column="1" Text="{Binding Security.LocalAdmins}" LineBreakMode="WordWrap"/>
                         </Grid>
                     </Border>
                 </VerticalStackLayout>
