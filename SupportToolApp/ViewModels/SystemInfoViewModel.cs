@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -604,20 +604,16 @@ public class SystemInfoViewModel : BaseViewModel
 
     private List<LoginEvent> QueryLoginsPs(string target, int count)
     {
-        var isLocal = string.IsNullOrWhiteSpace(target)
-                   || target.Equals("localhost", StringComparison.OrdinalIgnoreCase)
-                   || target.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase);
-        var maxEvents = Math.Max(count * 20, 200);
-        var compLine  = isLocal ? "" : $"$gwParams['ComputerName'] = '{target.Replace("'", "''")}'\n";
-        var script = $"$n = {count}\n$nMax = {maxEvents}\n" + compLine + """
+        var body = $"$n = {count}\n$nMax = {count * 20 + 50}\n" + """
             $ErrorActionPreference = 'SilentlyContinue'
-            $typeMap  = @{2='Interactive';7='Unlock';10='Remote (RDP)';11='Cached'}
-            $gwParams = @{ FilterHashtable = @{LogName='Security';Id=4624}; MaxEvents = $nMax; ErrorAction = 'Stop' }
-            $events   = try {
-                Get-WinEvent @gwParams |
+            $cutoff  = (Get-Date).AddDays(-5)
+            $typeMap = @{2='Interactive';7='Unlock';10='Remote (RDP)';11='Cached'}
+            $events  = try {
+                Get-WinEvent -LogName Security -FilterHashtable @{Id=4624; StartTime=$cutoff} -MaxEvents $nMax -ErrorAction Stop |
                     Where-Object { $_.Properties[8].Value -in 2,7,10,11 } |
                     Select-Object -First $n
             } catch { @() }
+            $events  = @($events)
             @($events | ForEach-Object {
                 $user   = $_.Properties[5].Value
                 $domain = $_.Properties[6].Value
@@ -630,7 +626,7 @@ public class SystemInfoViewModel : BaseViewModel
                 }
             }) | ConvertTo-Json
             """;
-        var json = RunPs(script);
+        var json = RunPs(WrapScript(target, body));
         if (string.IsNullOrWhiteSpace(json)) return [];
         try
         {
