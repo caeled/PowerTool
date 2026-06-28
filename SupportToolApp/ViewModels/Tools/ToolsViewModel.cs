@@ -295,6 +295,16 @@ public class ToolsViewModel : BaseViewModel
     public ObservableCollection<NetworkAdapterEntry> NetworkAdapters { get; } = [];
     public ICommand LoadNetworkCommand { get; }
 
+    // ── DHCP Stats ───────────────────────────────────────────────────────────
+    private string _dhcpServers = "", _dhcpAlertPct = "95", _dhcpOutput = "";
+    private bool _dhcpLoading;
+    public string DhcpServers  { get => _dhcpServers;  set => SetProperty(ref _dhcpServers,  value); }
+    public string DhcpAlertPct { get => _dhcpAlertPct; set => SetProperty(ref _dhcpAlertPct, value); }
+    public string DhcpOutput   { get => _dhcpOutput;   set => SetProperty(ref _dhcpOutput,   value); }
+    public bool   DhcpLoading  { get => _dhcpLoading;  set => SetProperty(ref _dhcpLoading,  value); }
+    public ICommand LoadDhcpStatsCommand  { get; }
+    public ICommand LaunchPowerCopyCommand { get; }
+
     // ── Logged On User ───────────────────────────────────────────────────────
     private bool _loggedOnLoading;
     private string _loggedOnResult = "";
@@ -1113,6 +1123,36 @@ public class ToolsViewModel : BaseViewModel
                 NetworkAdapters.Clear();
                 foreach (var a in entries ?? []) NetworkAdapters.Add(a);
             }));
+
+        LoadDhcpStatsCommand = new Command(async () =>
+        {
+            DhcpLoading = true;
+            DhcpOutput = "";
+            try
+            {
+                var servers = string.IsNullOrWhiteSpace(DhcpServers) ? "localhost" : DhcpServers;
+                var pct = int.TryParse(DhcpAlertPct, out var p) ? p : 95;
+                var result = await Task.Run(() => RunPsSync(PsScripts.DhcpStats(servers, pct)));
+                DhcpOutput = string.IsNullOrWhiteSpace(result) ? "No output — ensure the DhcpServer module is available and you have access." : result.Trim();
+            }
+            catch (Exception ex) { DhcpOutput = $"Error: {ex.Message}"; }
+            finally { DhcpLoading = false; }
+        });
+
+        LaunchPowerCopyCommand = new Command(() =>
+        {
+            var script = System.IO.Path.Combine(
+                AppContext.BaseDirectory, "..", "..", "..", "..", "ToolBox", "PowerCopy.ps1");
+            if (!System.IO.File.Exists(script))
+                script = System.IO.Path.GetFullPath(script);
+            var psi = new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = "powershell.exe",
+                Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{script}\"",
+                UseShellExecute = true
+            };
+            System.Diagnostics.Process.Start(psi);
+        });
 
         GetLoggedOnUserCommand = new Command(async () => await RunTool(
             "Logged On User", () => LoggedOnLoading = true, () => LoggedOnLoading = false,
@@ -4220,6 +4260,33 @@ internal static class PsScripts
                 "Drive $($_.DeviceID) $([math]::Round($_.FreeSpace/1GB,1)) GB free of $([math]::Round($_.Size/1GB,1)) GB"
             }
         """);
+
+    public static string DhcpStats(string servers, int alertPct) => $$"""
+        $ErrorActionPreference = 'Stop'
+        try { Import-Module DhcpServer -ErrorAction Stop }
+        catch { "ERROR: DhcpServer module not available. Install RSAT or run on a Windows Server with the DHCP role."; exit }
+        $serverList = '{{servers}}' -split ',' | ForEach-Object { $_.Trim() } | Where-Object { $_ }
+        $alert = {{alertPct}}
+        $lines = @()
+        foreach ($srv in $serverList) {
+            $lines += "=== $srv ==="
+            try {
+                $scopes = Get-DhcpServerv4Scope -ComputerName $srv
+                foreach ($s in $scopes) {
+                    $stats = Get-DhcpServerv4ScopeStatistics -ComputerName $srv -ScopeId $s.ScopeId
+                    $total = $stats.AddressesFree + $stats.AddressesInUse
+                    $pct   = if ($total -gt 0) { [math]::Round($stats.AddressesInUse / $total * 100, 1) } else { 0 }
+                    $flag  = if ($pct -ge $alert) { " *** ALERT ***" } else { "" }
+                    $lines += "  Scope $($s.ScopeId)  [$($s.Name)]"
+                    $lines += "    In Use: $($stats.AddressesInUse) / $total  ($pct%)$flag"
+                    $lines += "    Free: $($stats.AddressesFree)  Reserved: $($stats.Reserved)"
+                }
+            } catch {
+                $lines += "  ERROR: $_"
+            }
+        }
+        $lines
+        """;
 }
 
 internal static class JsonElementExtensions2

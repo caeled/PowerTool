@@ -73,6 +73,8 @@ public partial class ToolsPage : ContentPage
             { TabWakeOnLan,       PanelWakeOnLan },
             { TabPing,            PanelPing },
             { TabWifiSetup,       PanelWifiSetup },
+            { TabDhcpStats,       PanelDhcpStats },
+            { TabPowerCopy,       PanelPowerCopy },
             { TabAutoLogon,       PanelAutoLogon },
             { TabSetPrinter,      PanelSetPrinter },
             { TabTrustedSites,    PanelTrustedSites },
@@ -89,9 +91,9 @@ public partial class ToolsPage : ContentPage
         {
             { CatSystem,  [TabApps, TabServices, TabUpdates, TabPatches, TabProcesses, TabPrinters, TabDiskSpace, TabSchedTasks, TabActivation, TabTempClean, TabStartup, TabRemotePsSystem, TabPsRunSystem, TabAutoLogon, TabSetPrinter, TabTrustedSites, TabQuickAccess, TabDiskCleanup, TabKeepAlive] },
             { CatUsers,   [TabLocalUsers, TabLoggedOn, TabLocalAdmins, TabRunAs, TabGroupMembership, TabAcctLockout, TabRdpSessions, TabPwdExpiry, TabUserMgmt, TabAdReset] },
-            { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns, TabFlushDns, TabNetStat, TabTrace, TabWifi, TabProxy, TabResetNic, TabPing, TabWifiSetup] },
+            { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns, TabFlushDns, TabNetStat, TabTrace, TabWifi, TabProxy, TabResetNic, TabPing, TabWifiSetup, TabDhcpStats] },
             { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate, TabRemotePsRemote, TabPsRunRemote, TabDirBrowser, TabProcKill, TabWinRmToggle, TabWakeOnLan, TabHostsFile] },
-            { CatDeploy,  [TabDeploy, TabCopyFile, TabWinget, TabRegPush, TabPendingUpdates, TabRunUpdates, TabUpdateLog, TabWinKey, TabWsusClient] },
+            { CatDeploy,  [TabDeploy, TabCopyFile, TabWinget, TabRegPush, TabPendingUpdates, TabRunUpdates, TabUpdateLog, TabWinKey, TabWsusClient, TabPowerCopy] },
         };
 
         SelectCategory(CatSystem, TabApps);

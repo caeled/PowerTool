@@ -1,5 +1,6 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
+using SupportToolApp.Helpers;
 using SupportToolApp.Models;
 using SupportToolApp.Services;
 
@@ -47,6 +48,15 @@ public class EmailViewModel : BaseViewModel
         ? "No delegated permissions"
         : string.Join("\n", Mailbox.Permissions.Select(p => $"  {p.User}  →  {p.AccessRights}"));
 
+    // Parse Header
+    private string _rawHeader = "", _headerResult = "";
+    private bool _hasHeaderResult;
+    public string RawHeader      { get => _rawHeader;       set => SetProperty(ref _rawHeader, value); }
+    public string HeaderResult   { get => _headerResult;    set { SetProperty(ref _headerResult, value); HasHeaderResult = !string.IsNullOrEmpty(value); } }
+    public bool   HasHeaderResult { get => _hasHeaderResult; set => SetProperty(ref _hasHeaderResult, value); }
+    public ICommand ParseHeaderCommand { get; }
+    public ICommand ClearHeaderCommand { get; }
+
     public ICommand LookupCommand { get; }
     public ICommand SetForwardingCommand { get; }
     public ICommand GrantAccessCommand { get; }
@@ -58,6 +68,14 @@ public class EmailViewModel : BaseViewModel
     public EmailViewModel(IExchangeService exchange)
     {
         _exchange = exchange;
+
+        ParseHeaderCommand = new Command(() =>
+        {
+            if (string.IsNullOrWhiteSpace(RawHeader)) return;
+            HeaderResult = EmailHeaderParser.Parse(RawHeader);
+        });
+
+        ClearHeaderCommand = new Command(() => { RawHeader = ""; HeaderResult = ""; });
 
         LookupCommand = new Command(async () =>
         {
