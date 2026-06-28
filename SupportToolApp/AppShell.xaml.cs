@@ -94,6 +94,9 @@ public partial class AppShell : Shell
             await Launcher.OpenAsync(new Uri(_creds.QuickLink4Url));
     }
 
+    private async void OnHelpClicked(object sender, EventArgs e)
+        => await Shell.Current.GoToAsync("//Help");
+
     private async void OnSaveConfig(object sender, EventArgs e)
     {
         try

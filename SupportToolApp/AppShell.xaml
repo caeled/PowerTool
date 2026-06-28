@@ -11,6 +11,7 @@
        xmlns:st="clr-namespace:SupportToolApp.Pages.Settings"
        xmlns:tl="clr-namespace:SupportToolApp.Pages.Tools"
        xmlns:cr="clr-namespace:SupportToolApp.Pages.Credentials"
+       xmlns:hp="clr-namespace:SupportToolApp.Pages.Help"
        x:Class="SupportToolApp.AppShell"
        Shell.FlyoutBehavior="Flyout"
        Title="IT Support Tool">
@@ -19,6 +20,8 @@
         <MenuBarItem Text="File">
             <MenuFlyoutItem Text="Save Config..." Clicked="OnSaveConfig"/>
             <MenuFlyoutItem Text="Load Config..." Clicked="OnLoadConfig"/>
+            <MenuFlyoutSeparator/>
+            <MenuFlyoutItem Text="Help" Clicked="OnHelpClicked"/>
         </MenuBarItem>
     </Shell.MenuBarItems>
 
@@ -121,6 +124,10 @@
 
     <FlyoutItem Title="🔑 Credentials">
         <ShellContent ContentTemplate="{DataTemplate cr:SetCredentialsPage}" Route="SetCredentials"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="Help">
+        <ShellContent ContentTemplate="{DataTemplate hp:HelpPage}" Route="Help"/>
     </FlyoutItem>
 
 </Shell>

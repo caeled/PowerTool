@@ -10,6 +10,7 @@ using SupportToolApp.Pages.UserManager;
 using SupportToolApp.Services;
 using SupportToolApp.Pages.Credentials;
 using SupportToolApp.Pages.Tools;
+using SupportToolApp.Pages.Help;
 using SupportToolApp.Services.Graph;
 using SupportToolApp.Services.Mock;
 using SupportToolApp.ViewModels;
@@ -70,6 +71,7 @@ public static class MauiProgram
         builder.Services.AddTransient<SearchPage>();
         builder.Services.AddTransient<SettingsPage>();
         builder.Services.AddTransient<SetCredentialsPage>();
+        builder.Services.AddTransient<HelpPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();
