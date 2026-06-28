@@ -4,6 +4,9 @@ SupportToolApp/obj/
 SoundCombineApp/bin/Release/
 SoundCombineApp/obj/
 SoundCombineApp/publish/
+CompareApp/bin/
+CompareApp/obj/
+CompareApp/publish/
 *.user
 
 # Claude Code session data
