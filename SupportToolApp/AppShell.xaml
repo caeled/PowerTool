@@ -15,6 +15,13 @@
        Shell.FlyoutBehavior="Flyout"
        Title="IT Support Tool">
 
+    <Shell.MenuBarItems>
+        <MenuBarItem Text="File">
+            <MenuFlyoutItem Text="Save Config..." Clicked="OnSaveConfig"/>
+            <MenuFlyoutItem Text="Load Config..." Clicked="OnLoadConfig"/>
+        </MenuBarItem>
+    </Shell.MenuBarItems>
+
     <Shell.TitleView>
         <Grid ColumnDefinitions="Auto,*" ColumnSpacing="8" VerticalOptions="Fill">
             <!-- Logo badge: image if configured, else initials tile -->
