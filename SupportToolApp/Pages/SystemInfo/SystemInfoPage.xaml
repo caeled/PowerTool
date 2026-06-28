@@ -106,6 +106,45 @@
                                    TextColor="Gray" FontSize="12"/>
                         </VerticalStackLayout>
                     </Border>
+                    <!-- Recent Logins -->
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="0"
+                            StrokeShape="RoundRectangle 6">
+                        <VerticalStackLayout>
+                            <Grid ColumnDefinitions="*,80,Auto,Auto" Padding="12,10"
+                                  BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                                <Label Grid.Column="0" Text="Recent Logins" FontAttributes="Bold"
+                                       FontSize="13" TextColor="#0078D4" VerticalOptions="Center"/>
+                                <Entry Grid.Column="1" Text="{Binding LoginCountText}"
+                                       Placeholder="10" Keyboard="Numeric"
+                                       HorizontalTextAlignment="Center" VerticalOptions="Center"/>
+                                <Button Grid.Column="2" Text="Load" Command="{Binding QueryLoginsCommand}"
+                                        BackgroundColor="#0078D4" TextColor="White"
+                                        Padding="14,4" FontSize="12"/>
+                                <ActivityIndicator Grid.Column="3" IsRunning="{Binding IsLoadingLogins}"
+                                                   IsVisible="{Binding IsLoadingLogins}" Color="DodgerBlue"
+                                                   VerticalOptions="Center"/>
+                            </Grid>
+                            <CollectionView ItemsSource="{Binding RecentLogins}">
+                                <CollectionView.Header>
+                                    <Grid ColumnDefinitions="*,180,100" Padding="12,6"
+                                          BackgroundColor="#FAFAFA" ColumnSpacing="12">
+                                        <Label Grid.Column="0" Text="User"      FontAttributes="Bold" FontSize="11" TextColor="Gray"/>
+                                        <Label Grid.Column="1" Text="Time"      FontAttributes="Bold" FontSize="11" TextColor="Gray"/>
+                                        <Label Grid.Column="2" Text="Type"      FontAttributes="Bold" FontSize="11" TextColor="Gray"/>
+                                    </Grid>
+                                </CollectionView.Header>
+                                <CollectionView.ItemTemplate>
+                                    <DataTemplate>
+                                        <Grid ColumnDefinitions="*,180,100" Padding="12,5" ColumnSpacing="12">
+                                            <Label Grid.Column="0" Text="{Binding User}" FontSize="12" LineBreakMode="TailTruncation"/>
+                                            <Label Grid.Column="1" Text="{Binding Time}" FontSize="11" TextColor="Gray" FontFamily="Courier New"/>
+                                            <Label Grid.Column="2" Text="{Binding Type}" FontSize="11" TextColor="Gray"/>
+                                        </Grid>
+                                    </DataTemplate>
+                                </CollectionView.ItemTemplate>
+                            </CollectionView>
+                        </VerticalStackLayout>
+                    </Border>
                 </VerticalStackLayout>
             </ScrollView>
 

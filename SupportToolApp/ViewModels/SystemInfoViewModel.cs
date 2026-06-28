@@ -113,6 +113,13 @@ public class SecurityData
     public string LocalAdmins     { get; set; } = "";
 }
 
+public class LoginEvent
+{
+    public string User   { get; set; } = "";
+    public string Time   { get; set; } = "";
+    public string Type   { get; set; } = "";
+}
+
 public class SharedFolder
 {
     public string Name        { get; set; } = "";
@@ -137,7 +144,8 @@ public class SystemInfoViewModel : BaseViewModel
     private readonly CredentialService _creds;
 
     private string _target = "", _statusMessage = "", _softwareSearch = "", _serviceSearch = "", _errorMessage = "";
-    private bool _isBusy, _hasData, _hasError;
+    private string _loginCountText = "10";
+    private bool _isBusy, _hasData, _hasError, _isLoadingLogins;
     private OverviewData? _overview;
     private HardwareData? _hardware;
     private SecurityData? _security;
@@ -145,9 +153,16 @@ public class SystemInfoViewModel : BaseViewModel
     public string Target        { get => _target;        set => SetProperty(ref _target, value); }
     public string StatusMessage { get => _statusMessage; set => SetProperty(ref _statusMessage, value); }
     public string ErrorMessage  { get => _errorMessage;  set { SetProperty(ref _errorMessage, value); HasError = !string.IsNullOrEmpty(value); } }
-    public bool   IsBusy        { get => _isBusy;        set => SetProperty(ref _isBusy, value); }
-    public bool   HasData       { get => _hasData;       set => SetProperty(ref _hasData, value); }
-    public bool   HasError      { get => _hasError;      set => SetProperty(ref _hasError, value); }
+    public bool   IsBusy          { get => _isBusy;         set => SetProperty(ref _isBusy, value); }
+    public bool   HasData         { get => _hasData;        set => SetProperty(ref _hasData, value); }
+    public bool   HasError        { get => _hasError;       set => SetProperty(ref _hasError, value); }
+    public bool   IsLoadingLogins { get => _isLoadingLogins; set => SetProperty(ref _isLoadingLogins, value); }
+
+    public string LoginCountText
+    {
+        get => _loginCountText;
+        set => SetProperty(ref _loginCountText, value);
+    }
 
     public string CredentialStatus => string.IsNullOrWhiteSpace(_creds.UserUsername)
         ? "No credentials set — local queries only"
@@ -157,6 +172,7 @@ public class SystemInfoViewModel : BaseViewModel
     public HardwareData? Hardware { get => _hardware; set => SetProperty(ref _hardware, value); }
     public SecurityData? Security { get => _security; set => SetProperty(ref _security, value); }
 
+    public ObservableCollection<LoginEvent>     RecentLogins    { get; } = [];
     public ObservableCollection<DiskInfo>       Disks           { get; } = [];
     public ObservableCollection<NetworkAdapter> Adapters        { get; } = [];
     public ObservableCollection<SharedFolder>   Shares          { get; } = [];
@@ -180,8 +196,9 @@ public class SystemInfoViewModel : BaseViewModel
     public string AppCount     => $"{FilteredApps.Count} of {AllApps.Count} apps";
     public string ServiceCount => $"{FilteredServices.Count} of {AllServices.Count} services";
 
-    public ICommand QueryCommand  { get; }
-    public ICommand ExportCommand { get; }
+    public ICommand QueryCommand        { get; }
+    public ICommand ExportCommand       { get; }
+    public ICommand QueryLoginsCommand  { get; }
 
     public SystemInfoViewModel(CredentialService creds)
     {
@@ -196,6 +213,7 @@ public class SystemInfoViewModel : BaseViewModel
             Disks.Clear(); Adapters.Clear(); Shares.Clear();
             AllApps.Clear(); FilteredApps.Clear();
             AllServices.Clear(); FilteredServices.Clear();
+            RecentLogins.Clear();
             SoftwareSearch = ""; ServiceSearch = "";
 
             var t = Target.Trim();
@@ -229,6 +247,19 @@ public class SystemInfoViewModel : BaseViewModel
         });
 
         ExportCommand = new Command(async () => { if (HasData) await ExportReportAsync(); });
+
+        QueryLoginsCommand = new Command(async () =>
+        {
+            if (!HasData || IsLoadingLogins) return;
+            if (!int.TryParse(_loginCountText.Trim(), out var count) || count < 1) count = 10;
+            if (count > 500) count = 500;
+            IsLoadingLogins = true;
+            RecentLogins.Clear();
+            var t = Target.Trim();
+            var logins = await Task.Run(() => QueryLoginsPs(t, count));
+            foreach (var l in logins) RecentLogins.Add(l);
+            IsLoadingLogins = false;
+        });
     }
 
     // ── PS helpers ────────────────────────────────────────────────────────────
@@ -569,6 +600,43 @@ public class SystemInfoViewModel : BaseViewModel
             UAC             = Str(r, "UAC"),              WUAutoUpdate    = Str(r, "WUAutoUpdate"),
             ProductKey      = Str(r, "ProductKey"),       LocalAdmins     = Str(r, "LocalAdmins"),
         };
+    }
+
+    private List<LoginEvent> QueryLoginsPs(string target, int count)
+    {
+        var body = $"$n = {count}\n$nMax = {count * 10}\n" + """
+            $ErrorActionPreference = 'SilentlyContinue'
+            $events = try {
+                Get-WinEvent -LogName Security -FilterHashtable @{Id=4624} -MaxEvents $nMax -ErrorAction Stop |
+                    Where-Object { $_.Properties[8].Value -in 2,10 } |
+                    Select-Object -First $n
+            } catch { @() }
+            @($events | ForEach-Object {
+                $user   = $_.Properties[5].Value
+                $domain = $_.Properties[6].Value
+                $ltype  = [int]$_.Properties[8].Value
+                $ltStr  = if ($ltype -eq 2) { 'Interactive' } else { 'Remote' }
+                [ordered]@{
+                    User = [string]"$domain\$user"
+                    Time = [string]$_.TimeCreated.ToString('yyyy-MM-dd HH:mm:ss')
+                    Type = [string]$ltStr
+                }
+            }) | ConvertTo-Json
+            """;
+        var json = RunPs(WrapScript(target, body));
+        if (string.IsNullOrWhiteSpace(json)) return [];
+        try
+        {
+            using var doc = JsonDocument.Parse(json);
+            var arr = doc.RootElement.ValueKind == JsonValueKind.Array
+                ? doc.RootElement.EnumerateArray().ToList()
+                : new List<JsonElement> { doc.RootElement };
+            return arr.Select(e => new LoginEvent
+            {
+                User = Str(e, "User"), Time = Str(e, "Time"), Type = Str(e, "Type"),
+            }).ToList();
+        }
+        catch { return []; }
     }
 
     private async Task QuerySharedFoldersAsync(string target)
