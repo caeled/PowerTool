@@ -12,6 +12,7 @@
        xmlns:tl="clr-namespace:SupportToolApp.Pages.Tools"
        xmlns:cr="clr-namespace:SupportToolApp.Pages.Credentials"
        xmlns:hp="clr-namespace:SupportToolApp.Pages.Help"
+       xmlns:cp="clr-namespace:SupportToolApp.Pages.Compare"
        x:Class="SupportToolApp.AppShell"
        Shell.FlyoutBehavior="Flyout"
        Title="IT Support Tool">
@@ -128,6 +129,10 @@
 
     <FlyoutItem Title="Help">
         <ShellContent ContentTemplate="{DataTemplate hp:HelpPage}" Route="Help"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="Compare Files">
+        <ShellContent ContentTemplate="{DataTemplate cp:ComparePage}" Route="Compare"/>
     </FlyoutItem>
 
 </Shell>

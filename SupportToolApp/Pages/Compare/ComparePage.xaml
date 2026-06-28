@@ -1,0 +1,116 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SupportToolApp.Pages.Compare.ComparePage"
+             Title="Compare">
+
+    <Grid RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" Padding="16" RowSpacing="10">
+
+        <!-- File A -->
+        <Border Grid.Row="0" Stroke="#0078D4" StrokeThickness="1" Padding="10"
+                StrokeShape="RoundRectangle 6" BackgroundColor="#F0F7FF">
+            <Grid ColumnDefinitions="60,*,Auto" ColumnSpacing="8">
+                <Label Grid.Column="0" Text="File A:" FontAttributes="Bold" VerticalOptions="Center"/>
+                <Label Grid.Column="1" x:Name="LabelA" Text="No file selected"
+                       TextColor="#777" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
+                <Button Grid.Column="2" Text="Browse" Padding="12,6"
+                        BackgroundColor="#0078D4" Clicked="OnBrowseA"/>
+            </Grid>
+        </Border>
+
+        <!-- File B -->
+        <Border Grid.Row="1" Stroke="#0078D4" StrokeThickness="1" Padding="10"
+                StrokeShape="RoundRectangle 6" BackgroundColor="#F0F7FF">
+            <Grid ColumnDefinitions="60,*,Auto" ColumnSpacing="8">
+                <Label Grid.Column="0" Text="File B:" FontAttributes="Bold" VerticalOptions="Center"/>
+                <Label Grid.Column="1" x:Name="LabelB" Text="No file selected"
+                       TextColor="#777" VerticalOptions="Center" LineBreakMode="TailTruncation"/>
+                <Button Grid.Column="2" Text="Browse" Padding="12,6"
+                        BackgroundColor="#0078D4" Clicked="OnBrowseB"/>
+            </Grid>
+        </Border>
+
+        <!-- Column picker + Compare -->
+        <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
+            <Label Grid.Column="0" Text="Compare on column:" VerticalOptions="Center" FontAttributes="Bold"/>
+            <Picker Grid.Column="1" x:Name="ColumnPicker" Title="(load files first)"
+                    VerticalOptions="Center"/>
+            <Button Grid.Column="2" Text="Compare" Padding="18,8"
+                    BackgroundColor="#0078D4" FontAttributes="Bold" Clicked="OnCompare"/>
+            <Button Grid.Column="3" Text="Clear" Padding="12,8"
+                    BackgroundColor="#555" Clicked="OnClear"/>
+        </Grid>
+
+        <!-- Status -->
+        <Label Grid.Row="3" x:Name="StatusLabel" Text="" FontSize="12"
+               TextColor="#555" IsVisible="False"/>
+
+        <!-- Results -->
+        <Grid Grid.Row="4" ColumnDefinitions="*,*,*" ColumnSpacing="8">
+
+            <!-- Only in A -->
+            <Grid Grid.Column="0" RowDefinitions="Auto,*">
+                <Border Grid.Row="0" BackgroundColor="#D32F2F" Padding="8,6" StrokeShape="RoundRectangle 4,4,0,0">
+                    <Label x:Name="HeaderA" Text="Only in A (0)" TextColor="White"
+                           FontAttributes="Bold" FontSize="13" HorizontalTextAlignment="Center"/>
+                </Border>
+                <Border Grid.Row="1" Stroke="#DDDDDD" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 0,0,4,4">
+                    <CollectionView x:Name="ListOnlyA" Margin="4">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding .}" FontSize="12" Padding="4,3"
+                                       LineBreakMode="TailTruncation"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- In Both -->
+            <Grid Grid.Column="1" RowDefinitions="Auto,*">
+                <Border Grid.Row="0" BackgroundColor="#388E3C" Padding="8,6" StrokeShape="RoundRectangle 4,4,0,0">
+                    <Label x:Name="HeaderBoth" Text="In Both (0)" TextColor="White"
+                           FontAttributes="Bold" FontSize="13" HorizontalTextAlignment="Center"/>
+                </Border>
+                <Border Grid.Row="1" Stroke="#DDDDDD" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 0,0,4,4">
+                    <CollectionView x:Name="ListBoth" Margin="4">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding .}" FontSize="12" Padding="4,3"
+                                       LineBreakMode="TailTruncation"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+            <!-- Only in B -->
+            <Grid Grid.Column="2" RowDefinitions="Auto,*">
+                <Border Grid.Row="0" BackgroundColor="#1565C0" Padding="8,6" StrokeShape="RoundRectangle 4,4,0,0">
+                    <Label x:Name="HeaderB" Text="Only in B (0)" TextColor="White"
+                           FontAttributes="Bold" FontSize="13" HorizontalTextAlignment="Center"/>
+                </Border>
+                <Border Grid.Row="1" Stroke="#DDDDDD" StrokeThickness="1"
+                        StrokeShape="RoundRectangle 0,0,4,4">
+                    <CollectionView x:Name="ListOnlyB" Margin="4">
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Label Text="{Binding .}" FontSize="12" Padding="4,3"
+                                       LineBreakMode="TailTruncation"/>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
+
+        </Grid>
+
+        <!-- Export -->
+        <Button Grid.Row="5" Text="Export Results to CSV" HorizontalOptions="End"
+                Padding="18,8" BackgroundColor="#228B22" Clicked="OnExport"
+                x:Name="ExportButton" IsVisible="False"/>
+
+    </Grid>
+</ContentPage>
