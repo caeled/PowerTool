@@ -75,7 +75,7 @@
 		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.*" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
-		<PackageReference Include="System.Management" Version="9.0.0" />
+		<PackageReference Include="System.Management" Version="9.0.0" Condition="$([MSBuild]::IsOSPlatform('windows'))"/>
 	</ItemGroup>
 
 </Project>
