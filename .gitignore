@@ -1,6 +1,8 @@
 # MAUI / .NET build output
 SupportToolApp/bin/
 SupportToolApp/obj/
+SoundCombineApp/bin/Release/
+SoundCombineApp/obj/
 *.user
 
 # Claude Code session data
