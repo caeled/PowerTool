@@ -823,18 +823,13 @@ public class SystemInfoViewModel : BaseViewModel
         try
         {
 #if WINDOWS
-            var picker = new Windows.Storage.Pickers.FileSavePicker();
-            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-            picker.SuggestedFileName = fileName;
-            picker.FileTypeChoices.Add("Text Report", new List<string> { ".txt" });
-            var nw = Application.Current!.Windows[0].Handler?.PlatformView as MauiWinUIWindow;
-            var hwnd = nw?.WindowHandle ?? IntPtr.Zero;
-            if (hwnd != IntPtr.Zero) WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
-            var file = await picker.PickSaveFileAsync();
-            if (file == null) return;
-            await Windows.Storage.FileIO.WriteTextAsync(file, report);
-            var open = await Application.Current!.Windows[0].Page!.DisplayAlert("Report Saved", $"Saved to:\n{file.Path}", "Open", "Close");
-            if (open) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(file.Path) { UseShellExecute = true });
+            var savePath = await Task.Run(() => SupportToolApp.Helpers.Win32FileDialog.SaveFile(
+                "Save Inventory Report", fileName,
+                "Text Report\0*.txt\0All Files\0*.*\0\0", "txt"));
+            if (string.IsNullOrEmpty(savePath)) return;
+            await File.WriteAllTextAsync(savePath, report);
+            var open = await Application.Current!.Windows[0].Page!.DisplayAlert("Report Saved", $"Saved to:\n{savePath}", "Open", "Close");
+            if (open) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(savePath) { UseShellExecute = true });
 #else
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), fileName);
             await File.WriteAllTextAsync(path, report);

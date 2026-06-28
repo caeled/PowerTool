@@ -2,6 +2,7 @@ using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text.Json;
 using System.Windows.Input;
+using SupportToolApp.Helpers;
 using SupportToolApp.Services;
 
 namespace SupportToolApp.ViewModels.Tools;
@@ -806,6 +807,72 @@ public class ToolsViewModel : BaseViewModel
     public ICommand DeployRunCommand { get; }
     public ICommand DeployBrowseCommand { get; }
 
+    // ── Auto Logon ───────────────────────────────────────────────────────────
+    private string _autoLogonUsername = "", _autoLogonPassword = "", _autoLogonCount = "1", _autoLogonScript = "";
+    private string _autoLogonOutput = "";
+    private bool _autoLogonLoading;
+    public string AutoLogonUsername { get => _autoLogonUsername; set => SetProperty(ref _autoLogonUsername, value); }
+    public string AutoLogonPassword { get => _autoLogonPassword; set => SetProperty(ref _autoLogonPassword, value); }
+    public string AutoLogonCount    { get => _autoLogonCount;    set => SetProperty(ref _autoLogonCount, value); }
+    public string AutoLogonScript   { get => _autoLogonScript;   set => SetProperty(ref _autoLogonScript, value); }
+    public string AutoLogonOutput   { get => _autoLogonOutput;   set => SetProperty(ref _autoLogonOutput, value); }
+    public bool AutoLogonLoading    { get => _autoLogonLoading;  set => SetProperty(ref _autoLogonLoading, value); }
+    public ICommand AutoLogonEnableCommand  { get; private set; } = null!;
+    public ICommand AutoLogonDisableCommand { get; private set; } = null!;
+    public ICommand AutoLogonCheckCommand   { get; private set; } = null!;
+
+    // ── Default Printer (Set) ─────────────────────────────────────────────────
+    private string _selectedPrinterName = "", _setPrinterOutput = "";
+    private bool _setPrinterLoading;
+    public string SelectedPrinterName { get => _selectedPrinterName; set => SetProperty(ref _selectedPrinterName, value); }
+    public string SetPrinterOutput    { get => _setPrinterOutput;    set => SetProperty(ref _setPrinterOutput, value); }
+    public bool SetPrinterLoading     { get => _setPrinterLoading;   set => SetProperty(ref _setPrinterLoading, value); }
+    public ObservableCollection<string> PrinterNames { get; } = [];
+    public ICommand LoadPrintersForDefaultCommand { get; private set; } = null!;
+    public ICommand SetDefaultPrinterCommand      { get; private set; } = null!;
+
+    // ── Trusted Sites ────────────────────────────────────────────────────────
+    private string _trustedSiteDomain = "", _trustedSiteOutput = "";
+    private bool _trustedSiteHttp, _trustedSiteLoading;
+    public string TrustedSiteDomain  { get => _trustedSiteDomain;  set => SetProperty(ref _trustedSiteDomain, value); }
+    public string TrustedSiteOutput  { get => _trustedSiteOutput;  set => SetProperty(ref _trustedSiteOutput, value); }
+    public bool TrustedSiteHttp      { get => _trustedSiteHttp;    set => SetProperty(ref _trustedSiteHttp, value); }
+    public bool TrustedSiteLoading   { get => _trustedSiteLoading; set => SetProperty(ref _trustedSiteLoading, value); }
+    public ICommand AddTrustedSiteCommand { get; private set; } = null!;
+
+    // ── Quick Access ─────────────────────────────────────────────────────────
+    private string _quickAccessPath = "", _quickAccessOutput = "";
+    private bool _quickAccessLoading;
+    public string QuickAccessPath    { get => _quickAccessPath;    set => SetProperty(ref _quickAccessPath, value); }
+    public string QuickAccessOutput  { get => _quickAccessOutput;  set => SetProperty(ref _quickAccessOutput, value); }
+    public bool QuickAccessLoading   { get => _quickAccessLoading; set => SetProperty(ref _quickAccessLoading, value); }
+    public ICommand QuickAccessBrowseCommand { get; private set; } = null!;
+    public ICommand QuickAccessPinCommand    { get; private set; } = null!;
+    public ICommand QuickAccessUnpinCommand  { get; private set; } = null!;
+
+    // ── Windows Key ──────────────────────────────────────────────────────────
+    private string _winKeyValue = "", _winKeyOutput = "";
+    private bool _winKeyLoading;
+    public string WinKeyValue   { get => _winKeyValue;   set => SetProperty(ref _winKeyValue, value); }
+    public string WinKeyOutput  { get => _winKeyOutput;  set => SetProperty(ref _winKeyOutput, value); }
+    public bool WinKeyLoading   { get => _winKeyLoading; set => SetProperty(ref _winKeyLoading, value); }
+    public ICommand WinKeyInstallCommand  { get; private set; } = null!;
+    public ICommand WinKeyActivateCommand { get; private set; } = null!;
+
+    // ── WSUS Client ──────────────────────────────────────────────────────────
+    private string _wsusServerUrl = "", _wsusTargetGroup = "", _wsusOutput = "";
+    private string _wsusAuOption = "DownloadAndInstall";
+    private bool _wsusLoading;
+    public string WsusServerUrl   { get => _wsusServerUrl;   set => SetProperty(ref _wsusServerUrl, value); }
+    public string WsusTargetGroup { get => _wsusTargetGroup; set => SetProperty(ref _wsusTargetGroup, value); }
+    public string WsusAuOption    { get => _wsusAuOption;    set => SetProperty(ref _wsusAuOption, value); }
+    public string WsusOutput      { get => _wsusOutput;      set => SetProperty(ref _wsusOutput, value); }
+    public bool WsusLoading       { get => _wsusLoading;     set => SetProperty(ref _wsusLoading, value); }
+    public List<string> WsusAuOptions { get; } = ["Notify", "DownloadOnly", "DownloadAndInstall", "AllowUserConfig"];
+    public ICommand WsusApplyCommand   { get; private set; } = null!;
+    public ICommand WsusDisableCommand { get; private set; } = null!;
+    public ICommand WsusCheckCommand   { get; private set; } = null!;
+
     // ── Constructor ──────────────────────────────────────────────────────────
 
     private readonly CredentialService _creds;
@@ -1092,17 +1159,19 @@ public class ToolsViewModel : BaseViewModel
 
         DeployBrowseCommand = new Command(async () =>
         {
-            var result = await FilePicker.Default.PickAsync(new PickOptions
-            {
-                PickerTitle = "Select script to deploy",
-                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-                {
-                    { DevicePlatform.WinUI, new[] { ".ps1", ".bat", ".cmd", ".exe" } }
-                })
-            });
+#if WINDOWS
+            var path = await Task.Run(() => Win32FileDialog.OpenFile(
+                "Select script to deploy",
+                "Scripts & Executables\0*.ps1;*.bat;*.cmd;*.exe\0All Files\0*.*\0\0"));
+            if (string.IsNullOrEmpty(path)) return;
+            DeployScriptName = Path.GetFileName(path);
+            DeployScriptContent = await File.ReadAllTextAsync(path);
+#else
+            var result = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select script to deploy" });
             if (result == null) return;
             DeployScriptName = Path.GetFileName(result.FullPath);
             DeployScriptContent = await File.ReadAllTextAsync(result.FullPath);
+#endif
         });
 
         DeployRunCommand = new Command(async () =>
@@ -1617,9 +1686,14 @@ public class ToolsViewModel : BaseViewModel
 
         CopyBrowseCommand = new Command(async () =>
         {
+#if WINDOWS
+            var path = await Task.Run(() => Win32FileDialog.OpenFile("Select file to copy"));
+            if (!string.IsNullOrEmpty(path)) CopyLocalPath = path;
+#else
             var result = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select file to copy" });
             if (result == null) return;
             CopyLocalPath = result.FullPath;
+#endif
         });
 
         CopyRunCommand = new Command(async () =>
@@ -2354,6 +2428,135 @@ Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
             {
                 var result = await Task.Run(() => RunPsSync(PsScripts.UpdateLog(target)));
                 UpdateLogOutput = string.IsNullOrWhiteSpace(result) ? "No update log entries found." : result.Trim();
+            }));
+
+        // ── Auto Logon ───────────────────────────────────────────────────
+        AutoLogonEnableCommand = new Command(async () => await RunTool(
+            "Auto Logon", () => AutoLogonLoading = true, () => AutoLogonLoading = false,
+            async target =>
+            {
+                if (string.IsNullOrWhiteSpace(AutoLogonUsername)) { AutoLogonOutput = "Username is required."; return; }
+                if (!int.TryParse(AutoLogonCount, out var cnt) || cnt < 1) cnt = 1;
+                var result = await Task.Run(() => RunPsSync(PsScripts.AutoLogonEnable(target, AutoLogonUsername, AutoLogonPassword, cnt, AutoLogonScript)));
+                AutoLogonOutput = string.IsNullOrWhiteSpace(result) ? "Auto Logon enabled." : result.Trim();
+            }));
+
+        AutoLogonDisableCommand = new Command(async () => await RunTool(
+            "Auto Logon", () => AutoLogonLoading = true, () => AutoLogonLoading = false,
+            async target =>
+            {
+                var result = await Task.Run(() => RunPsSync(PsScripts.AutoLogonDisable(target)));
+                AutoLogonOutput = string.IsNullOrWhiteSpace(result) ? "Auto Logon disabled." : result.Trim();
+            }));
+
+        AutoLogonCheckCommand = new Command(async () => await RunTool(
+            "Auto Logon", () => AutoLogonLoading = true, () => AutoLogonLoading = false,
+            async target =>
+            {
+                var result = await Task.Run(() => RunPsSync(PsScripts.AutoLogonCheck(target)));
+                AutoLogonOutput = string.IsNullOrWhiteSpace(result) ? "Could not read auto logon settings." : result.Trim();
+            }));
+
+        // ── Default Printer (Set) ─────────────────────────────────────────
+        LoadPrintersForDefaultCommand = new Command(async () => await RunTool(
+            "Default Printer", () => SetPrinterLoading = true, () => SetPrinterLoading = false,
+            async target =>
+            {
+                var names = await RunPsJson<List<string>>(target, PsScripts.PrinterNames(target));
+                PrinterNames.Clear();
+                foreach (var n in names ?? []) PrinterNames.Add(n);
+                SetPrinterOutput = $"{PrinterNames.Count} printer(s) loaded.";
+            }));
+
+        SetDefaultPrinterCommand = new Command(async () => await RunTool(
+            "Default Printer", () => SetPrinterLoading = true, () => SetPrinterLoading = false,
+            async target =>
+            {
+                if (string.IsNullOrWhiteSpace(SelectedPrinterName)) { SetPrinterOutput = "Select a printer first."; return; }
+                var result = await Task.Run(() => RunPsSync(PsScripts.SetDefaultPrinter(target, SelectedPrinterName)));
+                SetPrinterOutput = string.IsNullOrWhiteSpace(result) ? $"'{SelectedPrinterName}' set as default." : result.Trim();
+            }));
+
+        // ── Trusted Sites ─────────────────────────────────────────────────
+        AddTrustedSiteCommand = new Command(async () => await RunTool(
+            "Trusted Sites", () => TrustedSiteLoading = true, () => TrustedSiteLoading = false,
+            async target =>
+            {
+                if (string.IsNullOrWhiteSpace(TrustedSiteDomain)) { TrustedSiteOutput = "Enter a domain first."; return; }
+                var result = await Task.Run(() => RunPsSync(PsScripts.AddTrustedSite(target, TrustedSiteDomain, TrustedSiteHttp)));
+                TrustedSiteOutput = string.IsNullOrWhiteSpace(result) ? $"Added: {TrustedSiteDomain}" : result.Trim();
+            }));
+
+        // ── Quick Access ──────────────────────────────────────────────────
+        QuickAccessBrowseCommand = new Command(async () =>
+        {
+#if WINDOWS
+            var folder = await Task.Run(() => Win32FileDialog.BrowseFolder("Select folder for Quick Access"));
+            if (!string.IsNullOrEmpty(folder)) QuickAccessPath = folder;
+#endif
+        });
+
+        QuickAccessPinCommand = new Command(async () => await RunTool(
+            "Quick Access", () => QuickAccessLoading = true, () => QuickAccessLoading = false,
+            async _ =>
+            {
+                if (string.IsNullOrWhiteSpace(QuickAccessPath)) { QuickAccessOutput = "Enter a folder path first."; return; }
+                var result = await Task.Run(() => RunPsSync(PsScripts.QuickAccessPin(QuickAccessPath)));
+                QuickAccessOutput = string.IsNullOrWhiteSpace(result) ? $"Pinned: {QuickAccessPath}" : result.Trim();
+            }));
+
+        QuickAccessUnpinCommand = new Command(async () => await RunTool(
+            "Quick Access", () => QuickAccessLoading = true, () => QuickAccessLoading = false,
+            async _ =>
+            {
+                if (string.IsNullOrWhiteSpace(QuickAccessPath)) { QuickAccessOutput = "Enter a folder path first."; return; }
+                var result = await Task.Run(() => RunPsSync(PsScripts.QuickAccessUnpin(QuickAccessPath)));
+                QuickAccessOutput = string.IsNullOrWhiteSpace(result) ? $"Unpinned: {QuickAccessPath}" : result.Trim();
+            }));
+
+        // ── Windows Key ───────────────────────────────────────────────────
+        WinKeyInstallCommand = new Command(async () => await RunTool(
+            "Windows Key", () => WinKeyLoading = true, () => WinKeyLoading = false,
+            async target =>
+            {
+                var key = WinKeyValue.Trim();
+                if (key.Length < 5) { WinKeyOutput = "Enter a valid product key."; return; }
+                var result = await Task.Run(() => RunPsSync(PsScripts.WinKeyInstall(target, key)));
+                WinKeyOutput = string.IsNullOrWhiteSpace(result) ? "Key installed." : result.Trim();
+            }));
+
+        WinKeyActivateCommand = new Command(async () => await RunTool(
+            "Windows Key", () => WinKeyLoading = true, () => WinKeyLoading = false,
+            async target =>
+            {
+                var result = await Task.Run(() => RunPsSync(PsScripts.WinKeyActivate(target)));
+                WinKeyOutput = string.IsNullOrWhiteSpace(result) ? "Activation attempted." : result.Trim();
+            }));
+
+        // ── WSUS Client ───────────────────────────────────────────────────
+        WsusApplyCommand = new Command(async () => await RunTool(
+            "WSUS Client", () => WsusLoading = true, () => WsusLoading = false,
+            async target =>
+            {
+                if (string.IsNullOrWhiteSpace(WsusServerUrl)) { WsusOutput = "Enter the WSUS server URL first."; return; }
+                var result = await Task.Run(() => RunPsSync(PsScripts.WsusApply(target, WsusServerUrl, WsusTargetGroup, WsusAuOption)));
+                WsusOutput = string.IsNullOrWhiteSpace(result) ? "WSUS settings applied." : result.Trim();
+            }));
+
+        WsusDisableCommand = new Command(async () => await RunTool(
+            "WSUS Client", () => WsusLoading = true, () => WsusLoading = false,
+            async target =>
+            {
+                var result = await Task.Run(() => RunPsSync(PsScripts.WsusDisable(target)));
+                WsusOutput = string.IsNullOrWhiteSpace(result) ? "WSUS disabled — machine will use Microsoft Update." : result.Trim();
+            }));
+
+        WsusCheckCommand = new Command(async () => await RunTool(
+            "WSUS Client", () => WsusLoading = true, () => WsusLoading = false,
+            async target =>
+            {
+                var result = await Task.Run(() => RunPsSync(PsScripts.WsusCheck(target)));
+                WsusOutput = string.IsNullOrWhiteSpace(result) ? "No WSUS settings found." : result.Trim();
             }));
 
         // Pre-fill credential fields from the shared service on startup
@@ -3638,6 +3841,122 @@ internal static class PsScripts
             $"    }} | ForEach-Object {{ \"$_\" }}\n" +
             $"}}\n";
     }
+
+    public static string AutoLogonEnable(string target, string username, string password, int count, string script) =>
+        TextScriptWithTarget(target, $$"""
+            $reg = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+            Set-ItemProperty $reg "AutoAdminLogon" -Value "1" -Type String
+            Set-ItemProperty $reg "DefaultUsername" -Value "{{username}}" -Type String
+            Set-ItemProperty $reg "DefaultPassword" -Value "{{password}}" -Type String
+            Set-ItemProperty $reg "AutoLogonCount"  -Value {{count}} -Type DWord
+            if ("{{script}}") {
+                Set-ItemProperty "HKLM:\SOFTWARE\Microsoft\Windows\CurrentVersion\RunOnce" "(Default)" -Value "{{script}}" -Type String
+            }
+            "Done"
+        """);
+
+    public static string AutoLogonDisable(string target) =>
+        TextScriptWithTarget(target, """
+            $reg = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+            Set-ItemProperty $reg "AutoAdminLogon" -Value "0" -Type String
+            Remove-ItemProperty $reg "DefaultPassword" -ErrorAction SilentlyContinue
+            Remove-ItemProperty $reg "DefaultUsername" -ErrorAction SilentlyContinue
+            Remove-ItemProperty $reg "AutoLogonCount"  -ErrorAction SilentlyContinue
+            "Done"
+        """);
+
+    public static string AutoLogonCheck(string target) =>
+        TextScriptWithTarget(target, """
+            $reg = "HKLM:\SOFTWARE\Microsoft\Windows NT\CurrentVersion\Winlogon"
+            $v = Get-ItemProperty $reg -ErrorAction SilentlyContinue
+            "AutoAdminLogon : $($v.AutoAdminLogon)"
+            "DefaultUsername: $($v.DefaultUsername)"
+            "AutoLogonCount : $($v.AutoLogonCount)"
+        """);
+
+    public static string PrinterNames(string target) => ScriptWithTarget(target, """
+            Get-WmiObject Win32_Printer |
+                Select-Object -ExpandProperty Name |
+                Sort-Object
+        """, 1);
+
+    public static string SetDefaultPrinter(string target, string name) =>
+        TextScriptWithTarget(target, $$"""
+            $p = Get-WmiObject Win32_Printer | Where-Object { $_.Name -eq "{{name}}" }
+            if ($p) { $p.SetDefaultPrinter() | Out-Null; "OK" }
+            else    { "Printer not found: {{name}}" }
+        """);
+
+    public static string AddTrustedSite(string target, string domain, bool useHttp) =>
+        TextScriptWithTarget(target, $$"""
+            $base = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains"
+            New-Item -Path "$base\{{domain}}" -Force | Out-Null
+            Set-ItemProperty -Path "$base\{{domain}}" -Name "{{(useHttp ? "http" : "https")}}" -Value 2 -Type DWord
+            "Added {{domain}} to Trusted Sites"
+        """);
+
+    public static string QuickAccessPin(string path) =>
+        "$ErrorActionPreference = 'SilentlyContinue'\n" +
+        "$qa = New-Object -ComObject shell.application\n" +
+        $"if (-not (Test-Path '{path}')) {{ \"Path not found: {path}\"; exit }}\n" +
+        $"$qa.Namespace('{path}').Self.InvokeVerb('pintohome')\n";
+
+    public static string QuickAccessUnpin(string path) =>
+        "$ErrorActionPreference = 'SilentlyContinue'\n" +
+        "$qa = New-Object -ComObject shell.application\n" +
+        $"$item = $qa.Namespace('shell:::{{679f85cb-0220-4080-b29b-5540cc05aab6}}').Items() | Where-Object {{ $_.Path -eq '{path}' }}\n" +
+        $"if ($item) {{ $item.InvokeVerb('unpinfromhome') }} else {{ \"Not pinned: {path}\" }}\n";
+
+    public static string WinKeyInstall(string target, string key) =>
+        TextScriptWithTarget(target, $"""
+            cscript //nologo "$env:SystemRoot\system32\slmgr.vbs" -ipk {key} 2>&1
+        """);
+
+    public static string WinKeyActivate(string target) =>
+        TextScriptWithTarget(target, """
+            cscript //nologo "$env:SystemRoot\system32\slmgr.vbs" /ato 2>&1
+        """);
+
+    public static string WsusApply(string target, string serverUrl, string targetGroup, string auOption) =>
+        TextScriptWithTarget(target, $$"""
+            $reg    = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
+            $regAU  = "$reg\AU"
+            New-Item -Path $reg   -Force | Out-Null
+            New-Item -Path $regAU -Force | Out-Null
+            Set-ItemProperty $reg "WUServer"       -Value "{{serverUrl}}" -Type String
+            Set-ItemProperty $reg "WUStatusServer" -Value "{{serverUrl}}" -Type String
+            if ("{{targetGroup}}") {
+                Set-ItemProperty $reg "TargetGroupEnabled" -Value 1 -Type DWord
+                Set-ItemProperty $reg "TargetGroup"        -Value "{{targetGroup}}" -Type String
+            }
+            Set-ItemProperty $regAU "UseWUServer" -Value 1 -Type DWord
+            $auMap = @{Notify=2;DownloadOnly=3;DownloadAndInstall=4;AllowUserConfig=5}
+            $opt = $auMap["{{auOption}}"]
+            if ($opt) { Set-ItemProperty $regAU "AUOptions" -Value $opt -Type DWord }
+            "WSUS settings applied. Server: {{serverUrl}}"
+        """);
+
+    public static string WsusDisable(string target) =>
+        TextScriptWithTarget(target, """
+            $reg   = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
+            $regAU = "$reg\AU"
+            if (Test-Path $regAU) { Set-ItemProperty $regAU "UseWUServer" -Value 0 -Type DWord }
+            "WSUS disabled."
+        """);
+
+    public static string WsusCheck(string target) =>
+        TextScriptWithTarget(target, """
+            $reg   = "HKLM:\SOFTWARE\Policies\Microsoft\Windows\WindowsUpdate"
+            $regAU = "$reg\AU"
+            if (-not (Test-Path $reg)) { "No WSUS policy registry keys found."; exit }
+            $wuv  = Get-ItemProperty $reg   -ErrorAction SilentlyContinue
+            $auv  = Get-ItemProperty $regAU -ErrorAction SilentlyContinue
+            $auMap = @{2='Notify';3='DownloadOnly';4='DownloadAndInstall';5='AllowUserConfig'}
+            "WUServer      : $($wuv.WUServer)"
+            "UseWUServer   : $($auv.UseWUServer)"
+            "TargetGroup   : $($wuv.TargetGroup)"
+            "AUOptions     : $($auMap[$auv.AUOptions]) ($($auv.AUOptions))"
+        """);
 }
 
 internal static class JsonElementExtensions2

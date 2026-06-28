@@ -43,6 +43,10 @@
                 <Button Text="Startup Programs" x:Name="TabStartup"       Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
                 <Button Text="Remote PS" x:Name="TabRemotePsSystem" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
                 <Button Text="PS Runner" x:Name="TabPsRunSystem"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
+                <Button Text="Auto Logon"     x:Name="TabAutoLogon"    Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
+                <Button Text="Default Printer" x:Name="TabSetPrinter"  Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
+                <Button Text="Trusted Sites"  x:Name="TabTrustedSites" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
+                <Button Text="Quick Access"   x:Name="TabQuickAccess"  Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
                 <!-- Users -->
                 <Button Text="Local Users &amp; Groups" x:Name="TabLocalUsers"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Logged On User"           x:Name="TabLoggedOn"         Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
@@ -87,6 +91,8 @@
                 <Button Text="Pending Updates" x:Name="TabPendingUpdates"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Run Updates"     x:Name="TabRunUpdates"      Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Update Log"      x:Name="TabUpdateLog"       Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Windows Key"  x:Name="TabWinKey"     Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="WSUS Client"  x:Name="TabWsusClient" Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
             </HorizontalStackLayout>
         </ScrollView>
 
@@ -1719,6 +1725,159 @@
                 </Grid>
                 <Border Grid.Row="5" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="10">
                     <ScrollView><Label Text="{Binding WifiSetupOutput}" FontFamily="Courier New" FontSize="12"/></ScrollView>
+                </Border>
+            </Grid>
+
+
+            <!-- ── Auto Logon ──────────────────────────────────────────────────── -->
+            <Grid x:Name="PanelAutoLogon" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="80,*,80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Username:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="1" Text="{Binding AutoLogonUsername}" Placeholder="DOMAIN\user or user"/>
+                    <Label Grid.Column="2" Text="Count:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="3" Text="{Binding AutoLogonCount}" Placeholder="1" Keyboard="Numeric"/>
+                </Grid>
+                <Grid Grid.Row="1" ColumnDefinitions="80,*,80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Password:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="1" Text="{Binding AutoLogonPassword}" IsPassword="True"/>
+                    <Label Grid.Column="2" Text="Run Script:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="3" Text="{Binding AutoLogonScript}" Placeholder="C:\path\to\script.bat (optional)"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,Auto,Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Enable Auto Logon" Command="{Binding AutoLogonEnableCommand}"
+                            BackgroundColor="#228B22" Padding="16,8"/>
+                    <Button Grid.Column="1" Text="Disable" Command="{Binding AutoLogonDisableCommand}"
+                            BackgroundColor="#8B0000" Padding="16,8"/>
+                    <Button Grid.Column="2" Text="Check Status" Command="{Binding AutoLogonCheckCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="3" IsRunning="{Binding AutoLogonLoading}"
+                                       IsVisible="{Binding AutoLogonLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="3" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
+                    <ScrollView><Label Text="{Binding AutoLogonOutput}" FontFamily="Courier New" FontSize="12" TextColor="#00FF41"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Default Printer ────────────────────────────────────────────── -->
+            <Grid x:Name="PanelSetPrinter" RowDefinitions="Auto,*,Auto" RowSpacing="8" Padding="4" IsVisible="False">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Load Printers" Command="{Binding LoadPrintersForDefaultCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding SetPrinterLoading}"
+                                       IsVisible="{Binding SetPrinterLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeShape="RoundRectangle 4" Padding="4">
+                    <ListView ItemsSource="{Binding PrinterNames}"
+                              SelectedItem="{Binding SelectedPrinterName}"
+                              SelectionMode="Single">
+                        <ListView.ItemTemplate>
+                            <DataTemplate>
+                                <TextCell Text="{Binding .}"/>
+                            </DataTemplate>
+                        </ListView.ItemTemplate>
+                    </ListView>
+                </Border>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Set as Default" Command="{Binding SetDefaultPrinterCommand}"
+                            BackgroundColor="#228B22" Padding="16,8"/>
+                    <Label Grid.Column="1" Text="{Binding SetPrinterOutput}" VerticalOptions="Center" TextColor="#2E7D32"/>
+                </Grid>
+            </Grid>
+
+            <!-- ── Trusted Sites ──────────────────────────────────────────────── -->
+            <Grid x:Name="PanelTrustedSites" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Adds sites to the IE/Edge Trusted Sites zone (HKCU registry). Runs on the target machine."
+                       TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding TrustedSiteDomain}" Placeholder="e.g. contoso.com or intranet.local"/>
+                    <CheckBox Grid.Column="1" IsChecked="{Binding TrustedSiteHttp}" VerticalOptions="Center"/>
+                    <Label Grid.Column="2" Text="HTTP (default = HTTPS)" VerticalOptions="Center" FontSize="12"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Add Site" Command="{Binding AddTrustedSiteCommand}"
+                            BackgroundColor="#228B22" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding TrustedSiteLoading}"
+                                       IsVisible="{Binding TrustedSiteLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="3" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
+                    <ScrollView><Label Text="{Binding TrustedSiteOutput}" FontFamily="Courier New" FontSize="12" TextColor="#00FF41"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Quick Access ───────────────────────────────────────────────── -->
+            <Grid x:Name="PanelQuickAccess" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Pin or unpin folders from Quick Access in File Explorer. Runs on this machine (COM shell, local only)."
+                       TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding QuickAccessPath}" Placeholder="\\server\share or C:\path\to\folder"/>
+                    <Button Grid.Column="1" Text="Browse" Command="{Binding QuickAccessBrowseCommand}"
+                            BackgroundColor="#555" Padding="14,8"/>
+                    <Button Grid.Column="2" Text="Pin" Command="{Binding QuickAccessPinCommand}"
+                            BackgroundColor="#228B22" Padding="16,8"/>
+                    <Button Grid.Column="3" Text="Unpin" Command="{Binding QuickAccessUnpinCommand}"
+                            BackgroundColor="#8B0000" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="4" IsRunning="{Binding QuickAccessLoading}"
+                                       IsVisible="{Binding QuickAccessLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="2" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
+                    <ScrollView><Label Text="{Binding QuickAccessOutput}" FontFamily="Courier New" FontSize="12" TextColor="#00FF41"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Windows Key ────────────────────────────────────────────────── -->
+            <Grid x:Name="PanelWinKey" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Install a new Windows product key and activate via slmgr. Runs on the target machine."
+                       TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="70,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Product Key:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding WinKeyValue}" Placeholder="XXXXX-XXXXX-XXXXX-XXXXX-XXXXX"
+                           FontFamily="Courier New" MaxLength="29"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Install Key" Command="{Binding WinKeyInstallCommand}"
+                            BackgroundColor="#228B22" Padding="16,8"/>
+                    <Button Grid.Column="1" Text="Activate" Command="{Binding WinKeyActivateCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="2" IsRunning="{Binding WinKeyLoading}"
+                                       IsVisible="{Binding WinKeyLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="3" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
+                    <ScrollView><Label Text="{Binding WinKeyOutput}" FontFamily="Courier New" FontSize="12" TextColor="#00FF41"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── WSUS Client ────────────────────────────────────────────────── -->
+            <Grid x:Name="PanelWsusClient" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Configure Windows Update Server (WSUS) client settings via registry. Runs on the target machine."
+                       TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Server URL:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding WsusServerUrl}" Placeholder="http://wsus.contoso.com:8530"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="90,*,80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Target Group:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="1" Text="{Binding WsusTargetGroup}" Placeholder="e.g. Workstations (optional)"/>
+                    <Label Grid.Column="2" Text="AU Option:" VerticalOptions="Center"/>
+                    <Picker Grid.Column="3" ItemsSource="{Binding WsusAuOptions}" SelectedItem="{Binding WsusAuOption}"/>
+                </Grid>
+                <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Apply WSUS" Command="{Binding WsusApplyCommand}"
+                            BackgroundColor="#228B22" Padding="16,8"/>
+                    <Button Grid.Column="1" Text="Disable WSUS" Command="{Binding WsusDisableCommand}"
+                            BackgroundColor="#8B0000" Padding="16,8"/>
+                    <Button Grid.Column="2" Text="Check Status" Command="{Binding WsusCheckCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="3" IsRunning="{Binding WsusLoading}"
+                                       IsVisible="{Binding WsusLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="4" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
+                    <ScrollView><Label Text="{Binding WsusOutput}" FontFamily="Courier New" FontSize="12" TextColor="#00FF41"/></ScrollView>
                 </Border>
             </Grid>
 

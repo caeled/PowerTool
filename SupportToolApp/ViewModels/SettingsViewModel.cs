@@ -1,6 +1,7 @@
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using SupportToolApp.Config;
+using SupportToolApp.Helpers;
 using SupportToolApp.Services;
 
 namespace SupportToolApp.ViewModels;
@@ -125,29 +126,29 @@ public class SettingsViewModel : BaseViewModel
 
         BrowseLogoCommand = new Command(async () =>
         {
+#if WINDOWS
+            var path = await Task.Run(() => Win32FileDialog.OpenFile(
+                "Select a logo image",
+                "Image Files\0*.png;*.jpg;*.jpeg;*.bmp;*.gif\0All Files\0*.*\0\0"));
+            if (!string.IsNullOrEmpty(path)) LogoPath = path;
+#else
             var result = await FilePicker.Default.PickAsync(new PickOptions
             {
                 PickerTitle = "Select a logo image",
                 FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
                 {
-                    { DevicePlatform.WinUI, new[] { ".png", ".jpg", ".jpeg", ".bmp", ".gif" } },
                     { DevicePlatform.macOS, new[] { "png", "jpg", "jpeg", "bmp", "gif" } },
                 })
             });
             if (result != null) LogoPath = result.FullPath;
+#endif
         });
 
         BrowseFolderCommand = new Command(async () =>
         {
 #if WINDOWS
-            var picker = new Windows.Storage.Pickers.FolderPicker();
-            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Desktop;
-            picker.FileTypeFilter.Add("*");
-            var nativeWindow = Application.Current!.Windows[0].Handler?.PlatformView as MauiWinUIWindow;
-            var hwnd = nativeWindow?.WindowHandle ?? IntPtr.Zero;
-            if (hwnd != IntPtr.Zero) WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
-            var folder = await picker.PickSingleFolderAsync();
-            if (folder != null) LocalFolder = folder.Path;
+            var folder = await Task.Run(() => Win32FileDialog.BrowseFolder("Select local folder"));
+            if (!string.IsNullOrEmpty(folder)) LocalFolder = folder;
 #else
             var result = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Navigate to your folder and pick any file inside it" });
             if (result != null) LocalFolder = Path.GetDirectoryName(result.FullPath) ?? result.FullPath;
