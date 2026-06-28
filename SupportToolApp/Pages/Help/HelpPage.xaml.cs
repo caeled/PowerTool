@@ -122,6 +122,39 @@ public partial class HelpPage : ContentPage
 
         new("GP Update", "Remote",
             "Forces a Group Policy refresh (gpupdate /force) on the target machine."),
+
+        new("Hosts File", "Remote",
+            "View, add, and remove entries in the hosts file (C:\\Windows\\System32\\drivers\\etc\\hosts) on the target machine. Accesses via admin share (\\\\target\\C$\\...). Target must have admin shares enabled.\n\nView Hosts File: loads the current contents.\nAdd Entry: appends an IP + hostname line.\nRemove Entry: deletes any line containing the specified hostname or IP."),
+
+        new("Auto Logon", "System",
+            "Configures Windows automatic logon by writing credentials to the Winlogon registry key. Enable stores the username, password, and optional logon count. Disable clears the auto-logon settings. Requires elevated rights on the target."),
+
+        new("Default Printer", "System",
+            "Load the list of printers on the target machine and set one as the default. Select a printer from the list and click Set as Default."),
+
+        new("Trusted Sites", "System",
+            "Adds a domain to Internet Explorer / Edge's Trusted Sites zone in the registry (HKCU). Supports both http:// and https://. Useful for internal web apps that need trusted zone access."),
+
+        new("Quick Access", "System",
+            "Pins or unpins a folder from Windows Quick Access (the left-hand panel in File Explorer). Enter the full local folder path on the target machine.\n\nPin: adds the folder to Quick Access.\nUnpin: removes it. Uses the Windows Shell COM object."),
+
+        new("Disk Cleanup", "System",
+            "Removes old temporary files from the target machine. You can select which locations to clean: Windows Temp, SoftwareDistribution (update cache), User Temp folders, IIS Logs, and the Recycle Bin. Files newer than the specified number of days are kept.\n\nIMPORTANT: Stops the Windows Update service briefly to clear the SoftwareDistribution folder."),
+
+        new("Keep Alive", "System",
+            "Prevents this machine from sleeping or locking by telling Windows the system is in use (SetThreadExecutionState API). Useful during large downloads or remote sessions. Set a duration in hours and click Start. No keystrokes are sent. Click Stop to end early."),
+
+        new("Reset AD Password", "Users",
+            "Resets an Active Directory user account password. Enter the SamAccountName and new password. Optionally force a password change at next logon or unlock the account. Requires the ActiveDirectory PowerShell module on this machine and domain connectivity."),
+
+        new("Windows Key", "Deploy",
+            "Installs or activates a Windows product key on the target machine using slmgr.vbs.\n\nInstall: runs slmgr.vbs -ipk to install the key.\nActivate: runs slmgr.vbs /ato to activate Windows online."),
+
+        new("WSUS Client", "Deploy",
+            "Configures or checks Windows Update Server (WSUS) client settings via registry on the target machine.\n\nApply WSUS: writes the server URL, optional target group, and automatic update option.\nDisable WSUS: clears the UseWUServer flag so the machine uses Microsoft Update directly.\nCheck Status: reads the current registry settings."),
+
+        new("Network Monitor", "General",
+            "Live ping dashboard for monitoring multiple hosts simultaneously. Add hostnames or IP addresses to the list, set a polling interval, and click Start Monitoring. Each host displays Online/Offline status, ping response time, and the last check time.\n\nAccess from the left-side flyout menu under Network Monitor."),
     ];
 
     private List<HelpTopic> _filtered;
