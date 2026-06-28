@@ -301,10 +301,7 @@ public class SystemInfoViewModel : BaseViewModel
             var error  = proc.StandardError.ReadToEnd();
             proc.WaitForExit();
             if (string.IsNullOrWhiteSpace(output) && !string.IsNullOrWhiteSpace(error))
-            {
-                var log = Path.Combine(Path.GetTempPath(), "si_debug_last.txt");
-                File.WriteAllText(log, $"=== SCRIPT ===\n{script}\n\n=== ERROR ===\n{error}");
-            }
+                try { File.WriteAllText(Path.Combine(Path.GetTempPath(), "si_debug_last.txt"), $"=== SCRIPT ===\n{script}\n\n=== ERROR ===\n{error}"); } catch { }
             return output.Trim();
         }
         finally { try { File.Delete(tmp); } catch { } }
@@ -607,13 +604,19 @@ public class SystemInfoViewModel : BaseViewModel
         var body = $"$n = {count}\n$nMax = {count * 20 + 50}\n" + """
             $ErrorActionPreference = 'SilentlyContinue'
             $cutoff  = (Get-Date).AddDays(-5)
-            $typeMap = @{2='Interactive';7='Unlock';10='Remote (RDP)';11='Cached'}
+            $typeMap = @{2='Interactive';3='Network';4='Batch';5='Service';7='Unlock';8='Network (Cleartext)';9='New Credentials';10='Remote (RDP)';11='Cached Interactive';12='Cached Remote';13='Cached Unlock'}
+            $errMsg  = $null
             $events  = try {
-                Get-WinEvent -LogName Security -FilterHashtable @{Id=4624; StartTime=$cutoff} -MaxEvents $nMax -ErrorAction Stop |
-                    Where-Object { $_.Properties[8].Value -in 2,7,10,11 } |
+                Get-WinEvent -FilterHashtable @{LogName='Security'; Id=4624} -MaxEvents $nMax -ErrorAction Stop |
+                    Where-Object {
+                        $_.Properties[5].Value -notmatch '^\$' -and
+                        $_.Properties[5].Value -ne 'ANONYMOUS LOGON' -and
+                        $_.Properties[5].Value -ne '-'
+                    } |
                     Select-Object -First $n
-            } catch { @() }
+            } catch { $errMsg = $_.Exception.Message; @() }
             $events  = @($events)
+            if ($errMsg) { Write-Error "LOGIN_ERR: $errMsg" }
             @($events | ForEach-Object {
                 $user   = $_.Properties[5].Value
                 $domain = $_.Properties[6].Value
