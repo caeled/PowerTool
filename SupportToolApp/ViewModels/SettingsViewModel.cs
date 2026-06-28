@@ -8,8 +8,14 @@ namespace SupportToolApp.ViewModels;
 public class SettingsViewModel : BaseViewModel
 {
     private readonly IAuthService _auth;
+    private readonly CredentialService _creds;
 
     private string _domain, _tenantId, _clientId, _adminUpn, _teamViewerPath, _sccmConsolePath;
+    private string _deployToolName, _deployToolUrl;
+    private string _ql1Name, _ql1Url, _ql2Name, _ql2Url, _ql3Name, _ql3Url, _ql4Name, _ql4Url;
+    private string _folderName, _localFolder, _libraryName, _libraryUrl;
+    private string _logoPath, _logoInitials, _logoColor;
+    private string _newServerName = "", _newServerHost = "";
     private bool _useMockData;
     private string _statusMessage = "";
     private bool _hasStatus;
@@ -22,6 +28,29 @@ public class SettingsViewModel : BaseViewModel
     public string AdminUpn { get => _adminUpn; set => SetProperty(ref _adminUpn, value); }
     public string TeamViewerPath { get => _teamViewerPath; set => SetProperty(ref _teamViewerPath, value); }
     public string SccmConsolePath { get => _sccmConsolePath; set => SetProperty(ref _sccmConsolePath, value); }
+    public string DeployToolName { get => _deployToolName; set => SetProperty(ref _deployToolName, value); }
+    public string DeployToolUrl  { get => _deployToolUrl;  set => SetProperty(ref _deployToolUrl, value); }
+
+    public string Ql1Name { get => _ql1Name; set => SetProperty(ref _ql1Name, value); }
+    public string Ql1Url  { get => _ql1Url;  set => SetProperty(ref _ql1Url, value); }
+    public string Ql2Name { get => _ql2Name; set => SetProperty(ref _ql2Name, value); }
+    public string Ql2Url  { get => _ql2Url;  set => SetProperty(ref _ql2Url, value); }
+    public string Ql3Name { get => _ql3Name; set => SetProperty(ref _ql3Name, value); }
+    public string Ql3Url  { get => _ql3Url;  set => SetProperty(ref _ql3Url, value); }
+    public string Ql4Name { get => _ql4Name; set => SetProperty(ref _ql4Name, value); }
+    public string Ql4Url  { get => _ql4Url;  set => SetProperty(ref _ql4Url, value); }
+
+    public string FolderName  { get => _folderName;  set => SetProperty(ref _folderName, value); }
+    public string LocalFolder { get => _localFolder; set => SetProperty(ref _localFolder, value); }
+    public string LibraryName { get => _libraryName; set => SetProperty(ref _libraryName, value); }
+    public string LibraryUrl  { get => _libraryUrl;  set => SetProperty(ref _libraryUrl, value); }
+
+    public string LogoPath     { get => _logoPath;     set => SetProperty(ref _logoPath, value); }
+    public string LogoInitials { get => _logoInitials; set => SetProperty(ref _logoInitials, value); }
+    public string LogoColor    { get => _logoColor;    set => SetProperty(ref _logoColor, value); }
+
+    public string NewServerName { get => _newServerName; set => SetProperty(ref _newServerName, value); }
+    public string NewServerHost { get => _newServerHost; set => SetProperty(ref _newServerHost, value); }
     public bool IsSigningIn { get => _isSigningIn; set => SetProperty(ref _isSigningIn, value); }
     public bool RestartRequired { get => _restartRequired; set => SetProperty(ref _restartRequired, value); }
 
@@ -66,9 +95,13 @@ public class SettingsViewModel : BaseViewModel
     public ICommand SignInCommand { get; }
     public ICommand SignOutCommand { get; }
 
-    public SettingsViewModel(IAuthService auth)
+    public ICommand BrowseLogoCommand { get; }
+    public ICommand BrowseFolderCommand { get; }
+
+    public SettingsViewModel(IAuthService auth, CredentialService creds)
     {
         _auth = auth;
+        _creds = creds;
 
         var cfg = AppConfig.Instance;
         _domain = cfg.Domain;
@@ -77,8 +110,49 @@ public class SettingsViewModel : BaseViewModel
         _adminUpn = cfg.AdminUpn;
         _teamViewerPath = cfg.TeamViewerPath;
         _sccmConsolePath = cfg.SccmConsolePath;
+        _deployToolName = cfg.DeployToolName;
+        _deployToolUrl  = cfg.DeployToolUrl;
         _useMockData = cfg.UseMockData;
         foreach (var s in cfg.Servers) Servers.Add(s);
+
+        _ql1Name = creds.QuickLink1Name; _ql1Url = creds.QuickLink1Url;
+        _ql2Name = creds.QuickLink2Name; _ql2Url = creds.QuickLink2Url;
+        _ql3Name = creds.QuickLink3Name; _ql3Url = creds.QuickLink3Url;
+        _ql4Name = creds.QuickLink4Name; _ql4Url = creds.QuickLink4Url;
+        _folderName  = creds.FolderName;  _localFolder = creds.LocalFolder;
+        _libraryName = creds.LibraryName; _libraryUrl  = creds.LibraryUrl;
+        _logoPath = creds.LogoPath; _logoInitials = creds.LogoInitials; _logoColor = creds.LogoColor;
+
+        BrowseLogoCommand = new Command(async () =>
+        {
+            var result = await FilePicker.Default.PickAsync(new PickOptions
+            {
+                PickerTitle = "Select a logo image",
+                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
+                {
+                    { DevicePlatform.WinUI, new[] { ".png", ".jpg", ".jpeg", ".bmp", ".gif" } },
+                    { DevicePlatform.macOS, new[] { "png", "jpg", "jpeg", "bmp", "gif" } },
+                })
+            });
+            if (result != null) LogoPath = result.FullPath;
+        });
+
+        BrowseFolderCommand = new Command(async () =>
+        {
+#if WINDOWS
+            var picker = new Windows.Storage.Pickers.FolderPicker();
+            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.Desktop;
+            picker.FileTypeFilter.Add("*");
+            var nativeWindow = Application.Current!.Windows[0].Handler?.PlatformView as MauiWinUIWindow;
+            var hwnd = nativeWindow?.WindowHandle ?? IntPtr.Zero;
+            if (hwnd != IntPtr.Zero) WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
+            var folder = await picker.PickSingleFolderAsync();
+            if (folder != null) LocalFolder = folder.Path;
+#else
+            var result = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Navigate to your folder and pick any file inside it" });
+            if (result != null) LocalFolder = Path.GetDirectoryName(result.FullPath) ?? result.FullPath;
+#endif
+        });
 
         SaveCommand = new Command(() =>
         {
@@ -89,16 +163,33 @@ public class SettingsViewModel : BaseViewModel
             c.AdminUpn = AdminUpn;
             c.TeamViewerPath = TeamViewerPath;
             c.SccmConsolePath = SccmConsolePath;
+            c.DeployToolName = string.IsNullOrWhiteSpace(DeployToolName) ? "Deployment Tool" : DeployToolName;
+            c.DeployToolUrl  = DeployToolUrl ?? "";
             c.UseMockData = UseMockData;
             c.Servers = [.. Servers];
             c.Save();
+
+            _creds.SetQuickLinks(Ql1Name, Ql1Url, Ql2Name, Ql2Url, Ql3Name, Ql3Url, Ql4Name, Ql4Url);
+            _creds.FolderName   = FolderName;
+            _creds.LocalFolder  = LocalFolder;
+            _creds.LibraryName  = LibraryName;
+            _creds.LibraryUrl   = string.IsNullOrWhiteSpace(LibraryUrl) ? "https://en.wikipedia.org/wiki/Main_Page" : LibraryUrl;
+            _creds.LogoPath     = LogoPath;
+            _creds.LogoInitials = string.IsNullOrWhiteSpace(LogoInitials) ? "IT" : LogoInitials;
+            _creds.LogoColor    = string.IsNullOrWhiteSpace(LogoColor) ? "#0078D4" : LogoColor;
+
             StatusMessage = RestartRequired
                 ? "Settings saved — restart the app to apply data source change."
                 : "Settings saved.";
         });
 
         AddServerCommand = new Command(() =>
-            Servers.Add(new ServerEntry { Name = "New Server", Host = "server.contoso.com" }));
+        {
+            if (string.IsNullOrWhiteSpace(NewServerName) || string.IsNullOrWhiteSpace(NewServerHost)) return;
+            Servers.Add(new ServerEntry { Name = NewServerName.Trim(), Host = NewServerHost.Trim() });
+            NewServerName = "";
+            NewServerHost = "";
+        });
 
         RemoveServerCommand = new Command<ServerEntry>(s => Servers.Remove(s));
 

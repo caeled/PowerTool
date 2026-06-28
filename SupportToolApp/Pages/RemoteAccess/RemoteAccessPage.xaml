@@ -76,7 +76,7 @@
                 <Label Text="Remote Tools" FontAttributes="Bold" FontSize="15"/>
 
                 <Button Text="TeamViewer" Command="{Binding TeamViewerCommand}" BackgroundColor="SteelBlue"/>
-                <Button Text="SCCM / ConfigMgr Console" Command="{Binding SccmCommand}" BackgroundColor="SteelBlue"/>
+                <Button Text="{Binding DeployToolName}" Command="{Binding DeployToolCommand}" BackgroundColor="SteelBlue"/>
                 <Button Text="Computer Management" Command="{Binding ComputerMgmtCommand}" BackgroundColor="SteelBlue"/>
                 <Button Text="Event Viewer (Remote)" Command="{Binding EventViewerCommand}" BackgroundColor="SteelBlue"/>
 

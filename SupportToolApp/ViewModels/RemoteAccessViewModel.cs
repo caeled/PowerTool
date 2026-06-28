@@ -47,11 +47,14 @@ public class RemoteAccessViewModel : BaseViewModel
     public bool HasStatus { get => _hasStatus; set => SetProperty(ref _hasStatus, value); }
     public bool HasOutput { get => _hasOutput; set => SetProperty(ref _hasOutput, value); }
 
+    public string DeployToolName => AppConfig.Instance.DeployToolName;
+
     public ICommand RdpServerCommand { get; }
     public ICommand RdpCustomCommand { get; }
     public ICommand RdpComputerCommand { get; }
     public ICommand TeamViewerCommand { get; }
     public ICommand SccmCommand { get; }
+    public ICommand DeployToolCommand { get; }
     public ICommand ComputerMgmtCommand { get; }
     public ICommand EventViewerCommand { get; }
     public ICommand RemoteCmdCommand { get; }
@@ -78,6 +81,7 @@ public class RemoteAccessViewModel : BaseViewModel
         });
         TeamViewerCommand = new Command(() => LaunchTool(AppConfig.Instance.TeamViewerPath));
         SccmCommand = new Command(() => LaunchTool(AppConfig.Instance.SccmConsolePath));
+        DeployToolCommand = new Command(() => LaunchTool(AppConfig.Instance.DeployToolUrl));
         ComputerMgmtCommand = new Command(async () =>
         {
             var host = await ResolveTargetAsync();
@@ -220,9 +224,14 @@ public class RemoteAccessViewModel : BaseViewModel
 
     private void LaunchTool(string path)
     {
+        if (string.IsNullOrWhiteSpace(path)) { StatusMessage = "No path or URL configured. Set it in Credentials."; return; }
         try
         {
-            System.Diagnostics.Process.Start(path);
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = path,
+                UseShellExecute = true  // handles both exe paths and http:// URLs
+            });
             StatusMessage = $"Launched: {path}";
         }
         catch (Exception ex) { StatusMessage = $"Failed to launch: {ex.Message}"; }

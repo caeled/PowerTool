@@ -112,7 +112,7 @@
         <ShellContent ContentTemplate="{DataTemplate st:SettingsPage}" Route="Settings"/>
     </FlyoutItem>
 
-    <FlyoutItem Title="🔑 Set Credentials">
+    <FlyoutItem Title="🔑 Credentials">
         <ShellContent ContentTemplate="{DataTemplate cr:SetCredentialsPage}" Route="SetCredentials"/>
     </FlyoutItem>
 

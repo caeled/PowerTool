@@ -26,6 +26,10 @@ public class AppConfig
     public string TeamViewerPath { get; set; } = @"C:\Program Files\TeamViewer\TeamViewer.exe";
     public string SccmConsolePath { get; set; } = @"C:\Program Files (x86)\Microsoft Endpoint Manager\AdminConsole\bin\Microsoft.ConfigurationManagement.exe";
 
+    // Configurable deployment tool (replaces hardcoded SCCM button)
+    public string DeployToolName { get; set; } = "SCCM / ConfigMgr Console";
+    public string DeployToolUrl  { get; set; } = @"C:\Program Files (x86)\Microsoft Endpoint Manager\AdminConsole\bin\Microsoft.ConfigurationManagement.exe";
+
     public bool UseMockData { get; set; } = true;
 
     public static AppConfig Load()

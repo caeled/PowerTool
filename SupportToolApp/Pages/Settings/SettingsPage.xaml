@@ -83,32 +83,130 @@
                     <Label Text="Tool Paths" FontAttributes="Bold" FontSize="15"/>
                     <Label Text="TeamViewer Executable" TextColor="Gray" FontSize="12"/>
                     <Entry Text="{Binding TeamViewerPath}" Placeholder="C:\Program Files\TeamViewer\TeamViewer.exe"/>
-                    <Label Text="SCCM Console Executable" TextColor="Gray" FontSize="12"/>
+                    <Label Text="SCCM Console (legacy)" TextColor="Gray" FontSize="12"/>
                     <Entry Text="{Binding SccmConsolePath}" Placeholder="C:\Program Files\...\Microsoft.ConfigurationManagement.exe"/>
                 </VerticalStackLayout>
             </Border>
 
-            <!-- Servers -->
-            <Border Stroke="LightGray" StrokeThickness="1" Padding="12" StrokeShape="RoundRectangle 6">
+            <!-- Deployment Tool Button -->
+            <Border Stroke="#7B2FBE" StrokeThickness="1" Padding="12" StrokeShape="RoundRectangle 6" BackgroundColor="#F8F0FF">
                 <VerticalStackLayout Spacing="8">
-                    <Label Text="Servers" FontAttributes="Bold" FontSize="15"/>
-                    <CollectionView ItemsSource="{Binding Servers}" HeightRequest="150">
+                    <Label Text="Deployment Tool Button" FontAttributes="Bold" FontSize="15" TextColor="#7B2FBE"/>
+                    <Label Text="Configures the button on Remote Access. Set a label and a URL (Syxsense, Ninja, etc.) or exe path."
+                           TextColor="Gray" FontSize="12" LineBreakMode="WordWrap"/>
+                    <Grid ColumnDefinitions="80,*" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="Label:" VerticalOptions="Center"/>
+                        <Entry Grid.Column="1" Text="{Binding DeployToolName}" Placeholder="Syxsense"/>
+                    </Grid>
+                    <Grid ColumnDefinitions="80,*" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="URL / Path:" VerticalOptions="Center"/>
+                        <Entry Grid.Column="1" Text="{Binding DeployToolUrl}" Placeholder="https://app.syxsense.com  or  C:\tool.exe"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Preconfigured Servers -->
+            <Border Stroke="#0078D4" StrokeThickness="1" Padding="12" StrokeShape="RoundRectangle 6" BackgroundColor="#F0F7FF">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Preconfigured Servers" FontAttributes="Bold" FontSize="15" TextColor="#0078D4"/>
+                    <Label Text="Shown in the Remote Access server list. Click a server there to auto-fill the target."
+                           TextColor="Gray" FontSize="12"/>
+                    <CollectionView x:Name="ServerListView" ItemsSource="{Binding Servers}" HeightRequest="150">
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid ColumnDefinitions="*,*,Auto" Padding="4,4" ColumnSpacing="8">
-                                    <Label Grid.Column="0" Text="{Binding Name}" FontAttributes="Bold" VerticalOptions="Center"/>
-                                    <Label Grid.Column="1" Text="{Binding Host}" TextColor="Gray" VerticalOptions="Center"/>
-                                    <Button Grid.Column="2" Text="Remove"
+                                    <Entry Grid.Column="0" Text="{Binding Name}" FontSize="12"/>
+                                    <Entry Grid.Column="1" Text="{Binding Host}" FontSize="12"/>
+                                    <Button Grid.Column="2" Text="✕" Padding="8,4" FontSize="11"
+                                            BackgroundColor="#C62828" TextColor="White"
                                             Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.RemoveServerCommand}"
-                                            CommandParameter="{Binding .}"
-                                            FontSize="11" Padding="8,4" BackgroundColor="OrangeRed"/>
+                                            CommandParameter="{Binding .}"/>
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
-                    <Button Text="+ Add Server" Command="{Binding AddServerCommand}"
-                            HorizontalOptions="Start" FontSize="13" Padding="12,6"
-                            BackgroundColor="#228B22"/>
+                    <Grid ColumnDefinitions="*,*,Auto" ColumnSpacing="8">
+                        <Entry Grid.Column="0" Text="{Binding NewServerName}" Placeholder="Name (e.g. File Server 1)" FontSize="12"/>
+                        <Entry Grid.Column="1" Text="{Binding NewServerHost}" Placeholder="Host (e.g. fs01.corp.com)" FontSize="12"/>
+                        <Button Grid.Column="2" Text="Add" Padding="12,6"
+                                BackgroundColor="#0078D4" TextColor="White"
+                                Command="{Binding AddServerCommand}"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Quick Launch Buttons -->
+            <Border Stroke="#228B22" StrokeThickness="1" Padding="12" StrokeShape="RoundRectangle 6" BackgroundColor="#F0FFF4">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Quick Launch Buttons" FontAttributes="Bold" FontSize="15" TextColor="#228B22"/>
+                    <Label Text="Four configurable buttons in the toolbar. Enter a label and any URL."
+                           TextColor="Gray" FontSize="12"/>
+                    <Grid ColumnDefinitions="60,*,60,*" ColumnSpacing="6">
+                        <Label Grid.Column="0" Text="Button 1:" VerticalOptions="Center" FontAttributes="Bold"/>
+                        <Entry Grid.Column="1" Text="{Binding Ql1Name}" Placeholder="Label"/>
+                        <Label Grid.Column="2" Text="URL:" VerticalOptions="Center"/>
+                        <Entry Grid.Column="3" Text="{Binding Ql1Url}" Placeholder="https://..."/>
+                    </Grid>
+                    <Grid ColumnDefinitions="60,*,60,*" ColumnSpacing="6">
+                        <Label Grid.Column="0" Text="Button 2:" VerticalOptions="Center" FontAttributes="Bold"/>
+                        <Entry Grid.Column="1" Text="{Binding Ql2Name}" Placeholder="Label"/>
+                        <Label Grid.Column="2" Text="URL:" VerticalOptions="Center"/>
+                        <Entry Grid.Column="3" Text="{Binding Ql2Url}" Placeholder="https://..."/>
+                    </Grid>
+                    <Grid ColumnDefinitions="60,*,60,*" ColumnSpacing="6">
+                        <Label Grid.Column="0" Text="Button 3:" VerticalOptions="Center" FontAttributes="Bold"/>
+                        <Entry Grid.Column="1" Text="{Binding Ql3Name}" Placeholder="Label"/>
+                        <Label Grid.Column="2" Text="URL:" VerticalOptions="Center"/>
+                        <Entry Grid.Column="3" Text="{Binding Ql3Url}" Placeholder="https://..."/>
+                    </Grid>
+                    <Grid ColumnDefinitions="60,*,60,*" ColumnSpacing="6">
+                        <Label Grid.Column="0" Text="Button 4:" VerticalOptions="Center" FontAttributes="Bold"/>
+                        <Entry Grid.Column="1" Text="{Binding Ql4Name}" Placeholder="Label"/>
+                        <Label Grid.Column="2" Text="URL:" VerticalOptions="Center"/>
+                        <Entry Grid.Column="3" Text="{Binding Ql4Url}" Placeholder="https://..."/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- Folder & Library -->
+            <Border Stroke="#D4500A" StrokeThickness="1" Padding="12" StrokeShape="RoundRectangle 6" BackgroundColor="#FFF8F0">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Folder &amp; Library Buttons" FontAttributes="Bold" FontSize="15" TextColor="#D4500A"/>
+                    <Label Text="Folder: opens a local folder in Explorer. Library: opens a reference URL."
+                           TextColor="Gray" FontSize="12"/>
+                    <Grid ColumnDefinitions="60,100,*,Auto" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="Folder:" VerticalOptions="Center" FontAttributes="Bold"/>
+                        <Entry Grid.Column="1" Text="{Binding FolderName}" Placeholder="Button name"/>
+                        <Entry Grid.Column="2" Text="{Binding LocalFolder}" Placeholder="C:\path\to\folder"/>
+                        <Button Grid.Column="3" Text="Browse" Command="{Binding BrowseFolderCommand}"
+                                BackgroundColor="#D4500A" TextColor="White" Padding="12,6"/>
+                    </Grid>
+                    <Grid ColumnDefinitions="60,100,*" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="Library:" VerticalOptions="Center" FontAttributes="Bold"/>
+                        <Entry Grid.Column="1" Text="{Binding LibraryName}" Placeholder="Button name"/>
+                        <Entry Grid.Column="2" Text="{Binding LibraryUrl}" Placeholder="https://en.wikipedia.org/wiki/Main_Page"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
+            <!-- App Logo -->
+            <Border Stroke="#CC5500" StrokeThickness="1" Padding="12" StrokeShape="RoundRectangle 6" BackgroundColor="#FFF5EE">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="App Logo" FontAttributes="Bold" FontSize="15" TextColor="#CC5500"/>
+                    <Label Text="Image for the logo badge in the title bar. Leave blank to show initials instead."
+                           TextColor="Gray" FontSize="12"/>
+                    <Grid ColumnDefinitions="60,*,Auto" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="Image:" VerticalOptions="Center"/>
+                        <Entry Grid.Column="1" Text="{Binding LogoPath}" Placeholder="C:\path\to\logo.png"/>
+                        <Button Grid.Column="2" Text="Browse" Command="{Binding BrowseLogoCommand}"
+                                BackgroundColor="#CC5500" TextColor="White" Padding="12,6"/>
+                    </Grid>
+                    <Grid ColumnDefinitions="60,120,60,120" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="Initials:" VerticalOptions="Center"/>
+                        <Entry Grid.Column="1" Text="{Binding LogoInitials}" Placeholder="IT" MaxLength="4"/>
+                        <Label Grid.Column="2" Text="Color:" VerticalOptions="Center"/>
+                        <Entry Grid.Column="3" Text="{Binding LogoColor}" Placeholder="#0078D4"/>
+                    </Grid>
                 </VerticalStackLayout>
             </Border>
 
