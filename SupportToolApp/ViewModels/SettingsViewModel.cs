@@ -126,33 +126,14 @@ public class SettingsViewModel : BaseViewModel
 
         BrowseLogoCommand = new Command(async () =>
         {
-#if WINDOWS
-            var path = await Task.Run(() => Win32FileDialog.OpenFile(
-                "Select a logo image",
-                "Image Files\0*.png;*.jpg;*.jpeg;*.bmp;*.gif\0All Files\0*.*\0\0"));
+            var path = await AppFileDialog.OpenFileAsync("Select a logo image", ".png", ".jpg", ".jpeg", ".bmp", ".gif");
             if (!string.IsNullOrEmpty(path)) LogoPath = path;
-#else
-            var result = await FilePicker.Default.PickAsync(new PickOptions
-            {
-                PickerTitle = "Select a logo image",
-                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-                {
-                    { DevicePlatform.macOS, new[] { "png", "jpg", "jpeg", "bmp", "gif" } },
-                })
-            });
-            if (result != null) LogoPath = result.FullPath;
-#endif
         });
 
         BrowseFolderCommand = new Command(async () =>
         {
-#if WINDOWS
-            var folder = await Task.Run(() => Win32FileDialog.BrowseFolder("Select local folder"));
+            var folder = await AppFileDialog.BrowseFolderAsync("Select local folder");
             if (!string.IsNullOrEmpty(folder)) LocalFolder = folder;
-#else
-            var result = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Navigate to your folder and pick any file inside it" });
-            if (result != null) LocalFolder = Path.GetDirectoryName(result.FullPath) ?? result.FullPath;
-#endif
         });
 
         SaveCommand = new Command(() =>

@@ -105,16 +105,9 @@ public partial class AppShell : Shell
             var json = ConfigExport.Capture(_creds).ToJson();
             var defaultName = $"SupportTool-Config-{DateTime.Now:yyyy-MM-dd}.json";
 
-#if WINDOWS
-            var path = await Task.Run(() => Win32FileDialog.SaveFile(
-                "Save Configuration", defaultName,
-                "JSON Config\0*.json\0All Files\0*.*\0\0", "json"));
+            var path = await AppFileDialog.SaveFileAsync("Save Configuration", defaultName, ".json");
             if (string.IsNullOrEmpty(path)) return;
             await File.WriteAllTextAsync(path, json);
-#else
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), defaultName);
-            await File.WriteAllTextAsync(path, json);
-#endif
             await DisplayAlert("Config Saved", $"Configuration saved to:\n{path}\n\nCredentials were not included.", "OK");
         }
         catch (Exception ex)
@@ -127,24 +120,9 @@ public partial class AppShell : Shell
     {
         try
         {
-#if WINDOWS
-            var loadPath = await Task.Run(() => Win32FileDialog.OpenFile(
-                "Select a SupportTool config file",
-                "JSON Config\0*.json\0All Files\0*.*\0\0"));
+            var loadPath = await AppFileDialog.OpenFileAsync("Select a SupportTool config file", ".json");
             if (string.IsNullOrEmpty(loadPath)) return;
             var json = await File.ReadAllTextAsync(loadPath);
-#else
-            var result = await FilePicker.Default.PickAsync(new PickOptions
-            {
-                PickerTitle = "Select a SupportTool config file",
-                FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
-                {
-                    { DevicePlatform.macOS, new[] { "json" } },
-                })
-            });
-            if (result == null) return;
-            var json = await File.ReadAllTextAsync(result.FullPath);
-#endif
             var export = ConfigExport.FromJson(json);
             if (export == null)
             {

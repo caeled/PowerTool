@@ -1213,19 +1213,10 @@ public class ToolsViewModel : BaseViewModel
 
         DeployBrowseCommand = new Command(async () =>
         {
-#if WINDOWS
-            var path = await Task.Run(() => Win32FileDialog.OpenFile(
-                "Select script to deploy",
-                "Scripts & Executables\0*.ps1;*.bat;*.cmd;*.exe\0All Files\0*.*\0\0"));
+            var path = await AppFileDialog.OpenFileAsync("Select script to deploy", ".ps1", ".bat", ".cmd", ".exe");
             if (string.IsNullOrEmpty(path)) return;
-            DeployScriptName = Path.GetFileName(path);
+            DeployScriptName    = Path.GetFileName(path);
             DeployScriptContent = await File.ReadAllTextAsync(path);
-#else
-            var result = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select script to deploy" });
-            if (result == null) return;
-            DeployScriptName = Path.GetFileName(result.FullPath);
-            DeployScriptContent = await File.ReadAllTextAsync(result.FullPath);
-#endif
         });
 
         DeployRunCommand = new Command(async () =>
@@ -1740,14 +1731,8 @@ public class ToolsViewModel : BaseViewModel
 
         CopyBrowseCommand = new Command(async () =>
         {
-#if WINDOWS
-            var path = await Task.Run(() => Win32FileDialog.OpenFile("Select file to copy"));
+            var path = await AppFileDialog.OpenFileAsync("Select file to copy");
             if (!string.IsNullOrEmpty(path)) CopyLocalPath = path;
-#else
-            var result = await FilePicker.Default.PickAsync(new PickOptions { PickerTitle = "Select file to copy" });
-            if (result == null) return;
-            CopyLocalPath = result.FullPath;
-#endif
         });
 
         CopyRunCommand = new Command(async () =>
@@ -2559,12 +2544,10 @@ Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
             }));
 
         // ── Quick Access ──────────────────────────────────────────────────
-        QuickAccessBrowseCommand = new Command(() =>
+        QuickAccessBrowseCommand = new Command(async () =>
         {
-#if WINDOWS
-            var folder = Win32FileDialog.BrowseFolder("Select folder for Quick Access");
+            var folder = await AppFileDialog.BrowseFolderAsync("Select folder for Quick Access");
             if (!string.IsNullOrEmpty(folder)) QuickAccessPath = folder;
-#endif
         });
 
         QuickAccessPinCommand = new Command(async () => await RunTool(
@@ -3014,9 +2997,12 @@ internal static class PsScripts
                 @{N='Status';E={$_.PrinterStatus}}
         """, 2);
 
-    // Wraps a script body in local/remote dispatch boilerplate
+    // Wraps a script body in local/remote dispatch boilerplate.
+    // On Windows uses WinRM (Invoke-Command -ComputerName).
+    // On Mac/Linux uses SSH-based remoting (Invoke-Command -HostName) — requires PS 7+ and SSH on target.
     private static string ScriptWithTarget(string target, string body, int depth)
     {
+        var remoteCmd = RemoteInvokeCmd(target, "-ScriptBlock $sb");
         return
             "$ErrorActionPreference = 'SilentlyContinue'\n" +
             $"$isLocal = ('{target}' -eq 'localhost' -or '{target}' -eq $env:COMPUTERNAME)\n" +
@@ -3024,12 +3010,13 @@ internal static class PsScripts
             body + "\n" +
             "}\n" +
             $"if ($isLocal) {{ @(& $sb) | ConvertTo-Json -Depth {depth} }}\n" +
-            $"else {{ @(Invoke-Command -ComputerName '{target}' -ScriptBlock $sb) | ConvertTo-Json -Depth {depth} }}\n";
+            $"else {{ @({remoteCmd}) | ConvertTo-Json -Depth {depth} }}\n";
     }
 
     // For scripts that output plain text (not JSON) — avoids WinRM PSObject serialization
     private static string TextScriptWithTarget(string target, string body)
     {
+        var remoteCmd = RemoteInvokeCmd(target, "-ScriptBlock $sb | ForEach-Object { \"$_\" }");
         return
             "$ErrorActionPreference = 'SilentlyContinue'\n" +
             $"$isLocal = ('{target}' -eq 'localhost' -or '{target}' -eq $env:COMPUTERNAME)\n" +
@@ -3037,7 +3024,18 @@ internal static class PsScripts
             body + "\n" +
             "}\n" +
             $"if ($isLocal) {{ & $sb }}\n" +
-            $"else {{ Invoke-Command -ComputerName '{target}' -ScriptBlock $sb | ForEach-Object {{ \"$_\" }} }}\n";
+            $"else {{ {remoteCmd} }}\n";
+    }
+
+    // Returns the appropriate Invoke-Command prefix for the current platform.
+    // Windows: WinRM (-ComputerName). Mac/Linux: SSH remoting (-HostName, requires PS 7+).
+    private static string RemoteInvokeCmd(string target, string scriptArgs)
+    {
+#if WINDOWS
+        return $"Invoke-Command -ComputerName '{target}' {scriptArgs}";
+#else
+        return $"Invoke-Command -HostName '{target}' {scriptArgs}";
+#endif
     }
 
     public static string NetworkInfo(string target) => ScriptWithTarget(target, """

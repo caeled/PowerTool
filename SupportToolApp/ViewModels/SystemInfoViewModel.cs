@@ -3,6 +3,7 @@ using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
 using System.Windows.Input;
+using SupportToolApp.Helpers;
 using SupportToolApp.Services;
 
 namespace SupportToolApp.ViewModels;
@@ -822,20 +823,11 @@ public class SystemInfoViewModel : BaseViewModel
         var fileName = $"Inventory-{name}-{DateTime.Now:yyyy-MM-dd}.txt";
         try
         {
-#if WINDOWS
-            var savePath = await Task.Run(() => SupportToolApp.Helpers.Win32FileDialog.SaveFile(
-                "Save Inventory Report", fileName,
-                "Text Report\0*.txt\0All Files\0*.*\0\0", "txt"));
+            var savePath = await AppFileDialog.SaveFileAsync("Save Inventory Report", fileName, ".txt");
             if (string.IsNullOrEmpty(savePath)) return;
             await File.WriteAllTextAsync(savePath, report);
             var open = await Application.Current!.Windows[0].Page!.DisplayAlert("Report Saved", $"Saved to:\n{savePath}", "Open", "Close");
             if (open) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(savePath) { UseShellExecute = true });
-#else
-            var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), fileName);
-            await File.WriteAllTextAsync(path, report);
-            var open = await Application.Current!.Windows[0].Page!.DisplayAlert("Report Saved", $"Saved to:\n{path}", "Open", "Close");
-            if (open) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(path) { UseShellExecute = true });
-#endif
         }
         catch (Exception ex)
         {
