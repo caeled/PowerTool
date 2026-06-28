@@ -1,5 +1,6 @@
 using System.Text.Json;
 using SupportToolApp.Config;
+using SupportToolApp.Helpers;
 using SupportToolApp.Services;
 
 namespace SupportToolApp;
@@ -105,17 +106,11 @@ public partial class AppShell : Shell
             var defaultName = $"SupportTool-Config-{DateTime.Now:yyyy-MM-dd}.json";
 
 #if WINDOWS
-            var picker = new Windows.Storage.Pickers.FileSavePicker();
-            picker.SuggestedStartLocation = Windows.Storage.Pickers.PickerLocationId.DocumentsLibrary;
-            picker.SuggestedFileName = defaultName;
-            picker.FileTypeChoices.Add("JSON Config", new List<string> { ".json" });
-            var nativeWindow = Application.Current!.Windows[0].Handler?.PlatformView as MauiWinUIWindow;
-            var hwnd = nativeWindow?.WindowHandle ?? IntPtr.Zero;
-            if (hwnd != IntPtr.Zero) WinRT.Interop.InitializeWithWindow.Initialize(picker, hwnd);
-            var file = await picker.PickSaveFileAsync();
-            if (file == null) return;
-            await Windows.Storage.FileIO.WriteTextAsync(file, json);
-            var path = file.Path;
+            var path = await Task.Run(() => Win32FileDialog.SaveFile(
+                "Save Configuration", defaultName,
+                "JSON Config\0*.json\0All Files\0*.*\0\0", "json"));
+            if (string.IsNullOrEmpty(path)) return;
+            await File.WriteAllTextAsync(path, json);
 #else
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments), defaultName);
             await File.WriteAllTextAsync(path, json);
@@ -132,18 +127,24 @@ public partial class AppShell : Shell
     {
         try
         {
+#if WINDOWS
+            var loadPath = await Task.Run(() => Win32FileDialog.OpenFile(
+                "Select a SupportTool config file",
+                "JSON Config\0*.json\0All Files\0*.*\0\0"));
+            if (string.IsNullOrEmpty(loadPath)) return;
+            var json = await File.ReadAllTextAsync(loadPath);
+#else
             var result = await FilePicker.Default.PickAsync(new PickOptions
             {
                 PickerTitle = "Select a SupportTool config file",
                 FileTypes = new FilePickerFileType(new Dictionary<DevicePlatform, IEnumerable<string>>
                 {
-                    { DevicePlatform.WinUI, new[] { ".json" } },
                     { DevicePlatform.macOS, new[] { "json" } },
                 })
             });
             if (result == null) return;
-
             var json = await File.ReadAllTextAsync(result.FullPath);
+#endif
             var export = ConfigExport.FromJson(json);
             if (export == null)
             {

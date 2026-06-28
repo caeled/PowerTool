@@ -112,7 +112,11 @@ public partial class ToolsPage : ContentPage
     {
         // Highlight category buttons
         foreach (var c in _categories.Keys)
-            c.BackgroundColor = Color.FromArgb(c == cat ? "#0078D4" : "#555555");
+        {
+            var active = c == cat;
+            c.BackgroundColor = active ? Color.FromArgb("#0078D4") : Colors.White;
+            c.TextColor        = active ? Colors.White : Colors.Black;
+        }
         _activeCategory = cat;
 
         // Show only this category's tool buttons, hide the rest
@@ -133,7 +137,10 @@ public partial class ToolsPage : ContentPage
         {
             var isActive = btn == tab;
             if (btn.IsVisible)
-                btn.BackgroundColor = isActive ? Color.FromArgb("#0078D4") : Color.FromArgb("#555555");
+            {
+                btn.BackgroundColor = isActive ? Color.FromArgb("#0078D4") : Colors.White;
+                btn.TextColor        = isActive ? Colors.White : Colors.Black;
+            }
             if (isActive) panel.IsVisible = true;
         }
         _activeTab = tab;

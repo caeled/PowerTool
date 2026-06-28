@@ -838,7 +838,9 @@ public class ToolsViewModel : BaseViewModel
     public string TrustedSiteOutput  { get => _trustedSiteOutput;  set => SetProperty(ref _trustedSiteOutput, value); }
     public bool TrustedSiteHttp      { get => _trustedSiteHttp;    set => SetProperty(ref _trustedSiteHttp, value); }
     public bool TrustedSiteLoading   { get => _trustedSiteLoading; set => SetProperty(ref _trustedSiteLoading, value); }
-    public ICommand AddTrustedSiteCommand { get; private set; } = null!;
+    public ICommand AddTrustedSiteCommand    { get; private set; } = null!;
+    public ICommand ListTrustedSitesCommand  { get; private set; } = null!;
+    public ICommand RemoveTrustedSiteCommand { get; private set; } = null!;
 
     // ── Quick Access ─────────────────────────────────────────────────────────
     private string _quickAccessPath = "", _quickAccessOutput = "";
@@ -897,18 +899,21 @@ public class ToolsViewModel : BaseViewModel
     public ICommand AdResetCommand { get; private set; } = null!;
 
     // ── Windows Disk Cleanup ───────────────────────────────────────────────────
-    private string _cleanupDays = "7", _cleanupOutput = "";
+    private string _cleanupDays = "7", _cleanupOutput = "", _selectedCleanupDrive = "C:";
     private bool _cleanupLoading, _cleanWinTemp = true, _cleanSwDist = true,
                  _cleanUserTemp = true, _cleanIisLogs, _cleanRecycleBin = true;
-    public string CleanupDays       { get => _cleanupDays;     set => SetProperty(ref _cleanupDays, value); }
-    public string CleanupOutput     { get => _cleanupOutput;   set => SetProperty(ref _cleanupOutput, value); }
-    public bool   CleanupLoading    { get => _cleanupLoading;  set => SetProperty(ref _cleanupLoading, value); }
-    public bool   CleanWinTemp      { get => _cleanWinTemp;    set => SetProperty(ref _cleanWinTemp, value); }
-    public bool   CleanSwDist       { get => _cleanSwDist;     set => SetProperty(ref _cleanSwDist, value); }
-    public bool   CleanUserTemp     { get => _cleanUserTemp;   set => SetProperty(ref _cleanUserTemp, value); }
-    public bool   CleanIisLogs      { get => _cleanIisLogs;    set => SetProperty(ref _cleanIisLogs, value); }
-    public bool   CleanRecycleBin   { get => _cleanRecycleBin; set => SetProperty(ref _cleanRecycleBin, value); }
-    public ICommand RunCleanupCommand { get; private set; } = null!;
+    public string CleanupDays          { get => _cleanupDays;            set => SetProperty(ref _cleanupDays, value); }
+    public string CleanupOutput        { get => _cleanupOutput;          set => SetProperty(ref _cleanupOutput, value); }
+    public bool   CleanupLoading       { get => _cleanupLoading;         set => SetProperty(ref _cleanupLoading, value); }
+    public bool   CleanWinTemp         { get => _cleanWinTemp;           set => SetProperty(ref _cleanWinTemp, value); }
+    public bool   CleanSwDist          { get => _cleanSwDist;            set => SetProperty(ref _cleanSwDist, value); }
+    public bool   CleanUserTemp        { get => _cleanUserTemp;          set => SetProperty(ref _cleanUserTemp, value); }
+    public bool   CleanIisLogs         { get => _cleanIisLogs;           set => SetProperty(ref _cleanIisLogs, value); }
+    public bool   CleanRecycleBin      { get => _cleanRecycleBin;        set => SetProperty(ref _cleanRecycleBin, value); }
+    public string SelectedCleanupDrive { get => _selectedCleanupDrive;   set => SetProperty(ref _selectedCleanupDrive, value); }
+    public ObservableCollection<string> CleanupDrives { get; } = ["C:"];
+    public ICommand RunCleanupCommand       { get; private set; } = null!;
+    public ICommand LoadCleanupDrivesCommand { get; private set; } = null!;
 
     // ── Keep Alive ─────────────────────────────────────────────────────────────
     private bool _keepAliveActive;
@@ -2536,11 +2541,28 @@ Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
                 TrustedSiteOutput = string.IsNullOrWhiteSpace(result) ? $"Added: {TrustedSiteDomain}" : result.Trim();
             }));
 
+        ListTrustedSitesCommand = new Command(async () => await RunTool(
+            "Trusted Sites", () => TrustedSiteLoading = true, () => TrustedSiteLoading = false,
+            async target =>
+            {
+                var result = await Task.Run(() => RunPsSync(PsScripts.ListTrustedSites(target)));
+                TrustedSiteOutput = string.IsNullOrWhiteSpace(result) ? "No trusted sites configured." : result.Trim();
+            }));
+
+        RemoveTrustedSiteCommand = new Command(async () => await RunTool(
+            "Trusted Sites", () => TrustedSiteLoading = true, () => TrustedSiteLoading = false,
+            async target =>
+            {
+                if (string.IsNullOrWhiteSpace(TrustedSiteDomain)) { TrustedSiteOutput = "Enter a domain to remove first."; return; }
+                var result = await Task.Run(() => RunPsSync(PsScripts.RemoveTrustedSite(target, TrustedSiteDomain)));
+                TrustedSiteOutput = string.IsNullOrWhiteSpace(result) ? $"Removed: {TrustedSiteDomain}" : result.Trim();
+            }));
+
         // ── Quick Access ──────────────────────────────────────────────────
-        QuickAccessBrowseCommand = new Command(async () =>
+        QuickAccessBrowseCommand = new Command(() =>
         {
 #if WINDOWS
-            var folder = await Task.Run(() => Win32FileDialog.BrowseFolder("Select folder for Quick Access"));
+            var folder = Win32FileDialog.BrowseFolder("Select folder for Quick Access");
             if (!string.IsNullOrEmpty(folder)) QuickAccessPath = folder;
 #endif
         });
@@ -2642,12 +2664,31 @@ Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
             AdResetLoading = false;
         });
 
+        LoadCleanupDrivesCommand = new Command(async () => await RunTool(
+            "Disk Cleanup", () => CleanupLoading = true, () => CleanupLoading = false,
+            async target =>
+            {
+                var result = await RunPsJson<List<string>>(target, """
+                    Get-WmiObject Win32_LogicalDisk -Filter "DriveType=3" |
+                    Select-Object -ExpandProperty DeviceID |
+                    ConvertTo-Json -Compress
+                    """);
+                if (result is { Count: > 0 })
+                {
+                    CleanupDrives.Clear();
+                    foreach (var d in result) CleanupDrives.Add(d);
+                    SelectedCleanupDrive = CleanupDrives[0];
+                    CleanupOutput = $"Found {CleanupDrives.Count} drive(s): {string.Join(", ", CleanupDrives)}";
+                }
+            }));
+
         RunCleanupCommand = new Command(async () => await RunTool(
             "Disk Cleanup", () => CleanupLoading = true, () => CleanupLoading = false,
             async target =>
             {
                 if (!int.TryParse(CleanupDays, out var days) || days < 0) days = 7;
-                var result = await Task.Run(() => RunPsSync(PsScripts.DiskCleanup(target, days, CleanWinTemp, CleanSwDist, CleanUserTemp, CleanIisLogs, CleanRecycleBin)));
+                var drive = string.IsNullOrWhiteSpace(SelectedCleanupDrive) ? "C:" : SelectedCleanupDrive.TrimEnd('\\');
+                var result = await Task.Run(() => RunPsSync(PsScripts.DiskCleanup(target, drive, days, CleanWinTemp, CleanSwDist, CleanUserTemp, CleanIisLogs, CleanRecycleBin)));
                 CleanupOutput = string.IsNullOrWhiteSpace(result) ? "Cleanup complete." : result.Trim();
             }));
 
@@ -4017,6 +4058,34 @@ internal static class PsScripts
             "Added {{domain}} to Trusted Sites"
         """);
 
+    public static string ListTrustedSites(string target) =>
+        TextScriptWithTarget(target, """
+            $base = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains"
+            if (-not (Test-Path $base)) { "No trusted sites registry key found."; exit }
+            $sites = Get-ChildItem $base -ErrorAction SilentlyContinue
+            if (-not $sites) { "No trusted sites configured."; exit }
+            $sites | ForEach-Object {
+                $domain = $_.PSChildName
+                $props = Get-ItemProperty $_.PSPath -ErrorAction SilentlyContinue
+                $schemes = @()
+                if ($props.https -eq 2) { $schemes += "https" }
+                if ($props.http  -eq 2) { $schemes += "http" }
+                "$domain  [$($schemes -join ', ')]"
+            }
+        """);
+
+    public static string RemoveTrustedSite(string target, string domain) =>
+        TextScriptWithTarget(target, $$"""
+            $base = "HKCU:\Software\Microsoft\Windows\CurrentVersion\Internet Settings\ZoneMap\Domains"
+            $path = "$base\{{domain}}"
+            if (Test-Path $path) {
+                Remove-Item $path -Recurse -Force
+                "Removed: {{domain}}"
+            } else {
+                "Not found: {{domain}}"
+            }
+        """);
+
     public static string QuickAccessPin(string path) =>
         "$ErrorActionPreference = 'SilentlyContinue'\n" +
         "$qa = New-Object -ComObject shell.application\n" +
@@ -4118,38 +4187,39 @@ internal static class PsScripts
             "Password reset for $($user.SamAccountName) ($($user.Name)). Force change: {{forceChange}}. Unlocked: {{unlock}}."
         """;
 
-    public static string DiskCleanup(string target, int days, bool winTemp, bool swDist, bool userTemp, bool iisLogs, bool recycleBin) =>
+    public static string DiskCleanup(string target, string drive, int days, bool winTemp, bool swDist, bool userTemp, bool iisLogs, bool recycleBin) =>
         TextScriptWithTarget(target, $$"""
-            $days = {{days}}
+            $drive  = "{{drive}}"
+            $days   = {{days}}
             $cutoff = (Get-Date).AddDays(-$days)
             $results = @()
 
             if ({{(winTemp  ? "$true" : "$false")}}) {
-                $n = (Get-ChildItem "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.CreationTime -lt $cutoff } | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue -PassThru).Count
+                $n = (Get-ChildItem "$drive\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.CreationTime -lt $cutoff } | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue -PassThru).Count
                 $results += "Windows Temp: $n item(s) removed"
             }
             if ({{(swDist   ? "$true" : "$false")}}) {
                 Get-Service wuauserv -ErrorAction SilentlyContinue | Stop-Service -Force -ErrorAction SilentlyContinue
-                $n = (Get-ChildItem "C:\Windows\SoftwareDistribution\*" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.CreationTime -lt $cutoff } | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue -PassThru).Count
+                $n = (Get-ChildItem "$drive\Windows\SoftwareDistribution\*" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.CreationTime -lt $cutoff } | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue -PassThru).Count
                 $results += "SoftwareDistribution: $n item(s) removed"
             }
             if ({{(userTemp  ? "$true" : "$false")}}) {
-                $n = (Get-ChildItem "C:\Users\*\AppData\Local\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.CreationTime -lt $cutoff } | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue -PassThru).Count
+                $n = (Get-ChildItem "$drive\Users\*\AppData\Local\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.CreationTime -lt $cutoff } | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue -PassThru).Count
                 $results += "User Temp: $n item(s) removed"
             }
             if ({{(iisLogs   ? "$true" : "$false")}}) {
-                $n = (Get-ChildItem "C:\inetpub\logs\LogFiles\*" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.CreationTime -lt $cutoff } | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue -PassThru).Count
+                $n = (Get-ChildItem "$drive\inetpub\logs\LogFiles\*" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.CreationTime -lt $cutoff } | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue -PassThru).Count
                 $results += "IIS Logs: $n item(s) removed"
             }
             if ({{(recycleBin ? "$true" : "$false")}}) {
-                $shell = New-Object -ComObject Shell.Application
-                $shell.Namespace(0xA).Items() | ForEach-Object { Remove-Item $_.Path -Force -Recurse -ErrorAction SilentlyContinue }
-                $results += "Recycle Bin emptied"
+                $rb = "$drive\`$Recycle.Bin"
+                $n = (Get-ChildItem $rb -Recurse -Force -ErrorAction SilentlyContinue | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue -PassThru).Count
+                $results += "Recycle Bin ($drive): $n item(s) removed"
             }
 
             $results
             Get-WmiObject Win32_LogicalDisk -Filter 'DriveType=3' | ForEach-Object {
-                "Drive $($_.DeviceID): $([math]::Round($_.FreeSpace/1GB,1)) GB free of $([math]::Round($_.Size/1GB,1)) GB"
+                "Drive $($_.DeviceID) $([math]::Round($_.FreeSpace/1GB,1)) GB free of $([math]::Round($_.Size/1GB,1)) GB"
             }
         """);
 }

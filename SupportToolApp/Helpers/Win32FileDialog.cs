@@ -1,4 +1,5 @@
 using System.Runtime.InteropServices;
+using System.Text;
 
 namespace SupportToolApp.Helpers;
 
@@ -101,8 +102,8 @@ internal static class Win32FileDialog
         var bi = new BrowseInfo { lpszTitle = title, ulFlags = BIF_RETURNONLYFSDIRS | BIF_NEWDIALOGSTYLE };
         var pidl = SHBrowseForFolder(ref bi);
         if (pidl == IntPtr.Zero) return null;
-        var path = new string('\0', 260);
-        return SHGetPathFromIDList(pidl, path) ? path.TrimEnd('\0') : null;
+        var path = new StringBuilder(260);
+        return SHGetPathFromIDList(pidl, path) ? path.ToString() : null;
     }
 
     private const int BIF_RETURNONLYFSDIRS = 0x0001;
@@ -125,7 +126,7 @@ internal static class Win32FileDialog
     private static extern IntPtr SHBrowseForFolder(ref BrowseInfo bi);
 
     [DllImport("shell32.dll", CharSet = CharSet.Auto)]
-    private static extern bool SHGetPathFromIDList(IntPtr pidl, [MarshalAs(UnmanagedType.LPTStr)] string pszPath);
+    private static extern bool SHGetPathFromIDList(IntPtr pidl, StringBuilder pszPath);
 
     [DllImport("comdlg32.dll", SetLastError = true, CharSet = CharSet.Auto)]
     private static extern bool GetOpenFileName(ref OpenFileName ofn);

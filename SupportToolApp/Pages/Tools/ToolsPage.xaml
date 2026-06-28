@@ -3,6 +3,31 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="SupportToolApp.Pages.Tools.ToolsPage"
              Title="Tools">
+    <ContentPage.Resources>
+        <Style TargetType="Button">
+            <Setter Property="VisualStateManager.VisualStateGroups">
+                <VisualStateGroupList>
+                    <VisualStateGroup Name="CommonStates">
+                        <VisualState Name="Normal">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="1.0"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState Name="PointerOver">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="0.80"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                        <VisualState Name="Pressed">
+                            <VisualState.Setters>
+                                <Setter Property="Opacity" Value="0.60"/>
+                            </VisualState.Setters>
+                        </VisualState>
+                    </VisualStateGroup>
+                </VisualStateGroupList>
+            </Setter>
+        </Style>
+    </ContentPage.Resources>
     <Grid RowDefinitions="Auto,Auto,Auto,Auto,*" Padding="12" RowSpacing="8">
 
         <!-- Target Computer Bar -->
@@ -11,7 +36,7 @@
             <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
                 <Label Grid.Column="0" Text="Target Computer:" FontAttributes="Bold" VerticalOptions="Center"/>
                 <Entry Grid.Column="1" Text="{Binding TargetComputer}"
-                       Placeholder="hostname or IP — blank = this machine" VerticalOptions="Center"/>
+                       Placeholder="hostname or IP â€” blank = this machine" VerticalOptions="Center"/>
                 <Button Grid.Column="2" Text="Clear" Padding="10,6" BackgroundColor="Gray"
                         Command="{Binding ClearTargetCommand}"/>
             </Grid>
@@ -20,85 +45,83 @@
         <!-- Category Bar -->
         <HorizontalStackLayout Grid.Row="1" Spacing="4">
             <Button Text="System"  x:Name="CatSystem"  Clicked="OnCategoryClicked" BackgroundColor="#0078D4" Padding="18,8" FontSize="13" FontAttributes="Bold"/>
-            <Button Text="Users"   x:Name="CatUsers"   Clicked="OnCategoryClicked" BackgroundColor="#555"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
-            <Button Text="Network" x:Name="CatNetwork" Clicked="OnCategoryClicked" BackgroundColor="#555"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
-            <Button Text="Remote"  x:Name="CatRemote"  Clicked="OnCategoryClicked" BackgroundColor="#555"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
-            <Button Text="Deploy"  x:Name="CatDeploy"  Clicked="OnCategoryClicked" BackgroundColor="#555"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+            <Button Text="Users"   x:Name="CatUsers"   Clicked="OnCategoryClicked" BackgroundColor="White" TextColor="Black"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+            <Button Text="Network" x:Name="CatNetwork" Clicked="OnCategoryClicked" BackgroundColor="White" TextColor="Black"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+            <Button Text="Remote"  x:Name="CatRemote"  Clicked="OnCategoryClicked" BackgroundColor="White" TextColor="Black"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+            <Button Text="Deploy"  x:Name="CatDeploy"  Clicked="OnCategoryClicked" BackgroundColor="White" TextColor="Black"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
         </HorizontalStackLayout>
 
-        <!-- Tool Bar — filtered by category -->
-        <ScrollView Grid.Row="2" Orientation="Horizontal">
-            <HorizontalStackLayout Spacing="4">
+        <!-- Tool Bar â€” filtered by category -->
+        <FlexLayout Grid.Row="2" Wrap="Wrap" Direction="Row" AlignContent="Start" AlignItems="Start" JustifyContent="Start" x:Name="TabStrip">
                 <!-- System -->
-                <Button Text="Installed Apps"   x:Name="TabApps"         Clicked="OnTabClicked" BackgroundColor="#0078D4" Padding="14,7" FontSize="12"/>
-                <Button Text="Services"         x:Name="TabServices"      Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
-                <Button Text="Updates"          x:Name="TabUpdates"       Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
-                <Button Text="Security Patches" x:Name="TabPatches"       Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
-                <Button Text="Processes"        x:Name="TabProcesses"     Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
-                <Button Text="Printers"         x:Name="TabPrinters"      Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
-                <Button Text="Disk Space"       x:Name="TabDiskSpace"     Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
-                <Button Text="Scheduled Tasks"  x:Name="TabSchedTasks"    Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
-                <Button Text="Activation"       x:Name="TabActivation"    Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
-                <Button Text="Temp Cleanup"     x:Name="TabTempClean"     Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
-                <Button Text="Startup Programs" x:Name="TabStartup"       Clicked="OnTabClicked" BackgroundColor="#555"    Padding="14,7" FontSize="12"/>
-                <Button Text="Remote PS" x:Name="TabRemotePsSystem" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
-                <Button Text="PS Runner" x:Name="TabPsRunSystem"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
-                <Button Text="Auto Logon"     x:Name="TabAutoLogon"    Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
-                <Button Text="Default Printer" x:Name="TabSetPrinter"  Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
-                <Button Text="Trusted Sites"  x:Name="TabTrustedSites" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
-                <Button Text="Quick Access"   x:Name="TabQuickAccess"  Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
-                <Button Text="Disk Cleanup"  x:Name="TabDiskCleanup"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12"/>
-                <Button Text="Keep Alive"    x:Name="TabKeepAlive"    Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
+                <Button Text="Installed Apps"   x:Name="TabApps"         Clicked="OnTabClicked" BackgroundColor="#0078D4" Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Services"         x:Name="TabServices"      Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black"    Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Updates"          x:Name="TabUpdates"       Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black"    Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Security Patches" x:Name="TabPatches"       Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black"    Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Processes"        x:Name="TabProcesses"     Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black"    Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Printers"         x:Name="TabPrinters"      Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black"    Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Disk Space"       x:Name="TabDiskSpace"     Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black"    Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Scheduled Tasks"  x:Name="TabSchedTasks"    Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black"    Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Activation"       x:Name="TabActivation"    Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black"    Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Temp Cleanup"     x:Name="TabTempClean"     Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black"    Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Startup Programs" x:Name="TabStartup"       Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black"    Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Remote PS" x:Name="TabRemotePsSystem" Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="PS Runner" x:Name="TabPsRunSystem"   Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Auto Logon"     x:Name="TabAutoLogon"    Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Default Printer" x:Name="TabSetPrinter"  Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Trusted Sites"  x:Name="TabTrustedSites" Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Quick Access"   x:Name="TabQuickAccess"  Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Disk Cleanup"  x:Name="TabDiskCleanup"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
+                <Button Text="Keep Alive"    x:Name="TabKeepAlive"    Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4"/>
                 <!-- Users -->
-                <Button Text="Local Users &amp; Groups" x:Name="TabLocalUsers"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Logged On User"           x:Name="TabLoggedOn"         Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Local Admins"             x:Name="TabLocalAdmins"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Run As"                   x:Name="TabRunAs"            Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Group Membership"         x:Name="TabGroupMembership"  Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Account Lockout"          x:Name="TabAcctLockout"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="RDP Sessions"             x:Name="TabRdpSessions"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Password Expiry"          x:Name="TabPwdExpiry"        Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="User Management"          x:Name="TabUserMgmt"         Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Reset AD Password"       x:Name="TabAdReset"          Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Local Users &amp; Groups" x:Name="TabLocalUsers"      Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Logged On User"           x:Name="TabLoggedOn"         Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Local Admins"             x:Name="TabLocalAdmins"      Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Run As"                   x:Name="TabRunAs"            Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Group Membership"         x:Name="TabGroupMembership"  Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Account Lockout"          x:Name="TabAcctLockout"      Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="RDP Sessions"             x:Name="TabRdpSessions"      Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Password Expiry"          x:Name="TabPwdExpiry"        Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="User Management"          x:Name="TabUserMgmt"         Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Reset AD Password"       x:Name="TabAdReset"          Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
                 <!-- Network -->
-                <Button Text="Network Info" x:Name="TabNetwork"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Port Tester"  x:Name="TabPorts"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Ping Sweep"   x:Name="TabPingSweep" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="DNS"          x:Name="TabDns"       Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Flush DNS"    x:Name="TabFlushDns"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="NetStat"      x:Name="TabNetStat"    Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Traceroute"   x:Name="TabTrace"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="WiFi Profiles" x:Name="TabWifi"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Proxy"        x:Name="TabProxy"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Reset NIC"    x:Name="TabResetNic"   Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Ping"         x:Name="TabPing"       Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="WiFi Setup"   x:Name="TabWifiSetup"  Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Network Info" x:Name="TabNetwork"   Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Port Tester"  x:Name="TabPorts"     Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Ping Sweep"   x:Name="TabPingSweep" Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="DNS"          x:Name="TabDns"       Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Flush DNS"    x:Name="TabFlushDns"   Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="NetStat"      x:Name="TabNetStat"    Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Traceroute"   x:Name="TabTrace"      Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="WiFi Profiles" x:Name="TabWifi"      Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Proxy"        x:Name="TabProxy"      Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Reset NIC"    x:Name="TabResetNic"   Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Ping"         x:Name="TabPing"       Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="WiFi Setup"   x:Name="TabWifiSetup"  Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
                 <!-- Remote -->
-                <Button Text="Pending Reboot" x:Name="TabReboot"       Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Remote Reboot"  x:Name="TabRebootAction" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Event Log"      x:Name="TabEventLog"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Shared Folders" x:Name="TabShares"       Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Registry"       x:Name="TabRegistry"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="GP Update"      x:Name="TabGpUpdate"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Remote PS" x:Name="TabRemotePsRemote" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="PS Runner"      x:Name="TabPsRunRemote"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Dir Browser"    x:Name="TabDirBrowser"    Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Process Kill"   x:Name="TabProcKill"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="WinRM Toggle"   x:Name="TabWinRmToggle"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Wake on LAN"    x:Name="TabWakeOnLan"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Hosts File"     x:Name="TabHostsFile"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Pending Reboot" x:Name="TabReboot"       Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Remote Reboot"  x:Name="TabRebootAction" Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Event Log"      x:Name="TabEventLog"     Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Shared Folders" x:Name="TabShares"       Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Registry"       x:Name="TabRegistry"     Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="GP Update"      x:Name="TabGpUpdate"     Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Remote PS" x:Name="TabRemotePsRemote" Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="PS Runner"      x:Name="TabPsRunRemote"   Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Dir Browser"    x:Name="TabDirBrowser"    Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Process Kill"   x:Name="TabProcKill"      Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="WinRM Toggle"   x:Name="TabWinRmToggle"   Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Wake on LAN"    x:Name="TabWakeOnLan"     Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Hosts File"     x:Name="TabHostsFile"     Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
                 <!-- Deploy -->
-                <Button Text="File Drop &amp; Run" x:Name="TabDeploy"    Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Copy File"           x:Name="TabCopyFile"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Winget"          x:Name="TabWinget"          Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Registry Push"   x:Name="TabRegPush"         Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Pending Updates" x:Name="TabPendingUpdates"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Run Updates"     x:Name="TabRunUpdates"      Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Update Log"      x:Name="TabUpdateLog"       Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="Windows Key"  x:Name="TabWinKey"     Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
-                <Button Text="WSUS Client"  x:Name="TabWsusClient" Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
-            </HorizontalStackLayout>
-        </ScrollView>
+                <Button Text="File Drop &amp; Run" x:Name="TabDeploy"    Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Copy File"           x:Name="TabCopyFile"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Winget"          x:Name="TabWinget"          Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Registry Push"   x:Name="TabRegPush"         Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Pending Updates" x:Name="TabPendingUpdates"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Run Updates"     x:Name="TabRunUpdates"      Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Update Log"      x:Name="TabUpdateLog"       Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Windows Key"  x:Name="TabWinKey"     Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="WSUS Client"  x:Name="TabWsusClient" Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+        </FlexLayout>
 
         <!-- Status -->
         <Border Grid.Row="3" Padding="10,7" BackgroundColor="#E8F5E9" StrokeShape="RoundRectangle 4"
@@ -109,7 +132,7 @@
         <!-- Tab Content -->
         <Grid Grid.Row="4">
 
-            <!-- ── Installed Apps ──────────────────────────────────────────── -->
+            <!-- â”€â”€ Installed Apps â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelApps" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4">
                 <Button Grid.Row="0" Text="Load Installed Apps" Command="{Binding LoadAppsCommand}"
                         BackgroundColor="SteelBlue" HorizontalOptions="Start" Padding="16,8"/>
@@ -142,7 +165,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Services ───────────────────────────────────────────────── -->
+            <!-- â”€â”€ Services â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelServices" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -154,9 +177,9 @@
                 </Grid>
                 <Entry Grid.Row="1" Text="{Binding ServiceSearch}" Placeholder="Filter services..."/>
                 <HorizontalStackLayout Grid.Row="2" Spacing="8">
-                    <Button Text="▶ Start" Command="{Binding StartServiceCommand}" BackgroundColor="#228B22" Padding="16,6"/>
-                    <Button Text="■ Stop" Command="{Binding StopServiceCommand}" BackgroundColor="#CC4400" Padding="16,6"/>
-                    <Button Text="↺ Restart" Command="{Binding RestartServiceCommand}" BackgroundColor="#1565C0" Padding="16,6"/>
+                    <Button Text="â–¶ Start" Command="{Binding StartServiceCommand}" BackgroundColor="#228B22" Padding="16,6"/>
+                    <Button Text="â–  Stop" Command="{Binding StopServiceCommand}" BackgroundColor="#CC4400" Padding="16,6"/>
+                    <Button Text="â†º Restart" Command="{Binding RestartServiceCommand}" BackgroundColor="#1565C0" Padding="16,6"/>
                     <Label Text="{Binding SelectedService.DisplayName, StringFormat='Selected: {0}'}"
                            VerticalOptions="Center" TextColor="Gray" FontSize="12"/>
                 </HorizontalStackLayout>
@@ -186,7 +209,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Local Users & Groups ───────────────────────────────────── -->
+            <!-- â”€â”€ Local Users & Groups â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelLocalUsers" RowDefinitions="Auto,*,Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -234,7 +257,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Printers ───────────────────────────────────────────────── -->
+            <!-- â”€â”€ Printers â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelPrinters" RowDefinitions="Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <!-- Add + Load row -->
@@ -274,7 +297,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Pending Reboot ─────────────────────────────────────────── -->
+            <!-- â”€â”€ Pending Reboot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelReboot" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Enter computer names (one per line or comma-separated). Leave blank to check Target Computer."
@@ -311,7 +334,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── TCP Port Tester ────────────────────────────────────────── -->
+            <!-- â”€â”€ TCP Port Tester â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelPorts" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="80,*" ColumnSpacing="8">
@@ -351,7 +374,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Windows Updates ────────────────────────────────────────── -->
+            <!-- â”€â”€ Windows Updates â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelUpdates" RowDefinitions="Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -383,7 +406,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Network Info ───────────────────────────────────────────── -->
+            <!-- â”€â”€ Network Info â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelNetwork" RowDefinitions="Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -420,7 +443,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Logged On User ─────────────────────────────────────────── -->
+            <!-- â”€â”€ Logged On User â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelLoggedOn" RowDefinitions="Auto,Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -435,11 +458,11 @@
                     <Label Text="{Binding LoggedOnResult}" FontSize="16" FontAttributes="Bold"
                            TextColor="#0078D4" HorizontalTextAlignment="Center"/>
                 </Border>
-                <Label Grid.Row="2" Text="Queries Win32_ComputerSystem.UserName — shows the interactively logged-on user for the target machine."
+                <Label Grid.Row="2" Text="Queries Win32_ComputerSystem.UserName â€” shows the interactively logged-on user for the target machine."
                        TextColor="Gray" FontSize="11" Padding="4"/>
             </Grid>
 
-            <!-- ── Local Admins ───────────────────────────────────────────── -->
+            <!-- â”€â”€ Local Admins â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelLocalAdmins" RowDefinitions="Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -460,7 +483,7 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid ColumnDefinitions="Auto,*" Padding="14,8" ColumnSpacing="10">
-                                    <Label Grid.Column="0" Text="🔑" FontSize="14"/>
+                                    <Label Grid.Column="0" Text="ðŸ”‘" FontSize="14"/>
                                     <Label Grid.Column="1" Text="{Binding .}" FontSize="13" VerticalOptions="Center"/>
                                 </Grid>
                             </DataTemplate>
@@ -469,7 +492,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Security Patches ───────────────────────────────────────── -->
+            <!-- â”€â”€ Security Patches â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelPatches" RowDefinitions="Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -504,13 +527,13 @@
                 </Border>
             </Grid>
 
-            <!-- ── Process Manager ────────────────────────────────────────── -->
+            <!-- â”€â”€ Process Manager â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelProcesses" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
                     <Button Grid.Column="0" Text="Load Processes" Command="{Binding LoadProcessesCommand}"
                             BackgroundColor="SteelBlue" Padding="16,8"/>
-                    <Button Grid.Column="1" Text="⚡ Kill Process" Command="{Binding KillProcessCommand}"
+                    <Button Grid.Column="1" Text="âš¡ Kill Process" Command="{Binding KillProcessCommand}"
                             BackgroundColor="#CC4400" Padding="16,8"/>
                     <ActivityIndicator Grid.Column="2" IsRunning="{Binding ProcessesLoading}"
                                        IsVisible="{Binding ProcessesLoading}" Color="SteelBlue"
@@ -548,18 +571,18 @@
                 </Border>
             </Grid>
 
-            <!-- ── Remote Reboot ──────────────────────────────────────────── -->
+            <!-- â”€â”€ Remote Reboot â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelRebootAction" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12"
                   Padding="4" IsVisible="False">
                 <Label Grid.Row="0"
                        Text="Use the Target Computer field above to set the machine. Actions are confirmed before executing."
                        TextColor="Gray" FontSize="12"/>
                 <HorizontalStackLayout Grid.Row="1" Spacing="10">
-                    <Button Text="🔄 Reboot Now" Command="{Binding RebootNowCommand}"
+                    <Button Text="ðŸ”„ Reboot Now" Command="{Binding RebootNowCommand}"
                             BackgroundColor="#CC4400" Padding="18,10" FontAttributes="Bold"/>
-                    <Button Text="❌ Cancel Pending Reboot" Command="{Binding CancelRebootCommand}"
-                            BackgroundColor="#555" Padding="18,10"/>
-                    <Button Text="🖥 Enable RDP" Command="{Binding EnableRdpCommand}"
+                    <Button Text="âŒ Cancel Pending Reboot" Command="{Binding CancelRebootCommand}"
+                            BackgroundColor="White" TextColor="Black" Padding="18,10"/>
+                    <Button Text="ðŸ–¥ Enable RDP" Command="{Binding EnableRdpCommand}"
                             BackgroundColor="#1565C0" Padding="18,10"/>
                     <ActivityIndicator IsRunning="{Binding RebootActionLoading}"
                                        IsVisible="{Binding RebootActionLoading}" Color="SteelBlue"
@@ -575,10 +598,10 @@
                        TextColor="Gray" FontSize="11" Padding="4"/>
             </Grid>
 
-            <!-- ── Ping Sweep ─────────────────────────────────────────────── -->
+            <!-- â”€â”€ Ping Sweep â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelPingSweep" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
-                <Label Grid.Row="0" Text="Enter a subnet prefix (e.g. 192.168.1) — sweeps .1 through .254 in parallel."
+                <Label Grid.Row="0" Text="Enter a subnet prefix (e.g. 192.168.1) â€” sweeps .1 through .254 in parallel."
                        TextColor="Gray" FontSize="12"/>
                 <Grid Grid.Row="1" ColumnDefinitions="80,*,Auto,Auto" ColumnSpacing="8">
                     <Label Grid.Column="0" Text="Subnet:" VerticalOptions="Center" FontAttributes="Bold"/>
@@ -621,11 +644,11 @@
                 </Border>
             </Grid>
 
-            <!-- ── Run As ─────────────────────────────────────────────────── -->
+            <!-- â”€â”€ Run As â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelRunAs" RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Label Grid.Row="0"
-                       Text="Run a command or manage a service using alternate credentials. Password is passed to PowerShell SecureString — not stored."
+                       Text="Run a command or manage a service using alternate credentials. Password is passed to PowerShell SecureString â€” not stored."
                        TextColor="Gray" FontSize="12"/>
                 <Grid Grid.Row="1" ColumnDefinitions="80,120,80,*" ColumnSpacing="8">
                     <Label Grid.Column="0" Text="Domain:" VerticalOptions="Center" FontAttributes="Bold"/>
@@ -639,18 +662,18 @@
                 </Grid>
                 <Grid Grid.Row="3" ColumnDefinitions="80,*" ColumnSpacing="8">
                     <Label Grid.Column="0" Text="Command:" VerticalOptions="Center" FontAttributes="Bold"/>
-                    <Entry Grid.Column="1" Text="{Binding RunAsCommand}" Placeholder="notepad.exe  — or service name for Start/Stop"/>
+                    <Entry Grid.Column="1" Text="{Binding RunAsCommand}" Placeholder="notepad.exe  â€” or service name for Start/Stop"/>
                 </Grid>
                 <Grid Grid.Row="4" ColumnDefinitions="80,*" ColumnSpacing="8">
                     <Label Grid.Column="0" Text="Arguments:" VerticalOptions="Center" FontAttributes="Bold"/>
                     <Entry Grid.Column="1" Text="{Binding RunAsArgs}" Placeholder="optional arguments"/>
                 </Grid>
                 <HorizontalStackLayout Grid.Row="5" Spacing="10">
-                    <Button Text="▶ Run / Launch" Command="{Binding RunAsExecuteCommand}"
+                    <Button Text="â–¶ Run / Launch" Command="{Binding RunAsExecuteCommand}"
                             BackgroundColor="#228B22" Padding="16,8" FontAttributes="Bold"/>
-                    <Button Text="▶ Start Service" Command="{Binding RunAsStartServiceCommand}"
+                    <Button Text="â–¶ Start Service" Command="{Binding RunAsStartServiceCommand}"
                             BackgroundColor="#1565C0" Padding="16,8"/>
-                    <Button Text="■ Stop Service" Command="{Binding RunAsStopServiceCommand}"
+                    <Button Text="â–  Stop Service" Command="{Binding RunAsStopServiceCommand}"
                             BackgroundColor="#CC4400" Padding="16,8"/>
                     <ActivityIndicator IsRunning="{Binding RunAsLoading}" IsVisible="{Binding RunAsLoading}"
                                        Color="SteelBlue" VerticalOptions="Center"/>
@@ -662,7 +685,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Event Log ──────────────────────────────────────────────── -->
+            <!-- â”€â”€ Event Log â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelEventLog" RowDefinitions="Auto,Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="70,140,70,80,Auto,Auto,*" ColumnSpacing="8">
@@ -671,11 +694,11 @@
                     <Label Grid.Column="2" Text="Count:" VerticalOptions="Center" FontAttributes="Bold"/>
                     <Entry Grid.Column="3" Text="{Binding EventLogCount}" Placeholder="50"/>
                     <Button Grid.Column="4" Text="System" Padding="10,6" FontSize="11"
-                            BackgroundColor="#555" Clicked="OnEventLogPreset"/>
+                            BackgroundColor="White" TextColor="Black" Clicked="OnEventLogPreset"/>
                     <Button Grid.Column="5" Text="Application" Padding="10,6" FontSize="11"
-                            BackgroundColor="#555" Clicked="OnEventLogPreset"/>
+                            BackgroundColor="White" TextColor="Black" Clicked="OnEventLogPreset"/>
                     <Button Grid.Column="6" Text="Security" Padding="10,6" FontSize="11"
-                            BackgroundColor="#555" Clicked="OnEventLogPreset" HorizontalOptions="Start"/>
+                            BackgroundColor="White" TextColor="Black" Clicked="OnEventLogPreset" HorizontalOptions="Start"/>
                 </Grid>
                 <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
                     <Button Grid.Column="0" Text="Load Events" Command="{Binding LoadEventLogCommand}"
@@ -712,7 +735,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Shared Folders ─────────────────────────────────────────── -->
+            <!-- â”€â”€ Shared Folders â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelShares" RowDefinitions="Auto,*,Auto" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -753,13 +776,13 @@
                 </Grid>
             </Grid>
 
-            <!-- ── File Drop & Execute ────────────────────────────────────── -->
+            <!-- â”€â”€ File Drop & Execute â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelDeploy" RowDefinitions="Auto,Auto,Auto,Auto,*,Auto" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Border Grid.Row="0" Padding="10,8" BackgroundColor="#FFF8E1" Stroke="#FFB300"
                         StrokeShape="RoundRectangle 4">
                     <Label FontSize="12" TextColor="#5D4037">
-                        <Label.Text>Workflow: Creates a temp share on the remote machine → maps it locally → copies your script → removes share → executes remotely. Credentials must have admin rights on the target.</Label.Text>
+                        <Label.Text>Workflow: Creates a temp share on the remote machine â†’ maps it locally â†’ copies your script â†’ removes share â†’ executes remotely. Credentials must have admin rights on the target.</Label.Text>
                     </Label>
                 </Border>
                 <Grid Grid.Row="1" ColumnDefinitions="80,120,80,*" ColumnSpacing="8">
@@ -776,8 +799,8 @@
                 </Grid>
                 <Grid Grid.Row="3" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
                     <Entry Grid.Column="0" Text="{Binding DeployScriptName}" Placeholder="script.ps1"/>
-                    <Button Grid.Column="1" Text="📂 Browse" Command="{Binding DeployBrowseCommand}"
-                            BackgroundColor="#555" Padding="12,6"/>
+                    <Button Grid.Column="1" Text="ðŸ“‚ Browse" Command="{Binding DeployBrowseCommand}"
+                            BackgroundColor="White" TextColor="Black" Padding="12,6"/>
                     <CheckBox Grid.Column="2" IsChecked="{Binding DeployExecute}" VerticalOptions="Center"/>
                     <Label Grid.Column="3" Text="Execute after drop" VerticalOptions="Center" FontSize="12"/>
                     <ActivityIndicator Grid.Column="4" IsRunning="{Binding DeployLoading}"
@@ -802,12 +825,12 @@
                         </CollectionView>
                     </Border>
                 </Grid>
-                <Button Grid.Row="5" Text="🚀 Deploy &amp; Run" Command="{Binding DeployRunCommand}"
+                <Button Grid.Row="5" Text="ðŸš€ Deploy &amp; Run" Command="{Binding DeployRunCommand}"
                         BackgroundColor="#8B0000" TextColor="White" FontAttributes="Bold"
                         Padding="20,10" HorizontalOptions="Start"/>
             </Grid>
 
-            <!-- ── Disk Space ──────────────────────────────────────────────── -->
+            <!-- â”€â”€ Disk Space â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelDiskSpace" RowDefinitions="Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -847,7 +870,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Group Membership ───────────────────────────────────────── -->
+            <!-- â”€â”€ Group Membership â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelGroupMembership" RowDefinitions="Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="60,140,60,140,Auto,Auto,Auto,Auto" ColumnSpacing="8">
@@ -876,7 +899,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Account Lockout ───────────────────────────────────────── -->
+            <!-- â”€â”€ Account Lockout â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelAcctLockout" RowDefinitions="Auto,Auto,*" RowSpacing="10"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
@@ -901,7 +924,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── RDP Sessions ───────────────────────────────────────────── -->
+            <!-- â”€â”€ RDP Sessions â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelRdpSessions" RowDefinitions="Auto,*,Auto" RowSpacing="10"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto" ColumnSpacing="8">
@@ -931,7 +954,7 @@
                 <Label Grid.Row="2" Text="{Binding RdpStatus}" FontSize="12" TextColor="#228B22"/>
             </Grid>
 
-            <!-- ── Password Expiry ────────────────────────────────────────── -->
+            <!-- â”€â”€ Password Expiry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelPwdExpiry" RowDefinitions="Auto,*" RowSpacing="10"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,*,Auto,Auto" ColumnSpacing="8">
@@ -959,7 +982,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── User Management ───────────────────────────────────────── -->
+            <!-- â”€â”€ User Management â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelUserMgmt" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="10"
                   Padding="4" IsVisible="False">
 
@@ -1057,7 +1080,7 @@
                 </Grid>
             </Grid>
 
-            <!-- ── DNS ───────────────────────────────────────────────────── -->
+            <!-- â”€â”€ DNS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelDns" RowDefinitions="Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto" ColumnSpacing="8">
@@ -1077,7 +1100,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Remote Registry ────────────────────────────────────────── -->
+            <!-- â”€â”€ Remote Registry â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelRegistry" RowDefinitions="Auto,Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="70,160,140,Auto,Auto,Auto,Auto" ColumnSpacing="8">
@@ -1105,7 +1128,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── GP Update ──────────────────────────────────────────────── -->
+            <!-- â”€â”€ GP Update â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelGpUpdate" RowDefinitions="Auto,Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Label Grid.Row="0"
@@ -1125,7 +1148,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Copy File ──────────────────────────────────────────────── -->
+            <!-- â”€â”€ Copy File â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelCopyFile" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="8"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="60,100,80,*,80,*" ColumnSpacing="8">
@@ -1139,7 +1162,7 @@
                 <Grid Grid.Row="1" ColumnDefinitions="*,Auto" ColumnSpacing="8">
                     <Entry Grid.Column="0" Text="{Binding CopyLocalPath}" Placeholder="Local file path"/>
                     <Button Grid.Column="1" Text="Browse" Command="{Binding CopyBrowseCommand}"
-                            BackgroundColor="#555" Padding="12,8"/>
+                            BackgroundColor="White" TextColor="Black" Padding="12,8"/>
                 </Grid>
                 <Grid Grid.Row="2" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                     <Entry Grid.Column="0" Text="{Binding CopyRemoteDest}" Placeholder="C:\Windows\Temp"/>
@@ -1258,12 +1281,12 @@
                 </Border>
             </Grid>
 
-            <!-- ── Scheduled Tasks ────────────────────────────────────────────── -->
+            <!-- â”€â”€ Scheduled Tasks â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelSchedTasks" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnSpacing="8">
                     <Button Grid.Column="0" Text="Load Tasks" Command="{Binding LoadSchedTasksCommand}"
                             BackgroundColor="SteelBlue" Padding="16,8"/>
-                    <Button Grid.Column="1" Text="▶ Run" Command="{Binding RunSchedTaskCommand}"
+                    <Button Grid.Column="1" Text="â–¶ Run" Command="{Binding RunSchedTaskCommand}"
                             BackgroundColor="#228B22" Padding="14,8"/>
                     <Button Grid.Column="2" Text="Enable" Command="{Binding EnableSchedTaskCommand}"
                             BackgroundColor="#1565C0" Padding="14,8"/>
@@ -1301,7 +1324,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Windows Activation ─────────────────────────────────────────── -->
+            <!-- â”€â”€ Windows Activation â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelActivation" RowDefinitions="Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
                     <Button Grid.Column="0" Text="Check Activation" Command="{Binding CheckActivationCommand}"
@@ -1317,7 +1340,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Temp Cleanup ───────────────────────────────────────────────── -->
+            <!-- â”€â”€ Temp Cleanup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelTempClean" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <!-- Credentials row -->
                 <Grid Grid.Row="0" ColumnDefinitions="60,100,80,*,80,*" ColumnSpacing="8">
@@ -1356,7 +1379,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Startup Programs ───────────────────────────────────────────── -->
+            <!-- â”€â”€ Startup Programs â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelStartup" RowDefinitions="Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
                     <Button Grid.Column="0" Text="Load Startup Programs" Command="{Binding LoadStartupCommand}"
@@ -1387,13 +1410,13 @@
                 </Border>
             </Grid>
 
-            <!-- ── Remote PowerShell ──────────────────────────────────────────── -->
+            <!-- â”€â”€ Remote PowerShell â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelRemotePs" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12"
                   Padding="4" IsVisible="False">
                 <Border Grid.Row="0" Padding="12,10" BackgroundColor="#FFF8E1" Stroke="#FFB300"
                         StrokeShape="RoundRectangle 4">
                     <Label FontSize="12" TextColor="#5D4037">
-                        <Label.Text>Opens a new PowerShell console window and connects to the target computer via Enter-PSSession. Admin credentials are required. The session runs interactively in the console — close it when done.</Label.Text>
+                        <Label.Text>Opens a new PowerShell console window and connects to the target computer via Enter-PSSession. Admin credentials are required. The session runs interactively in the console â€” close it when done.</Label.Text>
                     </Label>
                 </Border>
                 <Grid Grid.Row="1" ColumnDefinitions="60,120,80,*,80,*" ColumnSpacing="8">
@@ -1412,7 +1435,7 @@
                 </Grid>
             </Grid>
 
-            <!-- ── PS Runner ─────────────────────────────────────────────────── -->
+            <!-- â”€â”€ PS Runner â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelPsRun" RowDefinitions="Auto,*,Auto,200" RowSpacing="10"
                   Padding="4" IsVisible="False">
                 <!-- Creds row -->
@@ -1427,7 +1450,7 @@
                 <!-- Script editor -->
                 <Border Grid.Row="1" Stroke="#444" StrokeShape="RoundRectangle 4" Padding="2">
                     <Editor x:Name="PsRunEditor" Text="{Binding PsRunScript}"
-                            Placeholder="Paste or type PowerShell here — runs on the remote machine via Invoke-Command"
+                            Placeholder="Paste or type PowerShell here â€” runs on the remote machine via Invoke-Command"
                             FontFamily="Consolas" FontSize="13" BackgroundColor="#1E1E1E"
                             TextColor="White" AutoSize="TextChanges"/>
                 </Border>
@@ -1436,7 +1459,7 @@
                     <Button Grid.Column="0" Text="Run on Remote" Command="{Binding RunPsOnRemoteCommand}"
                             BackgroundColor="#1565C0" TextColor="White" FontAttributes="Bold" Padding="20,10"/>
                     <Button Grid.Column="1" Text="Clear" Command="{Binding ClearPsRunCommand}"
-                            BackgroundColor="#555" TextColor="White" Padding="14,10"/>
+                            BackgroundColor="White" TextColor="Black" Padding="14,10"/>
                     <Label  Grid.Column="2" Text="{Binding PsRunStatus}" VerticalOptions="Center"
                             TextColor="#228B22" FontSize="12"/>
                 </Grid>
@@ -1449,7 +1472,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Remote Directory Browser ───────────────────────────────── -->
+            <!-- â”€â”€ Remote Directory Browser â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelDirBrowser" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="10"
                   Padding="4" IsVisible="False">
                 <!-- Credentials -->
@@ -1482,7 +1505,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Remote Process Kill ────────────────────────────────────── -->
+            <!-- â”€â”€ Remote Process Kill â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelProcKill" RowDefinitions="Auto,Auto,*" RowSpacing="10"
                   Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
@@ -1512,7 +1535,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── WinRM Toggle ───────────────────────────────────────────── -->
+            <!-- â”€â”€ WinRM Toggle â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelWinRmToggle" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="12"
                   Padding="4" IsVisible="False">
                 <Border Grid.Row="0" Padding="12,10" BackgroundColor="#FFF8E1" Stroke="#FFB300"
@@ -1552,7 +1575,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Wake on LAN ────────────────────────────────────────────── -->
+            <!-- â”€â”€ Wake on LAN â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelWakeOnLan" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="12"
                   Padding="4" IsVisible="False">
                 <Border Grid.Row="0" Padding="12,10" BackgroundColor="#E8F5E9" Stroke="#388E3C"
@@ -1584,7 +1607,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Flush DNS ──────────────────────────────────────────────── -->
+            <!-- â”€â”€ Flush DNS â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelFlushDns" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Flushes the DNS resolver cache on the target machine. Fixes many name resolution issues." TextColor="Gray" FontSize="12"/>
                 <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -1599,7 +1622,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── NetStat ──────────────────────────────────────────────────── -->
+            <!-- â”€â”€ NetStat â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelNetStat" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Shows active TCP/UDP connections and listening ports (netstat -ano)." TextColor="Gray" FontSize="12"/>
                 <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -1614,7 +1637,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Traceroute ───────────────────────────────────────────────── -->
+            <!-- â”€â”€ Traceroute â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelTrace" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Traces the network path to a host (tracert -d -h 20). May take up to 60 seconds." TextColor="Gray" FontSize="12"/>
                 <Grid Grid.Row="1" ColumnDefinitions="*,Auto,*" ColumnSpacing="8">
@@ -1630,7 +1653,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── WiFi Profiles ─────────────────────────────────────────────── -->
+            <!-- â”€â”€ WiFi Profiles â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelWifi" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Lists saved WiFi profiles. Works on local machine only." TextColor="Gray" FontSize="12"/>
                 <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -1653,7 +1676,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Proxy Settings ────────────────────────────────────────────── -->
+            <!-- â”€â”€ Proxy Settings â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelProxy" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Reads current WinInet proxy settings from the user registry (HKCU)." TextColor="Gray" FontSize="12"/>
                 <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -1668,7 +1691,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Reset NIC ─────────────────────────────────────────────────── -->
+            <!-- â”€â”€ Reset NIC â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelResetNic" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Disables then re-enables the selected adapter. Connection drops for ~5 seconds. Fixes many driver/DHCP issues." TextColor="Gray" FontSize="12"/>
                 <Grid Grid.Row="1" ColumnDefinitions="Auto,*" ColumnSpacing="8">
@@ -1733,7 +1756,7 @@
             </Grid>
 
 
-            <!-- ── Auto Logon ──────────────────────────────────────────────────── -->
+            <!-- â”€â”€ Auto Logon â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelAutoLogon" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="80,*,80,*" ColumnSpacing="8">
                     <Label Grid.Column="0" Text="Username:" VerticalOptions="Center"/>
@@ -1763,7 +1786,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Default Printer ────────────────────────────────────────────── -->
+            <!-- â”€â”€ Default Printer â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelSetPrinter" RowDefinitions="Auto,*,Auto" RowSpacing="8" Padding="4" IsVisible="False">
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
                     <Button Grid.Column="0" Text="Load Printers" Command="{Binding LoadPrintersForDefaultCommand}"
@@ -1790,19 +1813,23 @@
                 </Grid>
             </Grid>
 
-            <!-- ── Trusted Sites ──────────────────────────────────────────────── -->
+            <!-- â”€â”€ Trusted Sites â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelTrustedSites" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
-                <Label Grid.Row="0" Text="Adds sites to the IE/Edge Trusted Sites zone (HKCU registry). Runs on the target machine."
+                <Label Grid.Row="0" Text="Manage IE/Edge Trusted Sites zone (HKCU registry) on the target machine."
                        TextColor="Gray" FontSize="12"/>
                 <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
                     <Entry Grid.Column="0" Text="{Binding TrustedSiteDomain}" Placeholder="e.g. contoso.com or intranet.local"/>
                     <CheckBox Grid.Column="1" IsChecked="{Binding TrustedSiteHttp}" VerticalOptions="Center"/>
                     <Label Grid.Column="2" Text="HTTP (default = HTTPS)" VerticalOptions="Center" FontSize="12"/>
                 </Grid>
-                <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,Auto,Auto,*" ColumnSpacing="8">
                     <Button Grid.Column="0" Text="Add Site" Command="{Binding AddTrustedSiteCommand}"
                             BackgroundColor="#228B22" Padding="16,8"/>
-                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding TrustedSiteLoading}"
+                    <Button Grid.Column="1" Text="Remove Site" Command="{Binding RemoveTrustedSiteCommand}"
+                            BackgroundColor="#8B0000" Padding="16,8"/>
+                    <Button Grid.Column="2" Text="List All" Command="{Binding ListTrustedSitesCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="3" IsRunning="{Binding TrustedSiteLoading}"
                                        IsVisible="{Binding TrustedSiteLoading}" Color="SteelBlue"
                                        HorizontalOptions="Start" VerticalOptions="Center"/>
                 </Grid>
@@ -1811,14 +1838,14 @@
                 </Border>
             </Grid>
 
-            <!-- ── Quick Access ───────────────────────────────────────────────── -->
+            <!-- â”€â”€ Quick Access â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelQuickAccess" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Pin or unpin folders from Quick Access in File Explorer. Runs on this machine (COM shell, local only)."
                        TextColor="Gray" FontSize="12"/>
                 <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
                     <Entry Grid.Column="0" Text="{Binding QuickAccessPath}" Placeholder="\\server\share or C:\path\to\folder"/>
                     <Button Grid.Column="1" Text="Browse" Command="{Binding QuickAccessBrowseCommand}"
-                            BackgroundColor="#555" Padding="14,8"/>
+                            BackgroundColor="White" TextColor="Black" Padding="14,8"/>
                     <Button Grid.Column="2" Text="Pin" Command="{Binding QuickAccessPinCommand}"
                             BackgroundColor="#228B22" Padding="16,8"/>
                     <Button Grid.Column="3" Text="Unpin" Command="{Binding QuickAccessUnpinCommand}"
@@ -1832,7 +1859,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Windows Key ────────────────────────────────────────────────── -->
+            <!-- â”€â”€ Windows Key â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelWinKey" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Install a new Windows product key and activate via slmgr. Runs on the target machine."
                        TextColor="Gray" FontSize="12"/>
@@ -1855,7 +1882,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── WSUS Client ────────────────────────────────────────────────── -->
+            <!-- â”€â”€ WSUS Client â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelWsusClient" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Configure Windows Update Server (WSUS) client settings via registry. Runs on the target machine."
                        TextColor="Gray" FontSize="12"/>
@@ -1885,14 +1912,20 @@
                 </Border>
             </Grid>
 
-            <!-- ── Disk Cleanup ──────────────────────────────────────────────────── -->
+            <!-- â”€â”€ Disk Cleanup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelDiskCleanup" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Remove temporary files from the target machine. Files newer than the selected days are kept. Requires admin rights."
                        TextColor="Gray" FontSize="12"/>
-                <Grid Grid.Row="1" ColumnDefinitions="80,80,*" ColumnSpacing="8">
-                    <Label Grid.Column="0" Text="Keep files newer than:" VerticalOptions="Center" FontAttributes="Bold"/>
-                    <Entry Grid.Column="1" Text="{Binding CleanupDays}" Keyboard="Numeric" Placeholder="7"/>
-                    <Label Grid.Column="2" Text="days" VerticalOptions="Center" TextColor="Gray"/>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,Auto,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Drive:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Picker Grid.Column="1" ItemsSource="{Binding CleanupDrives}" SelectedItem="{Binding SelectedCleanupDrive}" WidthRequest="90"/>
+                    <Button Grid.Column="2" Text="Load Drives" Command="{Binding LoadCleanupDrivesCommand}"
+                            BackgroundColor="SteelBlue" Padding="12,6" FontSize="12"/>
+                    <Label Grid.Column="3" Text="  Keep files newer than:" VerticalOptions="Center"/>
+                    <Grid Grid.Column="4" ColumnDefinitions="80,*" ColumnSpacing="4">
+                        <Entry Grid.Column="0" Text="{Binding CleanupDays}" Keyboard="Numeric" Placeholder="7"/>
+                        <Label Grid.Column="1" Text="days" VerticalOptions="Center" TextColor="Gray"/>
+                    </Grid>
                 </Grid>
                 <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16">
                     <HorizontalStackLayout Grid.Column="0" Spacing="4">
@@ -1928,7 +1961,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Keep Alive ─────────────────────────────────────────────────── -->
+            <!-- â”€â”€ Keep Alive â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelKeepAlive" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Prevents this machine from sleeping or locking by telling Windows the system is in use. Useful during large downloads or remote sessions."
                        TextColor="Gray" FontSize="12"/>
@@ -1947,7 +1980,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Hosts File Editor ────────────────────────────────────────────────── -->
+            <!-- â”€â”€ Hosts File Editor â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelHostsFile" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Edit the hosts file on the target machine via admin share (\\target\C$\...). Target must allow admin shares."
                        TextColor="Gray" FontSize="12"/>
@@ -1975,7 +2008,7 @@
                 </Border>
             </Grid>
 
-            <!-- ── Reset AD User Password ────────────────────────────────────────────── -->
+            <!-- â”€â”€ Reset AD User Password â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
             <Grid x:Name="PanelAdReset" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <Label Grid.Row="0" Text="Reset an Active Directory user password. Requires ActiveDirectory module on this machine and domain connectivity."
                        TextColor="Gray" FontSize="12"/>
