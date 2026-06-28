@@ -13,11 +13,19 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <!-- Bundle the sndfile-concat binaries as content -->
-    <Content Include="bin\sndfile-concat.exe" CopyToOutputDirectory="PreserveNewest"/>
-    <Content Include="bin\libsndfile.dll"      CopyToOutputDirectory="PreserveNewest"/>
-    <Content Include="bin\msvcp71.dll"         CopyToOutputDirectory="PreserveNewest"/>
-    <Content Include="bin\msvcr71.dll"         CopyToOutputDirectory="PreserveNewest"/>
-    <Content Include="bin\silence03.WAV"       CopyToOutputDirectory="PreserveNewest"/>
+    <!-- Copy native binaries to output bin\ subfolder (regular build) -->
+    <Content Include="native\sndfile-concat.exe" CopyToOutputDirectory="PreserveNewest" Link="bin\sndfile-concat.exe"/>
+    <Content Include="native\libsndfile.dll"      CopyToOutputDirectory="PreserveNewest" Link="bin\libsndfile.dll"/>
+    <Content Include="native\msvcp71.dll"         CopyToOutputDirectory="PreserveNewest" Link="bin\msvcp71.dll"/>
+    <Content Include="native\msvcr71.dll"         CopyToOutputDirectory="PreserveNewest" Link="bin\msvcr71.dll"/>
+    <Content Include="native\silence03.WAV"       CopyToOutputDirectory="PreserveNewest" Link="bin\silence03.WAV"/>
   </ItemGroup>
+
+  <!-- Copy native binaries to publish\bin\ after publish -->
+  <Target Name="CopyNativesToPublish" AfterTargets="Publish">
+    <ItemGroup>
+      <NativeFiles Include="$(MSBuildProjectDirectory)\native\*"/>
+    </ItemGroup>
+    <Copy SourceFiles="@(NativeFiles)" DestinationFolder="$(PublishDir)bin\" SkipUnchangedFiles="true"/>
+  </Target>
 </Project>

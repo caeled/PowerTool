@@ -3,6 +3,7 @@ SupportToolApp/bin/
 SupportToolApp/obj/
 SoundCombineApp/bin/Release/
 SoundCombineApp/obj/
+SoundCombineApp/publish/
 *.user
 
 # Claude Code session data
