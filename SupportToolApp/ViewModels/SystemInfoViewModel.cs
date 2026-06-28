@@ -604,18 +604,25 @@ public class SystemInfoViewModel : BaseViewModel
 
     private List<LoginEvent> QueryLoginsPs(string target, int count)
     {
-        var body = $"$n = {count}\n$nMax = {count * 10}\n" + """
+        var isLocal = string.IsNullOrWhiteSpace(target)
+                   || target.Equals("localhost", StringComparison.OrdinalIgnoreCase)
+                   || target.Equals(Environment.MachineName, StringComparison.OrdinalIgnoreCase);
+        var maxEvents = Math.Max(count * 20, 200);
+        var compLine  = isLocal ? "" : $"$gwParams['ComputerName'] = '{target.Replace("'", "''")}'\n";
+        var script = $"$n = {count}\n$nMax = {maxEvents}\n" + compLine + """
             $ErrorActionPreference = 'SilentlyContinue'
-            $events = try {
-                Get-WinEvent -LogName Security -FilterHashtable @{Id=4624} -MaxEvents $nMax -ErrorAction Stop |
-                    Where-Object { $_.Properties[8].Value -in 2,10 } |
+            $typeMap  = @{2='Interactive';7='Unlock';10='Remote (RDP)';11='Cached'}
+            $gwParams = @{ FilterHashtable = @{LogName='Security';Id=4624}; MaxEvents = $nMax; ErrorAction = 'Stop' }
+            $events   = try {
+                Get-WinEvent @gwParams |
+                    Where-Object { $_.Properties[8].Value -in 2,7,10,11 } |
                     Select-Object -First $n
             } catch { @() }
             @($events | ForEach-Object {
                 $user   = $_.Properties[5].Value
                 $domain = $_.Properties[6].Value
                 $ltype  = [int]$_.Properties[8].Value
-                $ltStr  = if ($ltype -eq 2) { 'Interactive' } else { 'Remote' }
+                $ltStr  = if ($typeMap.ContainsKey($ltype)) { $typeMap[$ltype] } else { "Type $ltype" }
                 [ordered]@{
                     User = [string]"$domain\$user"
                     Time = [string]$_.TimeCreated.ToString('yyyy-MM-dd HH:mm:ss')
@@ -623,7 +630,7 @@ public class SystemInfoViewModel : BaseViewModel
                 }
             }) | ConvertTo-Json
             """;
-        var json = RunPs(WrapScript(target, body));
+        var json = RunPs(script);
         if (string.IsNullOrWhiteSpace(json)) return [];
         try
         {
