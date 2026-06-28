@@ -896,6 +896,32 @@ public class ToolsViewModel : BaseViewModel
     public bool   AdResetLoading     { get => _adResetLoading;     set => SetProperty(ref _adResetLoading, value); }
     public ICommand AdResetCommand { get; private set; } = null!;
 
+    // ── Windows Disk Cleanup ───────────────────────────────────────────────────
+    private string _cleanupDays = "7", _cleanupOutput = "";
+    private bool _cleanupLoading, _cleanWinTemp = true, _cleanSwDist = true,
+                 _cleanUserTemp = true, _cleanIisLogs, _cleanRecycleBin = true;
+    public string CleanupDays       { get => _cleanupDays;     set => SetProperty(ref _cleanupDays, value); }
+    public string CleanupOutput     { get => _cleanupOutput;   set => SetProperty(ref _cleanupOutput, value); }
+    public bool   CleanupLoading    { get => _cleanupLoading;  set => SetProperty(ref _cleanupLoading, value); }
+    public bool   CleanWinTemp      { get => _cleanWinTemp;    set => SetProperty(ref _cleanWinTemp, value); }
+    public bool   CleanSwDist       { get => _cleanSwDist;     set => SetProperty(ref _cleanSwDist, value); }
+    public bool   CleanUserTemp     { get => _cleanUserTemp;   set => SetProperty(ref _cleanUserTemp, value); }
+    public bool   CleanIisLogs      { get => _cleanIisLogs;    set => SetProperty(ref _cleanIisLogs, value); }
+    public bool   CleanRecycleBin   { get => _cleanRecycleBin; set => SetProperty(ref _cleanRecycleBin, value); }
+    public ICommand RunCleanupCommand { get; private set; } = null!;
+
+    // ── Keep Alive ─────────────────────────────────────────────────────────────
+    private bool _keepAliveActive;
+    private int _keepAliveDurationHours = 1;
+    private string _keepAliveStatus = "Not active";
+    private CancellationTokenSource? _keepAliveCts;
+    public bool   KeepAliveActive        { get => _keepAliveActive;        set { SetProperty(ref _keepAliveActive, value); OnPropertyChanged(nameof(KeepAliveButtonText)); } }
+    public int    KeepAliveDurationHours { get => _keepAliveDurationHours; set => SetProperty(ref _keepAliveDurationHours, value); }
+    public string KeepAliveStatus        { get => _keepAliveStatus;        set => SetProperty(ref _keepAliveStatus, value); }
+    public string KeepAliveButtonText    => KeepAliveActive ? "Stop Keep Alive" : "Start Keep Alive";
+    public List<int> KeepAliveDurationOptions { get; } = [1, 2, 4, 8];
+    public ICommand ToggleKeepAliveCommand { get; private set; } = null!;
+
     // ── Constructor ──────────────────────────────────────────────────────────
 
     private readonly CredentialService _creds;
@@ -2616,6 +2642,45 @@ Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
             AdResetLoading = false;
         });
 
+        RunCleanupCommand = new Command(async () => await RunTool(
+            "Disk Cleanup", () => CleanupLoading = true, () => CleanupLoading = false,
+            async target =>
+            {
+                if (!int.TryParse(CleanupDays, out var days) || days < 0) days = 7;
+                var result = await Task.Run(() => RunPsSync(PsScripts.DiskCleanup(target, days, CleanWinTemp, CleanSwDist, CleanUserTemp, CleanIisLogs, CleanRecycleBin)));
+                CleanupOutput = string.IsNullOrWhiteSpace(result) ? "Cleanup complete." : result.Trim();
+            }));
+
+        ToggleKeepAliveCommand = new Command(() =>
+        {
+            if (KeepAliveActive)
+            {
+                _keepAliveCts?.Cancel();
+                SupportToolApp.Helpers.KeepAliveHelper.Disable();
+                KeepAliveActive = false;
+                KeepAliveStatus = "Stopped.";
+            }
+            else
+            {
+                SupportToolApp.Helpers.KeepAliveHelper.Enable();
+                KeepAliveActive = true;
+                var endTime = DateTime.Now.AddHours(KeepAliveDurationHours);
+                KeepAliveStatus = $"Active until {endTime:HH:mm:ss}";
+                _keepAliveCts = new CancellationTokenSource();
+                _ = Task.Run(async () =>
+                {
+                    try { await Task.Delay(TimeSpan.FromHours(KeepAliveDurationHours), _keepAliveCts.Token); }
+                    catch (TaskCanceledException) { return; }
+                    SupportToolApp.Helpers.KeepAliveHelper.Disable();
+                    MainThread.BeginInvokeOnMainThread(() =>
+                    {
+                        KeepAliveActive = false;
+                        KeepAliveStatus = "Expired.";
+                    });
+                });
+            }
+        });
+
         // Pre-fill credential fields from the shared service on startup
         ApplyCredentials();
     }
@@ -4052,6 +4117,41 @@ internal static class PsScripts
             if ({{(unlock ? "$true" : "$false")}}) { Unlock-ADAccount "{{username}}" }
             "Password reset for $($user.SamAccountName) ($($user.Name)). Force change: {{forceChange}}. Unlocked: {{unlock}}."
         """;
+
+    public static string DiskCleanup(string target, int days, bool winTemp, bool swDist, bool userTemp, bool iisLogs, bool recycleBin) =>
+        TextScriptWithTarget(target, $$"""
+            $days = {{days}}
+            $cutoff = (Get-Date).AddDays(-$days)
+            $results = @()
+
+            if ({{(winTemp  ? "$true" : "$false")}}) {
+                $n = (Get-ChildItem "C:\Windows\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.CreationTime -lt $cutoff } | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue -PassThru).Count
+                $results += "Windows Temp: $n item(s) removed"
+            }
+            if ({{(swDist   ? "$true" : "$false")}}) {
+                Get-Service wuauserv -ErrorAction SilentlyContinue | Stop-Service -Force -ErrorAction SilentlyContinue
+                $n = (Get-ChildItem "C:\Windows\SoftwareDistribution\*" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.CreationTime -lt $cutoff } | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue -PassThru).Count
+                $results += "SoftwareDistribution: $n item(s) removed"
+            }
+            if ({{(userTemp  ? "$true" : "$false")}}) {
+                $n = (Get-ChildItem "C:\Users\*\AppData\Local\Temp\*" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.CreationTime -lt $cutoff } | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue -PassThru).Count
+                $results += "User Temp: $n item(s) removed"
+            }
+            if ({{(iisLogs   ? "$true" : "$false")}}) {
+                $n = (Get-ChildItem "C:\inetpub\logs\LogFiles\*" -Recurse -Force -ErrorAction SilentlyContinue | Where-Object { $_.CreationTime -lt $cutoff } | Remove-Item -Force -Recurse -ErrorAction SilentlyContinue -PassThru).Count
+                $results += "IIS Logs: $n item(s) removed"
+            }
+            if ({{(recycleBin ? "$true" : "$false")}}) {
+                $shell = New-Object -ComObject Shell.Application
+                $shell.Namespace(0xA).Items() | ForEach-Object { Remove-Item $_.Path -Force -Recurse -ErrorAction SilentlyContinue }
+                $results += "Recycle Bin emptied"
+            }
+
+            $results
+            Get-WmiObject Win32_LogicalDisk -Filter 'DriveType=3' | ForEach-Object {
+                "Drive $($_.DeviceID): $([math]::Round($_.FreeSpace/1GB,1)) GB free of $([math]::Round($_.Size/1GB,1)) GB"
+            }
+        """);
 }
 
 internal static class JsonElementExtensions2

@@ -81,11 +81,13 @@ public partial class ToolsPage : ContentPage
             { TabWsusClient,      PanelWsusClient },
             { TabHostsFile,       PanelHostsFile },
             { TabAdReset,         PanelAdReset },
+            { TabDiskCleanup,     PanelDiskCleanup },
+            { TabKeepAlive,       PanelKeepAlive },
         };
 
         _categories = new()
         {
-            { CatSystem,  [TabApps, TabServices, TabUpdates, TabPatches, TabProcesses, TabPrinters, TabDiskSpace, TabSchedTasks, TabActivation, TabTempClean, TabStartup, TabRemotePsSystem, TabPsRunSystem, TabAutoLogon, TabSetPrinter, TabTrustedSites, TabQuickAccess] },
+            { CatSystem,  [TabApps, TabServices, TabUpdates, TabPatches, TabProcesses, TabPrinters, TabDiskSpace, TabSchedTasks, TabActivation, TabTempClean, TabStartup, TabRemotePsSystem, TabPsRunSystem, TabAutoLogon, TabSetPrinter, TabTrustedSites, TabQuickAccess, TabDiskCleanup, TabKeepAlive] },
             { CatUsers,   [TabLocalUsers, TabLoggedOn, TabLocalAdmins, TabRunAs, TabGroupMembership, TabAcctLockout, TabRdpSessions, TabPwdExpiry, TabUserMgmt, TabAdReset] },
             { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns, TabFlushDns, TabNetStat, TabTrace, TabWifi, TabProxy, TabResetNic, TabPing, TabWifiSetup] },
             { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate, TabRemotePsRemote, TabPsRunRemote, TabDirBrowser, TabProcKill, TabWinRmToggle, TabWakeOnLan, TabHostsFile] },

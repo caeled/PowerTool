@@ -47,6 +47,8 @@
                 <Button Text="Default Printer" x:Name="TabSetPrinter"  Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
                 <Button Text="Trusted Sites"  x:Name="TabTrustedSites" Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
                 <Button Text="Quick Access"   x:Name="TabQuickAccess"  Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
+                <Button Text="Disk Cleanup"  x:Name="TabDiskCleanup"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12"/>
+                <Button Text="Keep Alive"    x:Name="TabKeepAlive"    Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12"/>
                 <!-- Users -->
                 <Button Text="Local Users &amp; Groups" x:Name="TabLocalUsers"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Logged On User"           x:Name="TabLoggedOn"         Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
@@ -1880,6 +1882,68 @@
                 </Grid>
                 <Border Grid.Row="4" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
                     <ScrollView><Label Text="{Binding WsusOutput}" FontFamily="Courier New" FontSize="12" TextColor="#00FF41"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Disk Cleanup ──────────────────────────────────────────────────── -->
+            <Grid x:Name="PanelDiskCleanup" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Remove temporary files from the target machine. Files newer than the selected days are kept. Requires admin rights."
+                       TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="80,80,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Keep files newer than:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding CleanupDays}" Keyboard="Numeric" Placeholder="7"/>
+                    <Label Grid.Column="2" Text="days" VerticalOptions="Center" TextColor="Gray"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnSpacing="16">
+                    <HorizontalStackLayout Grid.Column="0" Spacing="4">
+                        <CheckBox IsChecked="{Binding CleanWinTemp}"/>
+                        <Label Text="Windows Temp" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Column="1" Spacing="4">
+                        <CheckBox IsChecked="{Binding CleanSwDist}"/>
+                        <Label Text="SoftwareDistribution" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Column="2" Spacing="4">
+                        <CheckBox IsChecked="{Binding CleanUserTemp}"/>
+                        <Label Text="User Temp" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Column="3" Spacing="4">
+                        <CheckBox IsChecked="{Binding CleanIisLogs}"/>
+                        <Label Text="IIS Logs" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                    <HorizontalStackLayout Grid.Column="4" Spacing="4">
+                        <CheckBox IsChecked="{Binding CleanRecycleBin}"/>
+                        <Label Text="Recycle Bin" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Grid>
+                <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Run Cleanup" Command="{Binding RunCleanupCommand}"
+                            BackgroundColor="#8B0000" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding CleanupLoading}"
+                                       IsVisible="{Binding CleanupLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="4" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
+                    <ScrollView><Label Text="{Binding CleanupOutput}" FontFamily="Courier New" FontSize="12" TextColor="#00FF41"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Keep Alive ─────────────────────────────────────────────────── -->
+            <Grid x:Name="PanelKeepAlive" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Prevents this machine from sleeping or locking by telling Windows the system is in use. Useful during large downloads or remote sessions."
+                       TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="80,*,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Duration (hours):" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Picker Grid.Column="1" ItemsSource="{Binding KeepAliveDurationOptions}" SelectedItem="{Binding KeepAliveDurationHours}"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="{Binding KeepAliveButtonText}" Command="{Binding ToggleKeepAliveCommand}"
+                            BackgroundColor="#228B22" Padding="16,8"/>
+                    <Label Grid.Column="1" Text="{Binding KeepAliveStatus}" VerticalOptions="Center"
+                           TextColor="SteelBlue" FontSize="14" FontAttributes="Bold"/>
+                </Grid>
+                <Border Grid.Row="3" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
+                    <Label Text="Keep Alive uses the Windows SetThreadExecutionState API to prevent sleep and screen lock.&#x0a;No keystrokes are sent. Safe to use in a locked office.&#x0a;&#x0a;Status updates will appear here." FontFamily="Courier New" FontSize="12" TextColor="#888888"/>
                 </Border>
             </Grid>
 
