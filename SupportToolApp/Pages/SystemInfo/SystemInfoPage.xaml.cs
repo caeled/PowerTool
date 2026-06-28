@@ -19,6 +19,7 @@ public partial class SystemInfoPage : ContentPage
             { TabNetwork,  PanelNetwork  },
             { TabSoftware, PanelSoftware },
             { TabSecurity, PanelSecurity },
+            { TabServices, PanelServices },
         };
         SelectTab(TabOverview);
     }

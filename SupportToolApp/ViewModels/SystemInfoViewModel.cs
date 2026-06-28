@@ -110,13 +110,30 @@ public class SecurityData
     public string WUAutoUpdate    { get; set; } = "";
 }
 
+public class SharedFolder
+{
+    public string Name        { get; set; } = "";
+    public string Path        { get; set; } = "";
+    public string Description { get; set; } = "";
+    public string ShareType   { get; set; } = "";
+}
+
+public class ServiceItem
+{
+    public string Name      { get; set; } = "";
+    public string Caption   { get; set; } = "";
+    public string State     { get; set; } = "";
+    public string StartMode { get; set; } = "";
+    public string StartName { get; set; } = "";
+}
+
 // ── ViewModel ─────────────────────────────────────────────────────────────────
 
 public class SystemInfoViewModel : BaseViewModel
 {
     private readonly CredentialService _creds;
 
-    private string _target = "", _statusMessage = "", _softwareSearch = "", _errorMessage = "";
+    private string _target = "", _statusMessage = "", _softwareSearch = "", _serviceSearch = "", _errorMessage = "";
     private bool _isBusy, _hasData, _hasError;
     private OverviewData? _overview;
     private HardwareData? _hardware;
@@ -137,10 +154,13 @@ public class SystemInfoViewModel : BaseViewModel
     public HardwareData? Hardware { get => _hardware; set => SetProperty(ref _hardware, value); }
     public SecurityData? Security { get => _security; set => SetProperty(ref _security, value); }
 
-    public ObservableCollection<DiskInfo>       Disks        { get; } = [];
-    public ObservableCollection<NetworkAdapter> Adapters     { get; } = [];
-    public ObservableCollection<AppItem>        AllApps      { get; } = [];
-    public ObservableCollection<AppItem>        FilteredApps { get; } = [];
+    public ObservableCollection<DiskInfo>       Disks           { get; } = [];
+    public ObservableCollection<NetworkAdapter> Adapters        { get; } = [];
+    public ObservableCollection<SharedFolder>   Shares          { get; } = [];
+    public ObservableCollection<AppItem>        AllApps         { get; } = [];
+    public ObservableCollection<AppItem>        FilteredApps    { get; } = [];
+    public ObservableCollection<ServiceItem>    AllServices     { get; } = [];
+    public ObservableCollection<ServiceItem>    FilteredServices{ get; } = [];
 
     public string SoftwareSearch
     {
@@ -148,7 +168,14 @@ public class SystemInfoViewModel : BaseViewModel
         set { if (SetProperty(ref _softwareSearch, value)) ApplySoftwareFilter(); }
     }
 
-    public string AppCount => $"{FilteredApps.Count} of {AllApps.Count} apps";
+    public string ServiceSearch
+    {
+        get => _serviceSearch;
+        set { if (SetProperty(ref _serviceSearch, value)) ApplyServiceFilter(); }
+    }
+
+    public string AppCount     => $"{FilteredApps.Count} of {AllApps.Count} apps";
+    public string ServiceCount => $"{FilteredServices.Count} of {AllServices.Count} services";
 
     public ICommand QueryCommand  { get; }
     public ICommand ExportCommand { get; }
@@ -163,8 +190,10 @@ public class SystemInfoViewModel : BaseViewModel
             HasData = false;
             IsBusy = true;
             Overview = null; Hardware = null; Security = null;
-            Disks.Clear(); Adapters.Clear(); AllApps.Clear(); FilteredApps.Clear();
-            SoftwareSearch = "";
+            Disks.Clear(); Adapters.Clear(); Shares.Clear();
+            AllApps.Clear(); FilteredApps.Clear();
+            AllServices.Clear(); FilteredServices.Clear();
+            SoftwareSearch = ""; ServiceSearch = "";
 
             var t = Target.Trim();
             StatusMessage = string.IsNullOrWhiteSpace(t) ? "Querying local machine…" : $"Querying {t}…";
@@ -176,12 +205,15 @@ public class SystemInfoViewModel : BaseViewModel
                     QueryHardwareAsync(t),
                     QueryDisksAsync(t),
                     QueryNetworkAsync(t),
+                    QuerySharedFoldersAsync(t),
                     QuerySoftwareAsync(t),
-                    QuerySecurityAsync(t));
+                    QuerySecurityAsync(t),
+                    QueryServicesAsync(t));
                 HasData = true;
                 var name = Overview?.ComputerName ?? (string.IsNullOrWhiteSpace(t) ? Environment.MachineName : t);
                 StatusMessage = $"Ready — {name}";
                 OnPropertyChanged(nameof(AppCount));
+                OnPropertyChanged(nameof(ServiceCount));
             }
             catch (Exception ex)
             {
@@ -526,6 +558,87 @@ public class SystemInfoViewModel : BaseViewModel
         };
     }
 
+    private async Task QuerySharedFoldersAsync(string target)
+    {
+        const string body = """
+            $ErrorActionPreference = 'SilentlyContinue'
+            @(Get-CimInstance Win32_Share -ErrorAction SilentlyContinue | ForEach-Object {
+                [ordered]@{
+                    Name        = [string]$_.Name
+                    Path        = [string]$_.Path
+                    Description = [string]$_.Description
+                    ShareType   = [string]$_.Type
+                }
+            }) | ConvertTo-Json
+            """;
+        var json = await Task.Run(() => RunPs(WrapScript(target, body)));
+        if (string.IsNullOrWhiteSpace(json)) return;
+        using var doc = JsonDocument.Parse(json);
+        var arr = doc.RootElement.ValueKind == JsonValueKind.Array
+            ? doc.RootElement.EnumerateArray().ToList()
+            : new List<JsonElement> { doc.RootElement };
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            Shares.Clear();
+            foreach (var s in arr)
+                Shares.Add(new SharedFolder
+                {
+                    Name = Str(s, "Name"), Path = Str(s, "Path"),
+                    Description = Str(s, "Description"), ShareType = Str(s, "ShareType"),
+                });
+        });
+    }
+
+    private async Task QueryServicesAsync(string target)
+    {
+        const string body = """
+            $ErrorActionPreference = 'SilentlyContinue'
+            @(Get-CimInstance Win32_Service -ErrorAction SilentlyContinue |
+                Sort-Object StartMode, State, Name | ForEach-Object {
+                    [ordered]@{
+                        Name      = [string]$_.Name
+                        Caption   = [string]$_.Caption
+                        State     = [string]$_.State
+                        StartMode = [string]$_.StartMode
+                        StartName = [string]$_.StartName
+                    }
+                }) | ConvertTo-Json
+            """;
+        var json = await Task.Run(() => RunPs(WrapScript(target, body)));
+        if (string.IsNullOrWhiteSpace(json)) return;
+        using var doc = JsonDocument.Parse(json);
+        var arr = doc.RootElement.ValueKind == JsonValueKind.Array
+            ? doc.RootElement.EnumerateArray().ToList()
+            : new List<JsonElement> { doc.RootElement };
+        var items = arr.Select(a => new ServiceItem
+        {
+            Name      = Str(a, "Name"),    Caption   = Str(a, "Caption"),
+            State     = Str(a, "State"),   StartMode = Str(a, "StartMode"),
+            StartName = Str(a, "StartName"),
+        }).ToList();
+        MainThread.BeginInvokeOnMainThread(() =>
+        {
+            AllServices.Clear();
+            foreach (var item in items) AllServices.Add(item);
+            ApplyServiceFilter();
+            OnPropertyChanged(nameof(ServiceCount));
+        });
+    }
+
+    private void ApplyServiceFilter()
+    {
+        FilteredServices.Clear();
+        var s = _serviceSearch.Trim();
+        foreach (var svc in AllServices)
+            if (string.IsNullOrEmpty(s) ||
+                svc.Name.Contains(s, StringComparison.OrdinalIgnoreCase) ||
+                svc.Caption.Contains(s, StringComparison.OrdinalIgnoreCase) ||
+                svc.State.Contains(s, StringComparison.OrdinalIgnoreCase) ||
+                svc.StartMode.Contains(s, StringComparison.OrdinalIgnoreCase))
+                FilteredServices.Add(svc);
+        OnPropertyChanged(nameof(ServiceCount));
+    }
+
     private void ApplySoftwareFilter()
     {
         FilteredApps.Clear();
@@ -585,6 +698,12 @@ public class SystemInfoViewModel : BaseViewModel
                 sb.AppendLine($"    IP: {a.IPs}   GW: {a.Gateway}   DNS: {a.DNS}");
             }
         }
+        if (Shares.Any())
+        {
+            sb.AppendLine("\nSHARED FOLDERS");
+            foreach (var sh in Shares)
+                sb.AppendLine($"  {sh.Name,-20}  {sh.Path,-40}  {sh.Description}");
+        }
         if (Security != null)
         {
             sb.AppendLine("\nSECURITY");
@@ -599,6 +718,13 @@ public class SystemInfoViewModel : BaseViewModel
             sb.AppendLine($"\nSOFTWARE  ({AllApps.Count} installed)");
             foreach (var app in AllApps)
                 sb.AppendLine($"  {app.Name,-50}  {app.Version,-18}  {app.Publisher}");
+        }
+        if (AllServices.Any())
+        {
+            sb.AppendLine($"\nSERVICES  ({AllServices.Count} total)");
+            sb.AppendLine($"  {"Name",-40}  {"Caption",-50}  {"State",-10}  {"StartMode",-10}  StartName");
+            foreach (var svc in AllServices)
+                sb.AppendLine($"  {svc.Name,-40}  {svc.Caption,-50}  {svc.State,-10}  {svc.StartMode,-10}  {svc.StartName}");
         }
 
         var report = sb.ToString();

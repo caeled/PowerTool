@@ -51,6 +51,8 @@
                             BackgroundColor="#555" TextColor="White" Padding="14,6" FontSize="12"/>
                     <Button x:Name="TabSecurity"  Text="Security"  Clicked="OnTabClicked"
                             BackgroundColor="#555" TextColor="White" Padding="14,6" FontSize="12"/>
+                    <Button x:Name="TabServices"  Text="Services"  Clicked="OnTabClicked"
+                            BackgroundColor="#555" TextColor="White" Padding="14,6" FontSize="12"/>
                 </HorizontalStackLayout>
             </ScrollView>
             <Button Grid.Column="1" Text="Export ↗" Command="{Binding ExportCommand}"
@@ -214,6 +216,30 @@
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
                     </CollectionView>
+                    <!-- Shared Folders -->
+                    <Border Stroke="LightGray" StrokeThickness="1" Padding="0"
+                            StrokeShape="RoundRectangle 6">
+                        <CollectionView ItemsSource="{Binding Shares}">
+                            <CollectionView.Header>
+                                <Grid ColumnDefinitions="120,*,150" Padding="12,8"
+                                      BackgroundColor="#F5F5F5" ColumnSpacing="12">
+                                    <Label Grid.Column="0" Text="Shared Folders" FontAttributes="Bold"
+                                           FontSize="13" TextColor="#0078D4"/>
+                                    <Label Grid.Column="1" Text="Path"        FontAttributes="Bold" FontSize="12"/>
+                                    <Label Grid.Column="2" Text="Description" FontAttributes="Bold" FontSize="12"/>
+                                </Grid>
+                            </CollectionView.Header>
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="120,*,150" Padding="12,6" ColumnSpacing="12">
+                                        <Label Grid.Column="0" Text="{Binding Name}"        FontSize="12" FontAttributes="Bold"/>
+                                        <Label Grid.Column="1" Text="{Binding Path}"        FontSize="12" TextColor="Gray" LineBreakMode="TailTruncation"/>
+                                        <Label Grid.Column="2" Text="{Binding Description}" FontSize="11" TextColor="Gray" LineBreakMode="TailTruncation"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </Border>
                 </VerticalStackLayout>
             </ScrollView>
 
@@ -290,6 +316,42 @@
                     </Border>
                 </VerticalStackLayout>
             </ScrollView>
+
+            <!-- Services -->
+            <Grid x:Name="PanelServices" RowDefinitions="Auto,*" IsVisible="False" RowSpacing="8">
+                <Grid Grid.Row="0" ColumnDefinitions="*,Auto" ColumnSpacing="10">
+                    <Entry Grid.Column="0" Text="{Binding ServiceSearch}"
+                           Placeholder="Filter by name, caption, state, or start mode…"/>
+                    <Label Grid.Column="1" Text="{Binding ServiceCount}"
+                           TextColor="Gray" FontSize="12" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" Padding="0"
+                        StrokeShape="RoundRectangle 6">
+                    <CollectionView ItemsSource="{Binding FilteredServices}">
+                        <CollectionView.Header>
+                            <Grid ColumnDefinitions="160,*,90,90,130" Padding="12,8"
+                                  BackgroundColor="#F5F5F5" ColumnSpacing="12">
+                                <Label Grid.Column="0" Text="Name"       FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="Caption"    FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="State"      FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="3" Text="Start Mode" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="4" Text="Logon As"   FontAttributes="Bold" FontSize="12"/>
+                            </Grid>
+                        </CollectionView.Header>
+                        <CollectionView.ItemTemplate>
+                            <DataTemplate>
+                                <Grid ColumnDefinitions="160,*,90,90,130" Padding="12,5" ColumnSpacing="12">
+                                    <Label Grid.Column="0" Text="{Binding Name}"      FontSize="11" LineBreakMode="TailTruncation"/>
+                                    <Label Grid.Column="1" Text="{Binding Caption}"   FontSize="11" TextColor="Gray" LineBreakMode="TailTruncation"/>
+                                    <Label Grid.Column="2" Text="{Binding State}"     FontSize="11"/>
+                                    <Label Grid.Column="3" Text="{Binding StartMode}" FontSize="11" TextColor="Gray"/>
+                                    <Label Grid.Column="4" Text="{Binding StartName}" FontSize="11" TextColor="Gray" LineBreakMode="TailTruncation"/>
+                                </Grid>
+                            </DataTemplate>
+                        </CollectionView.ItemTemplate>
+                    </CollectionView>
+                </Border>
+            </Grid>
 
         </Grid>
     </Grid>
