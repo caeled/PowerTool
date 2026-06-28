@@ -1,0 +1,75 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SupportToolApp.Pages.SplashPage"
+             Shell.NavBarIsVisible="False">
+    <Grid BackgroundColor="#F0F7FF">
+        <Border Margin="60,40" Padding="36,28" StrokeShape="RoundRectangle 12"
+                Stroke="#0078D4" StrokeThickness="2" BackgroundColor="White"
+                VerticalOptions="Center" HorizontalOptions="Center" MaximumWidthRequest="620">
+            <VerticalStackLayout Spacing="16">
+
+                <!-- Header -->
+                <HorizontalStackLayout Spacing="12" HorizontalOptions="Center">
+                    <Label Text="IT" FontSize="28" FontAttributes="Bold" TextColor="White"
+                           WidthRequest="48" HeightRequest="48" HorizontalTextAlignment="Center"
+                           VerticalTextAlignment="Center" BackgroundColor="#0078D4"/>
+                    <VerticalStackLayout VerticalOptions="Center">
+                        <Label Text="PowellTec IT Support Tools" FontSize="20" FontAttributes="Bold" TextColor="#0078D4"/>
+                        <Label Text="Desktop support toolkit for IT technicians" FontSize="12" TextColor="Gray"/>
+                    </VerticalStackLayout>
+                </HorizontalStackLayout>
+
+                <BoxView HeightRequest="1" BackgroundColor="#E0E0E0"/>
+
+                <!-- What this is -->
+                <Label Text="What you have here:" FontAttributes="Bold" FontSize="14"/>
+
+                <Grid ColumnDefinitions="24,*" RowDefinitions="Auto,Auto,Auto,Auto,Auto" RowSpacing="10" ColumnSpacing="10">
+                    <Label Grid.Row="0" Grid.Column="0" Text="&#x2699;" FontSize="15" VerticalOptions="Start"/>
+                    <VerticalStackLayout Grid.Row="0" Grid.Column="1">
+                        <Label Text="Tools" FontAttributes="Bold" FontSize="13"/>
+                        <Label Text="Installed apps, services, processes, disk, network, patches, startup, remote management, deployment, and more -- all scriptable against a remote target computer." FontSize="12" TextColor="#444"/>
+                    </VerticalStackLayout>
+
+                    <Label Grid.Row="1" Grid.Column="0" Text="&#x2709;" FontSize="15" VerticalOptions="Start"/>
+                    <VerticalStackLayout Grid.Row="1" Grid.Column="1">
+                        <Label Text="Email &amp; Mailbox" FontAttributes="Bold" FontSize="13"/>
+                        <Label Text="Exchange / M365 mailbox lookup, forwarding, delegation, shared mailboxes, and email header analysis." FontSize="12" TextColor="#444"/>
+                    </VerticalStackLayout>
+
+                    <Label Grid.Row="2" Grid.Column="0" Text="&#x1F4CA;" FontSize="15" VerticalOptions="Start"/>
+                    <VerticalStackLayout Grid.Row="2" Grid.Column="1">
+                        <Label Text="Reporting &amp; Compare" FontAttributes="Bold" FontSize="13"/>
+                        <Label Text="Run reports and diff two CSV or XML files side-by-side to spot what changed between snapshots." FontSize="12" TextColor="#444"/>
+                    </VerticalStackLayout>
+
+                    <Label Grid.Row="3" Grid.Column="0" Text="&#x1F510;" FontSize="15" VerticalOptions="Start"/>
+                    <VerticalStackLayout Grid.Row="3" Grid.Column="1">
+                        <Label Text="Remote Access" FontAttributes="Bold" FontSize="13"/>
+                        <Label Text="Quick launchers for RDP, VNC, and remote tools. Set a target computer once and all tools point there." FontSize="12" TextColor="#444"/>
+                    </VerticalStackLayout>
+
+                    <Label Grid.Row="4" Grid.Column="0" Text="&#x1F527;" FontSize="15" VerticalOptions="Start"/>
+                    <VerticalStackLayout Grid.Row="4" Grid.Column="1">
+                        <Label Text="Settings &amp; Credentials" FontAttributes="Bold" FontSize="13"/>
+                        <Label Text="Store your Exchange / AD credentials, logo, quick links, and local folder shortcuts. Config exports as JSON." FontSize="12" TextColor="#444"/>
+                    </VerticalStackLayout>
+                </Grid>
+
+                <BoxView HeightRequest="1" BackgroundColor="#E0E0E0"/>
+
+                <!-- Footer -->
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="12">
+                    <HorizontalStackLayout Grid.Column="0" Spacing="8" VerticalOptions="Center">
+                        <CheckBox x:Name="ChkShowAgain" IsChecked="True"/>
+                        <Label Text="Show on next startup" VerticalOptions="Center" FontSize="12"/>
+                    </HorizontalStackLayout>
+                    <Button Grid.Column="2" Text="Get Started" Clicked="OnGetStarted"
+                            BackgroundColor="#0078D4" TextColor="White" Padding="24,10" FontAttributes="Bold"/>
+                </Grid>
+
+            </VerticalStackLayout>
+        </Border>
+    </Grid>
+</ContentPage>

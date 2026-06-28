@@ -1141,14 +1141,22 @@ public class ToolsViewModel : BaseViewModel
 
         LaunchPowerCopyCommand = new Command(() =>
         {
-            var script = System.IO.Path.Combine(
-                AppContext.BaseDirectory, "..", "..", "..", "..", "ToolBox", "PowerCopy.ps1");
+            // Walk up from AppContext.BaseDirectory until we find a sibling ToolBox folder
+            var dir = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
+            while (dir != null && !System.IO.Directory.Exists(System.IO.Path.Combine(dir.FullName, "ToolBox")))
+                dir = dir.Parent;
+            var script = dir != null
+                ? System.IO.Path.Combine(dir.FullName, "ToolBox", "PowerCopy.ps1")
+                : "";
             if (!System.IO.File.Exists(script))
-                script = System.IO.Path.GetFullPath(script);
+            {
+                Application.Current?.MainPage?.DisplayAlert("Not Found", $"PowerCopy.ps1 not found.\nLooked in: {script}", "OK");
+                return;
+            }
             var psi = new System.Diagnostics.ProcessStartInfo
             {
                 FileName = "powershell.exe",
-                Arguments = $"-NoProfile -ExecutionPolicy Bypass -File \"{script}\"",
+                Arguments = $"-Sta -NoProfile -ExecutionPolicy Bypass -File \"{script}\"",
                 UseShellExecute = true
             };
             System.Diagnostics.Process.Start(psi);

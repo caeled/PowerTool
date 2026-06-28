@@ -16,6 +16,12 @@ public partial class AppShell : Shell
         creds.LoadQuickLinks();
         creds.Changed += () => MainThread.BeginInvokeOnMainThread(RefreshQuickLinks);
         RefreshQuickLinks();
+        Loaded += async (_, _) =>
+        {
+            await GoToAsync("//Tools");
+            if (Preferences.Get("show_splash", true))
+                await Navigation.PushModalAsync(new Pages.SplashPage());
+        };
     }
 
     private void RefreshQuickLinks()

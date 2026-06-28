@@ -32,8 +32,8 @@ public class MainForm : Form
     public MainForm()
     {
         Text = "Compare Files";
-        Size = new Size(1000, 680);
-        MinimumSize = new Size(800, 500);
+        Size = new Size(900, 620);
+        MinimumSize = new Size(700, 480);
         StartPosition = FormStartPosition.CenterScreen;
         Font = new Font("Segoe UI", 9f);
 
