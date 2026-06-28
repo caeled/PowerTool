@@ -13,6 +13,7 @@
        xmlns:cr="clr-namespace:SupportToolApp.Pages.Credentials"
        xmlns:hp="clr-namespace:SupportToolApp.Pages.Help"
        xmlns:cp="clr-namespace:SupportToolApp.Pages.Compare"
+       xmlns:nm="clr-namespace:SupportToolApp.Pages.Monitor"
        x:Class="SupportToolApp.AppShell"
        Shell.FlyoutBehavior="Flyout"
        Title="IT Support Tool">
@@ -133,6 +134,10 @@
 
     <FlyoutItem Title="Compare Files">
         <ShellContent ContentTemplate="{DataTemplate cp:ComparePage}" Route="Compare"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="Network Monitor">
+        <ShellContent ContentTemplate="{DataTemplate nm:NetworkMonitorPage}" Route="NetworkMonitor"/>
     </FlyoutItem>
 
 </Shell>
