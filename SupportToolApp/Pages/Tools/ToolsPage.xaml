@@ -57,6 +57,7 @@
                 <Button Text="RDP Sessions"             x:Name="TabRdpSessions"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Password Expiry"          x:Name="TabPwdExpiry"        Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="User Management"          x:Name="TabUserMgmt"         Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Reset AD Password"       x:Name="TabAdReset"          Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <!-- Network -->
                 <Button Text="Network Info" x:Name="TabNetwork"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Port Tester"  x:Name="TabPorts"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
@@ -83,6 +84,7 @@
                 <Button Text="Process Kill"   x:Name="TabProcKill"      Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="WinRM Toggle"   x:Name="TabWinRmToggle"   Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Wake on LAN"    x:Name="TabWakeOnLan"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
+                <Button Text="Hosts File"     x:Name="TabHostsFile"     Clicked="OnTabClicked" BackgroundColor="#555" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <!-- Deploy -->
                 <Button Text="File Drop &amp; Run" x:Name="TabDeploy"    Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
                 <Button Text="Copy File"           x:Name="TabCopyFile"  Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" IsVisible="False"/>
@@ -1878,6 +1880,64 @@
                 </Grid>
                 <Border Grid.Row="4" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
                     <ScrollView><Label Text="{Binding WsusOutput}" FontFamily="Courier New" FontSize="12" TextColor="#00FF41"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Hosts File Editor ────────────────────────────────────────────────── -->
+            <Grid x:Name="PanelHostsFile" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Edit the hosts file on the target machine via admin share (\\target\C$\...). Target must allow admin shares."
+                       TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="View Hosts File" Command="{Binding HostsViewCommand}"
+                            BackgroundColor="SteelBlue" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding HostsLoading}"
+                                       IsVisible="{Binding HostsLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="60,120,*,Auto" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="IP Address:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding HostsEntryIp}" Placeholder="10.0.0.1"/>
+                    <Entry Grid.Column="2" Text="{Binding HostsEntryHost}" Placeholder="hostname.domain.local"/>
+                    <Button Grid.Column="3" Text="Add Entry" Command="{Binding HostsAddCommand}"
+                            BackgroundColor="#228B22" Padding="16,8"/>
+                </Grid>
+                <Grid Grid.Row="3" ColumnDefinitions="*,Auto" ColumnSpacing="8">
+                    <Entry Grid.Column="0" Text="{Binding HostsRemoveHost}" Placeholder="Hostname or IP to remove (partial match)"/>
+                    <Button Grid.Column="1" Text="Remove Entry" Command="{Binding HostsRemoveCommand}"
+                            BackgroundColor="#8B0000" Padding="16,8"/>
+                </Grid>
+                <Border Grid.Row="4" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
+                    <ScrollView><Label Text="{Binding HostsOutput}" FontFamily="Courier New" FontSize="12" TextColor="#00FF41"/></ScrollView>
+                </Border>
+            </Grid>
+
+            <!-- ── Reset AD User Password ────────────────────────────────────────────── -->
+            <Grid x:Name="PanelAdReset" RowDefinitions="Auto,Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
+                <Label Grid.Row="0" Text="Reset an Active Directory user password. Requires ActiveDirectory module on this machine and domain connectivity."
+                       TextColor="Gray" FontSize="12"/>
+                <Grid Grid.Row="1" ColumnDefinitions="90,*,90,*" ColumnSpacing="8">
+                    <Label Grid.Column="0" Text="Username:" VerticalOptions="Center" FontAttributes="Bold"/>
+                    <Entry Grid.Column="1" Text="{Binding AdResetUsername}" Placeholder="SamAccountName"/>
+                    <Label Grid.Column="2" Text="New Password:" VerticalOptions="Center"/>
+                    <Entry Grid.Column="3" Text="{Binding AdResetPassword}" IsPassword="True"/>
+                </Grid>
+                <Grid Grid.Row="2" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="16">
+                    <CheckBox Grid.Column="0" IsChecked="{Binding AdResetForceChange}"/>
+                    <Label Grid.Column="1" Text="Force password change at next logon" VerticalOptions="Center"/>
+                    <HorizontalStackLayout Grid.Column="2" Spacing="8">
+                        <CheckBox IsChecked="{Binding AdResetUnlock}"/>
+                        <Label Text="Unlock account" VerticalOptions="Center"/>
+                    </HorizontalStackLayout>
+                </Grid>
+                <Grid Grid.Row="3" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
+                    <Button Grid.Column="0" Text="Reset Password" Command="{Binding AdResetCommand}"
+                            BackgroundColor="#8B0000" Padding="16,8"/>
+                    <ActivityIndicator Grid.Column="1" IsRunning="{Binding AdResetLoading}"
+                                       IsVisible="{Binding AdResetLoading}" Color="SteelBlue"
+                                       HorizontalOptions="Start" VerticalOptions="Center"/>
+                </Grid>
+                <Border Grid.Row="4" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
+                    <ScrollView><Label Text="{Binding AdResetOutput}" FontFamily="Courier New" FontSize="12" TextColor="#00FF41"/></ScrollView>
                 </Border>
             </Grid>
 

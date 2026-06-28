@@ -873,6 +873,29 @@ public class ToolsViewModel : BaseViewModel
     public ICommand WsusDisableCommand { get; private set; } = null!;
     public ICommand WsusCheckCommand   { get; private set; } = null!;
 
+    // ── Hosts File Editor ──────────────────────────────────────────────────────
+    private string _hostsEntryIp = "", _hostsEntryHost = "", _hostsRemoveHost = "", _hostsOutput = "";
+    private bool _hostsLoading;
+    public string HostsEntryIp    { get => _hostsEntryIp;    set => SetProperty(ref _hostsEntryIp, value); }
+    public string HostsEntryHost  { get => _hostsEntryHost;  set => SetProperty(ref _hostsEntryHost, value); }
+    public string HostsRemoveHost { get => _hostsRemoveHost; set => SetProperty(ref _hostsRemoveHost, value); }
+    public string HostsOutput     { get => _hostsOutput;     set => SetProperty(ref _hostsOutput, value); }
+    public bool   HostsLoading    { get => _hostsLoading;    set => SetProperty(ref _hostsLoading, value); }
+    public ICommand HostsViewCommand   { get; private set; } = null!;
+    public ICommand HostsAddCommand    { get; private set; } = null!;
+    public ICommand HostsRemoveCommand { get; private set; } = null!;
+
+    // ── Reset AD User Password ─────────────────────────────────────────────────
+    private string _adResetUsername = "", _adResetPassword = "", _adResetOutput = "";
+    private bool _adResetForceChange = true, _adResetUnlock, _adResetLoading;
+    public string AdResetUsername    { get => _adResetUsername;    set => SetProperty(ref _adResetUsername, value); }
+    public string AdResetPassword    { get => _adResetPassword;    set => SetProperty(ref _adResetPassword, value); }
+    public string AdResetOutput      { get => _adResetOutput;      set => SetProperty(ref _adResetOutput, value); }
+    public bool   AdResetForceChange { get => _adResetForceChange; set => SetProperty(ref _adResetForceChange, value); }
+    public bool   AdResetUnlock      { get => _adResetUnlock;      set => SetProperty(ref _adResetUnlock, value); }
+    public bool   AdResetLoading     { get => _adResetLoading;     set => SetProperty(ref _adResetLoading, value); }
+    public ICommand AdResetCommand { get; private set; } = null!;
+
     // ── Constructor ──────────────────────────────────────────────────────────
 
     private readonly CredentialService _creds;
@@ -2559,6 +2582,40 @@ Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
                 WsusOutput = string.IsNullOrWhiteSpace(result) ? "No WSUS settings found." : result.Trim();
             }));
 
+        HostsViewCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(TargetComputer)) return;
+            HostsLoading = true;
+            var result = await Task.Run(() => RunPsSync(PsScripts.HostsView(TargetComputer.Trim())));
+            HostsOutput = string.IsNullOrWhiteSpace(result) ? "No output." : result.Trim();
+            HostsLoading = false;
+        });
+        HostsAddCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(TargetComputer) || string.IsNullOrWhiteSpace(HostsEntryIp) || string.IsNullOrWhiteSpace(HostsEntryHost)) return;
+            HostsLoading = true;
+            var result = await Task.Run(() => RunPsSync(PsScripts.HostsAdd(TargetComputer.Trim(), HostsEntryIp, HostsEntryHost)));
+            HostsOutput = string.IsNullOrWhiteSpace(result) ? "Done." : result.Trim();
+            HostsLoading = false;
+        });
+        HostsRemoveCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(TargetComputer) || string.IsNullOrWhiteSpace(HostsRemoveHost)) return;
+            HostsLoading = true;
+            var result = await Task.Run(() => RunPsSync(PsScripts.HostsRemove(TargetComputer.Trim(), HostsRemoveHost)));
+            HostsOutput = string.IsNullOrWhiteSpace(result) ? "Done." : result.Trim();
+            HostsLoading = false;
+        });
+
+        AdResetCommand = new Command(async () =>
+        {
+            if (string.IsNullOrWhiteSpace(AdResetUsername) || string.IsNullOrWhiteSpace(AdResetPassword)) return;
+            AdResetLoading = true;
+            var result = await Task.Run(() => RunPsSync(PsScripts.ResetAdPassword(AdResetUsername, AdResetPassword, AdResetForceChange, AdResetUnlock)));
+            AdResetOutput = string.IsNullOrWhiteSpace(result) ? "Done." : result.Trim();
+            AdResetLoading = false;
+        });
+
         // Pre-fill credential fields from the shared service on startup
         ApplyCredentials();
     }
@@ -3957,6 +4014,44 @@ internal static class PsScripts
             "TargetGroup   : $($wuv.TargetGroup)"
             "AUOptions     : $($auMap[$auv.AUOptions]) ($($auv.AUOptions))"
         """);
+
+    public static string HostsView(string target) =>
+        $$"""
+            $h = '\\{{target}}\C$\Windows\System32\drivers\etc\hosts'
+            if (-not (Test-Path $h)) { "Cannot access hosts file on {{target}}"; exit }
+            Get-Content $h
+        """;
+
+    public static string HostsAdd(string target, string ip, string hostname) =>
+        $$"""
+            $h = '\\{{target}}\C$\Windows\System32\drivers\etc\hosts'
+            if (-not (Test-Path $h)) { "Cannot access hosts file on {{target}}"; exit }
+            $existing = Get-Content $h
+            if ($existing | Where-Object { $_ -match [regex]::Escape("{{hostname}}") }) { "Entry for {{hostname}} already exists."; exit }
+            "{{ip}}`t{{hostname}}" | Out-File -Encoding ASCII -Append $h
+            "Added: {{ip}} -> {{hostname}}"
+        """;
+
+    public static string HostsRemove(string target, string hostname) =>
+        $$"""
+            $h = '\\{{target}}\C$\Windows\System32\drivers\etc\hosts'
+            if (-not (Test-Path $h)) { "Cannot access hosts file on {{target}}"; exit }
+            $lines = Get-Content $h
+            $newlines = $lines | Where-Object { $_ -notmatch [regex]::Escape("{{hostname}}") }
+            $removed = $lines.Count - $newlines.Count
+            $newlines | Set-Content -Encoding ASCII $h
+            "Removed $removed line(s) containing '{{hostname}}'"
+        """;
+
+    public static string ResetAdPassword(string username, string password, bool forceChange, bool unlock) =>
+        $$"""
+            Import-Module ActiveDirectory -ErrorAction Stop
+            $user = Get-ADUser "{{username}}" -ErrorAction Stop
+            Set-ADAccountPassword "{{username}}" -Reset -NewPassword (ConvertTo-SecureString "{{password}}" -AsPlainText -Force)
+            if ({{(forceChange ? "$true" : "$false")}}) { Set-ADUser "{{username}}" -ChangePasswordAtLogon $true }
+            if ({{(unlock ? "$true" : "$false")}}) { Unlock-ADAccount "{{username}}" }
+            "Password reset for $($user.SamAccountName) ($($user.Name)). Force change: {{forceChange}}. Unlocked: {{unlock}}."
+        """;
 }
 
 internal static class JsonElementExtensions2

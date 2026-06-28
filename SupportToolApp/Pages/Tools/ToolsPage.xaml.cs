@@ -79,14 +79,16 @@ public partial class ToolsPage : ContentPage
             { TabQuickAccess,     PanelQuickAccess },
             { TabWinKey,          PanelWinKey },
             { TabWsusClient,      PanelWsusClient },
+            { TabHostsFile,       PanelHostsFile },
+            { TabAdReset,         PanelAdReset },
         };
 
         _categories = new()
         {
             { CatSystem,  [TabApps, TabServices, TabUpdates, TabPatches, TabProcesses, TabPrinters, TabDiskSpace, TabSchedTasks, TabActivation, TabTempClean, TabStartup, TabRemotePsSystem, TabPsRunSystem, TabAutoLogon, TabSetPrinter, TabTrustedSites, TabQuickAccess] },
-            { CatUsers,   [TabLocalUsers, TabLoggedOn, TabLocalAdmins, TabRunAs, TabGroupMembership, TabAcctLockout, TabRdpSessions, TabPwdExpiry, TabUserMgmt] },
+            { CatUsers,   [TabLocalUsers, TabLoggedOn, TabLocalAdmins, TabRunAs, TabGroupMembership, TabAcctLockout, TabRdpSessions, TabPwdExpiry, TabUserMgmt, TabAdReset] },
             { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns, TabFlushDns, TabNetStat, TabTrace, TabWifi, TabProxy, TabResetNic, TabPing, TabWifiSetup] },
-            { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate, TabRemotePsRemote, TabPsRunRemote, TabDirBrowser, TabProcKill, TabWinRmToggle, TabWakeOnLan] },
+            { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate, TabRemotePsRemote, TabPsRunRemote, TabDirBrowser, TabProcKill, TabWinRmToggle, TabWakeOnLan, TabHostsFile] },
             { CatDeploy,  [TabDeploy, TabCopyFile, TabWinget, TabRegPush, TabPendingUpdates, TabRunUpdates, TabUpdateLog, TabWinKey, TabWsusClient] },
         };
 
