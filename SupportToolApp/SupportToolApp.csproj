@@ -28,17 +28,21 @@
 		<MauiXamlInflator>SourceGen</MauiXamlInflator>
 
 		<!-- Display name -->
-		<ApplicationTitle>SupportToolApp</ApplicationTitle>
+		<ApplicationTitle>PowellTec IT Support Tools</ApplicationTitle>
 
 		<!-- App Identifier -->
-		<ApplicationId>com.companyname.supporttoolapp</ApplicationId>
+		<ApplicationId>com.powelltec.supporttools</ApplicationId>
 
 		<!-- Versions -->
-		<ApplicationDisplayVersion>1.0</ApplicationDisplayVersion>
+		<ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
 
-		<!-- To develop, package, and publish an app to the Microsoft Store, see: https://aka.ms/MauiTemplateUnpackaged -->
-		<WindowsPackageType>None</WindowsPackageType>
+		<!-- MSIX packaging -->
+		<WindowsPackageType>MSIX</WindowsPackageType>
+		<AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
+		<PackageCertificateThumbprint>AD7D59FE9A6A0832DDB1D9D64FDA6A5F92EA36DC</PackageCertificateThumbprint>
+		<PackageCertificateKeyFile>PowellTec.pfx</PackageCertificateKeyFile>
+		<PackageCertificatePassword>PowellTec2025!</PackageCertificatePassword>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
