@@ -309,7 +309,7 @@
         <Border CornerRadius="6" BorderBrush="#21262D" BorderThickness="1" ClipToBounds="True">
           <ScrollViewer Background="#0D1117" HorizontalScrollBarVisibility="Auto">
             <TextBlock Text="{Binding Output}"
-                       FontFamily="Cascadia Code,Consolas,Courier New,monospace"
+                       FontFamily="Cascadia Code,Consolas,Menlo,Monaco,Courier New,monospace"
                        FontSize="12" Foreground="#C9D1D9"
                        Padding="14" TextWrapping="NoWrap"/>
           </ScrollViewer>
