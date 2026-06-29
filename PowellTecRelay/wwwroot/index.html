@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PowellTec IT Support Tools</title>
+<link rel="manifest" href="manifest.json">
+<style>
+  :root {
+    --bg:       #0d1117;
+    --surface:  #161b22;
+    --border:   #30363d;
+    --navy:     #0c2340;
+    --navy2:    #1f3a5f;
+    --text:     #e6edf3;
+    --muted:    #8b949e;
+    --green:    #238636;
+    --green2:   #2ea043;
+    --blue:     #1f6feb;
+    --blue2:    #388bfd;
+    --red:      #da3633;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; font-size: 14px; height: 100dvh; display: flex; flex-direction: column; }
+
+  /* Creds bar */
+  #creds { background: var(--navy); border-bottom: 1px solid var(--navy2); padding: 8px 12px; display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  #creds label { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  #creds input { background: #0d1117; border: 1px solid var(--border); color: var(--text); padding: 4px 8px; border-radius: 4px; width: 160px; font-size: 13px; }
+  #creds input:focus { outline: none; border-color: var(--blue2); }
+  #btn-clear-creds { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 4px 10px; border-radius: 4px; cursor: pointer; font-size: 12px; }
+  #btn-clear-creds:hover { border-color: var(--text); color: var(--text); }
+  #relay-status { margin-left: auto; font-size: 12px; color: var(--muted); }
+  #relay-status.ok { color: var(--green2); }
+  #relay-status.err { color: var(--red); }
+
+  /* Menu bar */
+  #menubar { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; flex-shrink: 0; }
+  #menu { display: flex; }
+  .menu-btn { background: transparent; border: none; color: var(--text); padding: 10px 14px; cursor: pointer; font-size: 13px; position: relative; }
+  .menu-btn:hover, .menu-btn.active { background: #21262d; }
+  .dropdown { display: none; position: absolute; top: 100%; left: 0; background: #fff; color: #000; border: 1px solid #d0d7de; border-radius: 6px; min-width: 200px; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
+  .dropdown.open { display: block; }
+  .dropdown a { display: block; padding: 8px 16px; color: #24292f; text-decoration: none; font-size: 13px; }
+  .dropdown a:hover { background: #f6f8fa; }
+  .dropdown hr { border: none; border-top: 1px solid #d0d7de; margin: 4px 0; }
+  #btn-kb { background: var(--blue); color: #fff; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
+  #btn-kb:hover { background: var(--blue2); }
+
+  /* Content area */
+  #content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+
+  /* Welcome */
+  #welcome { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 24px; padding: 24px; }
+  #welcome h1 { font-size: 28px; font-weight: 600; color: var(--blue2); }
+  #welcome p { color: var(--muted); }
+  .cards { display: flex; flex-wrap: wrap; gap: 12px; justify-content: center; max-width: 900px; }
+  .card { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 16px 20px; width: 160px; cursor: pointer; }
+  .card h3 { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .card p { font-size: 11px; color: var(--muted); line-height: 1.5; }
+  .card.sys h3 { color: #58a6ff; } .card.net h3 { color: #3fb950; } .card.sec h3 { color: #f85149; } .card.mgr h3 { color: #bc8cff; } .card.fil h3 { color: #ffa657; }
+
+  /* Tool panel */
+  #toolpanel { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
+  #toolheader { background: var(--surface); border-bottom: 1px solid var(--border); padding: 12px 16px; display: flex; align-items: center; justify-content: space-between; }
+  #toolheader h2 { font-size: 16px; font-weight: 600; }
+  #tooldesc { font-size: 12px; color: var(--muted); margin-top: 2px; }
+  #btn-run { background: var(--green); color: #fff; border: none; padding: 8px 20px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; min-width: 80px; }
+  #btn-run:hover { background: var(--green2); }
+  #btn-run:disabled { opacity: .5; cursor: not-allowed; }
+
+  /* Params */
+  #params { background: #0d1117; border-bottom: 1px solid var(--border); padding: 10px 16px; display: flex; flex-wrap: wrap; gap: 10px; align-items: center; }
+  #params label { color: var(--muted); font-size: 12px; white-space: nowrap; }
+  #params input { background: var(--surface); border: 1px solid var(--border); color: var(--text); padding: 5px 10px; border-radius: 4px; min-width: 240px; font-size: 13px; }
+  #params input:focus { outline: none; border-color: var(--blue2); }
+
+  /* Output */
+  #output-wrap { flex: 1; overflow: auto; padding: 12px 16px; }
+  #output { font-family: 'Cascadia Code', 'Consolas', monospace; font-size: 12px; color: #79c0ff; white-space: pre-wrap; word-break: break-all; line-height: 1.6; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Credentials bar -->
+<div id="creds">
+  <label>Target Computer:</label>
+  <input id="inp-target" placeholder="Leave blank for relay host (local)">
+  <label>Username:</label>
+  <input id="inp-user" placeholder="domain\user">
+  <label>Password:</label>
+  <input id="inp-pass" type="password" placeholder="">
+  <label>API Key:</label>
+  <input id="inp-key" type="password" placeholder="changeme" value="changeme">
+  <button id="btn-clear-creds">Clear</button>
+  <span id="relay-status">● checking...</span>
+</div>
+
+<!-- Menu bar -->
+<div id="menubar">
+  <div id="menu">
+    <div class="menu-btn" id="m-system">System ▾
+      <div class="dropdown" id="d-system">
+        <a href="#" data-tool="apps">Installed Apps</a>
+        <a href="#" data-tool="services">Services</a>
+        <a href="#" data-tool="processes">Processes</a>
+        <a href="#" data-tool="disk">Disk Space</a>
+        <a href="#" data-tool="sysinfo">System Info</a>
+        <hr>
+        <a href="#" data-tool="eventlog">Event Log</a>
+        <a href="#" data-tool="scheduled">Scheduled Tasks</a>
+      </div>
+    </div>
+    <div class="menu-btn" id="m-network">Network ▾
+      <div class="dropdown" id="d-network">
+        <a href="#" data-tool="ipconfig">IP Configuration</a>
+        <a href="#" data-tool="adapters">Network Adapters</a>
+        <a href="#" data-tool="wifiinfo">WiFi Info</a>
+        <a href="#" data-tool="wifiprofiles">WiFi Profiles</a>
+        <hr>
+        <a href="#" data-tool="ping">Ping</a>
+        <a href="#" data-tool="pingsweep">Ping Sweep</a>
+        <a href="#" data-tool="porttester">Port Tester</a>
+        <a href="#" data-tool="traceroute">Traceroute</a>
+        <hr>
+        <a href="#" data-tool="dns">DNS Lookup</a>
+        <a href="#" data-tool="flushdns">Flush DNS</a>
+        <a href="#" data-tool="openconn">Open Connections</a>
+        <a href="#" data-tool="shares">Network Shares</a>
+        <a href="#" data-tool="proxy">Proxy Settings</a>
+        <a href="#" data-tool="resetnic">Reset NIC</a>
+        <a href="#" data-tool="dhcp">DHCP Stats</a>
+      </div>
+    </div>
+    <div class="menu-btn" id="m-security">Security ▾
+      <div class="dropdown" id="d-security">
+        <a href="#" data-tool="patches">Security Patches</a>
+        <a href="#" data-tool="firewall">Firewall Status</a>
+      </div>
+    </div>
+    <div class="menu-btn" id="m-manage">Manage ▾
+      <div class="dropdown" id="d-manage">
+        <a href="#" data-tool="users">Local Users</a>
+        <a href="#" data-tool="groups">Local Groups</a>
+        <a href="#" data-tool="adduser">Add User to Group</a>
+        <a href="#" data-tool="removeuser">Remove User from Group</a>
+        <a href="#" data-tool="createuser">Create Local User</a>
+        <a href="#" data-tool="psremote">PS-Remote Shell</a>
+      </div>
+    </div>
+    <div class="menu-btn" id="m-files">Files ▾
+      <div class="dropdown" id="d-files">
+        <a href="#" data-tool="copyfile">Copy File</a>
+      </div>
+    </div>
+  </div>
+  <button id="btn-kb">📚 Knowledge Base</button>
+</div>
+
+<!-- Content -->
+<div id="content">
+  <!-- Welcome screen -->
+  <div id="welcome">
+    <h1>PowellTec IT Support Tools</h1>
+    <p>Select a tool from the menu above</p>
+    <div class="cards">
+      <div class="card sys" onclick="openMenu('m-system')"><h3>System</h3><p>Apps · Services · Processes · Disk · Sys Info · Event Log · Scheduled Tasks</p></div>
+      <div class="card net" onclick="openMenu('m-network')"><h3>Network</h3><p>IP · Adapters · WiFi · Ping · Sweep · Port · Trace · DNS · Flush · NetStat · Proxy · NIC</p></div>
+      <div class="card sec" onclick="openMenu('m-security')"><h3>Security</h3><p>Security Patches · Firewall Status</p></div>
+      <div class="card mgr" onclick="openMenu('m-manage')"><h3>Manage</h3><p>Users · Groups · Add/Remove · Create · PS-Remote Shell</p></div>
+      <div class="card fil" onclick="openMenu('m-files')"><h3>Files</h3><p>Copy File (UNC path support)</p></div>
+    </div>
+  </div>
+
+  <!-- Tool panel (hidden until a tool is selected) -->
+  <div id="toolpanel" class="hidden">
+    <div id="toolheader">
+      <div>
+        <h2 id="tool-title"></h2>
+        <div id="tooldesc"></div>
+      </div>
+      <button id="btn-run">Run</button>
+    </div>
+    <div id="params" class="hidden"></div>
+    <div id="output-wrap">
+      <pre id="output">Select a tool and click Run.</pre>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── Tool definitions ───────────────────────────────────────────────────────────
+const tools = {
+  apps:         { name:'Installed Apps',     desc:'All installed applications, sorted by name.', params:[], script:()=>wrap(`Get-ItemProperty 'HKLM:\\Software\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*','HKLM:\\Software\\Wow6432Node\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\*' | Where-Object {$_.DisplayName} | Select-Object DisplayName,DisplayVersion,Publisher | Sort-Object DisplayName | Format-Table -AutoSize | Out-String -Width 220`) },
+  services:     { name:'Services',           desc:'All Windows services with status and start type.', params:[], script:()=>wrap(`Get-Service | Sort-Object Status,DisplayName | Select-Object Name,DisplayName,Status,StartType | Format-Table -AutoSize | Out-String -Width 220`) },
+  processes:    { name:'Processes',          desc:'Top 50 processes by CPU usage.', params:[], script:()=>wrap(`Get-Process | Sort-Object CPU -Descending | Select-Object -First 50 | Select-Object Name,Id,@{N='CPU';E={[math]::Round($_.CPU,1)}},@{N='Mem MB';E={[math]::Round($_.WorkingSet/1MB,1)}} | Format-Table -AutoSize | Out-String -Width 220`) },
+  disk:         { name:'Disk Space',         desc:'Used, free, and total space for all drives.', params:[], script:()=>wrap(`Get-PSDrive -PSProvider FileSystem | Select-Object Name,@{N='Used GB';E={[math]::Round($_.Used/1GB,2)}},@{N='Free GB';E={[math]::Round($_.Free/1GB,2)}},@{N='Total GB';E={[math]::Round(($_.Used+$_.Free)/1GB,2)}} | Format-Table -AutoSize | Out-String -Width 220`) },
+  sysinfo:      { name:'System Info',        desc:'OS, uptime, RAM, model, BIOS.', params:[], script:()=>wrap(`$os=Get-CimInstance Win32_OperatingSystem;$cs=Get-CimInstance Win32_ComputerSystem;$b=Get-CimInstance Win32_BIOS;[PSCustomObject]@{ComputerName=$env:COMPUTERNAME;OS=$os.Caption;Version=$os.Version;Uptime=((Get-Date)-$os.LastBootUpTime).ToString('d\\d\\ h\\h\\ m\\m');RAM_GB=[math]::Round($cs.TotalPhysicalMemory/1GB,2);Model=$cs.Model;BIOS=$b.SMBIOSBIOSVersion}|Format-List|Out-String -Width 220`) },
+  eventlog:     { name:'Event Log',          desc:'Last 50 System errors/warnings.', params:[], script:()=>wrap(`Get-EventLog -LogName System -EntryType Error,Warning -Newest 50 | Select-Object TimeGenerated,EntryType,Source,Message | Format-Table -AutoSize | Out-String -Width 220`) },
+  scheduled:    { name:'Scheduled Tasks',    desc:'All enabled scheduled tasks.', params:[], script:()=>wrap(`Get-ScheduledTask | Where-Object State -eq 'Ready' | Select-Object TaskName,TaskPath,@{N='NextRun';E={(Get-ScheduledTaskInfo $_.TaskName -ErrorAction SilentlyContinue)?.NextRunTime}} | Format-Table -AutoSize | Out-String -Width 220`) },
+  ipconfig:     { name:'IP Configuration',   desc:'IP addresses, subnet, gateway for all adapters.', params:[], script:()=>wrap(`Get-NetIPConfiguration | Format-List | Out-String -Width 220`) },
+  adapters:     { name:'Network Adapters',   desc:'Physical network adapters and link speed.', params:[], script:()=>wrap(`Get-NetAdapter | Select-Object Name,InterfaceDescription,Status,LinkSpeed,MacAddress | Format-Table -AutoSize | Out-String -Width 220`) },
+  wifiinfo:     { name:'WiFi Info',          desc:'Current WiFi connection details.', params:[], script:()=>wrap(`netsh wlan show interfaces`) },
+  wifiprofiles: { name:'WiFi Profiles',      desc:'All saved WiFi profiles.', params:[], script:()=>wrap(`netsh wlan show profiles`) },
+  ping:         { name:'Ping',               desc:'Ping a host.', params:[{id:'p1',label:'Host',placeholder:'hostname or IP'}], script:(p)=>wrap(`Test-Connection -ComputerName '${esc(p.p1)}' -Count 4 | Format-Table -AutoSize | Out-String -Width 220`) },
+  pingsweep:    { name:'Ping Sweep',         desc:'Sweep a subnet for live hosts.', params:[{id:'p1',label:'Subnet',placeholder:'192.168.1'}], script:(p)=>wrap(`1..254 | ForEach-Object { $ip='${esc(p.p1)}.'+$_; if(Test-Connection $ip -Count 1 -Quiet){ Write-Host "$ip is UP" }} `) },
+  porttester:   { name:'Port Tester',        desc:'Test if a TCP port is open.', params:[{id:'p1',label:'Host',placeholder:'hostname'},{id:'p2',label:'Port',placeholder:'80'}], script:(p)=>wrap(`$r=Test-NetConnection -ComputerName '${esc(p.p1)}' -Port ${esc(p.p2)};Write-Host "Host: $($r.ComputerName)  Port: ${esc(p.p2)}  Open: $($r.TcpTestSucceeded)"`) },
+  traceroute:   { name:'Traceroute',         desc:'Trace route to a host.', params:[{id:'p1',label:'Host',placeholder:'hostname or IP'}], script:(p)=>wrap(`Test-NetConnection -ComputerName '${esc(p.p1)}' -TraceRoute | Select-Object -ExpandProperty TraceRoute | ForEach-Object { Write-Host $_ }`) },
+  dns:          { name:'DNS Lookup',         desc:'Resolve a hostname.', params:[{id:'p1',label:'Host',placeholder:'hostname or domain'}], script:(p)=>wrap(`Resolve-DnsName '${esc(p.p1)}' | Format-Table -AutoSize | Out-String -Width 220`) },
+  flushdns:     { name:'Flush DNS',          desc:'Clear the DNS resolver cache.', params:[], script:()=>wrap(`Clear-DnsClientCache; Write-Host 'DNS cache flushed.'`) },
+  openconn:     { name:'Open Connections',   desc:'Active TCP connections and listening ports.', params:[], script:()=>wrap(`Get-NetTCPConnection | Where-Object State -in 'Established','Listen' | Select-Object LocalAddress,LocalPort,RemoteAddress,RemotePort,State | Sort-Object State,LocalPort | Format-Table -AutoSize | Out-String -Width 220`) },
+  shares:       { name:'Network Shares',     desc:'Shared folders on this machine.', params:[], script:()=>wrap(`Get-SmbShare | Select-Object Name,Path,Description | Format-Table -AutoSize | Out-String -Width 220`) },
+  proxy:        { name:'Proxy Settings',     desc:'Current WinHTTP and IE proxy settings.', params:[], script:()=>wrap(`netsh winhttp show proxy; Get-ItemProperty -Path 'HKCU:\\Software\\Microsoft\\Windows\\CurrentVersion\\Internet Settings' | Select-Object ProxyEnable,ProxyServer,ProxyOverride | Format-List | Out-String -Width 220`) },
+  resetnic:     { name:'Reset NIC',          desc:'Reset all network adapters.', params:[], script:()=>wrap(`Get-NetAdapter | Restart-NetAdapter -Confirm:$false; Write-Host 'All adapters restarted.'`) },
+  dhcp:         { name:'DHCP Stats',         desc:'DHCP lease info for all adapters.', params:[], script:()=>wrap(`Get-NetIPAddress -AddressFamily IPv4 | Where-Object {$_.PrefixOrigin -eq 'Dhcp'} | Select-Object InterfaceAlias,IPAddress,PrefixLength,@{N='Lease';E={$_.ValidLifetime}} | Format-Table -AutoSize | Out-String -Width 220`) },
+  patches:      { name:'Security Patches',   desc:'Installed Windows security updates.', params:[], script:()=>wrap(`Get-HotFix | Where-Object {$_.Description -match 'Security'} | Sort-Object InstalledOn -Descending | Select-Object HotFixID,Description,InstalledOn,InstalledBy | Format-Table -AutoSize | Out-String -Width 220`) },
+  firewall:     { name:'Firewall Status',    desc:'Windows Firewall status for all profiles.', params:[], script:()=>wrap(`Get-NetFirewallProfile | Select-Object Name,Enabled,DefaultInboundAction,DefaultOutboundAction | Format-Table -AutoSize | Out-String -Width 220`) },
+  users:        { name:'Local Users',        desc:'All local user accounts.', params:[], script:()=>wrap(`Get-LocalUser | Select-Object Name,Enabled,LastLogon,PasswordLastSet,Description | Format-Table -AutoSize | Out-String -Width 220`) },
+  groups:       { name:'Local Groups',       desc:'All local groups and their members.', params:[], script:()=>wrap(`Get-LocalGroup | ForEach-Object { Write-Host "`n=== $($_.Name) ==="; Get-LocalGroupMember $_.Name -ErrorAction SilentlyContinue | Select-Object Name,ObjectClass | Format-Table -AutoSize | Out-String -Width 220 }`) },
+  adduser:      { name:'Add User to Group',  desc:'Add a user to a local group.', params:[{id:'p1',label:'Username',placeholder:'username'},{id:'p2',label:'Group',placeholder:'Administrators'}], script:(p)=>wrap(`Add-LocalGroupMember -Group '${esc(p.p2)}' -Member '${esc(p.p1)}'; Write-Host 'Done.'`) },
+  removeuser:   { name:'Remove from Group',  desc:'Remove a user from a local group.', params:[{id:'p1',label:'Username',placeholder:'username'},{id:'p2',label:'Group',placeholder:'Administrators'}], script:(p)=>wrap(`Remove-LocalGroupMember -Group '${esc(p.p2)}' -Member '${esc(p.p1)}'; Write-Host 'Done.'`) },
+  createuser:   { name:'Create Local User',  desc:'Create a new local user account.', params:[{id:'p1',label:'Username',placeholder:'newuser'},{id:'p2',label:'Password',placeholder:'TempPass123!'}], script:(p)=>wrap(`$pw=ConvertTo-SecureString '${esc(p.p2)}' -AsPlainText -Force; New-LocalUser -Name '${esc(p.p1)}' -Password $pw -PasswordNeverExpires; Write-Host 'User created.'`) },
+  psremote:     { name:'PS-Remote Shell',    desc:'Launch a PS-Remote session to the target.', params:[], script:()=>{ const t=target(); return t ? wrap(`Enter-PSSession -ComputerName '${esc(t)}'`) : `Write-Host 'Enter a target computer name in the bar above.'`} },
+  copyfile:     { name:'Copy File',          desc:'Copy a file. Use UNC paths for network destinations (\\\\server\\share\\file).', params:[{id:'p1',label:'Source',placeholder:'\\\\server\\share\\file.txt'},{id:'p2',label:'Destination',placeholder:'\\\\server\\share\\dest\\'}], script:(p)=>`$src='${esc(p.p1)}'\n$dst='${esc(p.p2)}'\nWrite-Host "Copying: $src"\nWrite-Host "     To: $dst"\nCopy-Item -Path $src -Destination $dst -Force -ErrorAction Stop\n$size=(Get-Item $src).Length\nWrite-Host "Done. $([math]::Round($size/1KB,1)) KB copied."` },
+};
+
+// ── Helpers ───────────────────────────────────────────────────────────────────
+const esc  = v => (v||'').replace(/'/g,"''");
+const target = () => document.getElementById('inp-target').value.trim();
+const user   = () => document.getElementById('inp-user').value.trim();
+const pass   = () => document.getElementById('inp-pass').value;
+const apiKey = () => document.getElementById('inp-key').value;
+
+function wrap(cmd) {
+  const t = target();
+  if (!t) return cmd;
+  const u = user(), p = pass();
+  const cred = u && p
+    ? `$secpw=ConvertTo-SecureString '${esc(p)}' -AsPlainText -Force\n$cred=New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList '${esc(u)}',$secpw\n\n`
+    : '';
+  const credArg = u && p ? ' -Credential $cred' : '';
+  return `${cred}Invoke-Command -ComputerName '${esc(t)}'${credArg} -ScriptBlock {\n${cmd}\n}`;
+}
+
+// ── Menu logic ────────────────────────────────────────────────────────────────
+let currentTool = null;
+
+document.querySelectorAll('.menu-btn').forEach(btn => {
+  btn.addEventListener('click', e => {
+    e.stopPropagation();
+    const dd = btn.querySelector('.dropdown');
+    const isOpen = dd.classList.contains('open');
+    closeAll();
+    if (!isOpen) { dd.classList.add('open'); btn.classList.add('active'); }
+  });
+});
+
+document.addEventListener('click', closeAll);
+function closeAll() {
+  document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open'));
+  document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
+}
+
+function openMenu(id) {
+  closeAll();
+  const btn = document.getElementById(id);
+  btn.querySelector('.dropdown').classList.add('open');
+  btn.classList.add('active');
+}
+
+document.querySelectorAll('.dropdown a').forEach(a => {
+  a.addEventListener('click', e => {
+    e.preventDefault();
+    closeAll();
+    loadTool(a.dataset.tool);
+  });
+});
+
+function loadTool(key) {
+  const def = tools[key];
+  if (!def) return;
+  currentTool = { key, def };
+  document.getElementById('welcome').classList.add('hidden');
+  document.getElementById('toolpanel').classList.remove('hidden');
+  document.getElementById('tool-title').textContent = def.name;
+  document.getElementById('tooldesc').textContent = def.desc;
+  document.getElementById('output').textContent = 'Click Run to execute.';
+
+  const paramsEl = document.getElementById('params');
+  paramsEl.innerHTML = '';
+  if (def.params.length) {
+    paramsEl.classList.remove('hidden');
+    def.params.forEach(p => {
+      const lbl = document.createElement('label');
+      lbl.textContent = p.label + ':';
+      const inp = document.createElement('input');
+      inp.id = 'param-' + p.id;
+      inp.placeholder = p.placeholder || '';
+      paramsEl.appendChild(lbl);
+      paramsEl.appendChild(inp);
+    });
+  } else {
+    paramsEl.classList.add('hidden');
+  }
+}
+
+// ── Run ───────────────────────────────────────────────────────────────────────
+document.getElementById('btn-run').addEventListener('click', runTool);
+
+async function runTool() {
+  if (!currentTool) return;
+  const btn = document.getElementById('btn-run');
+  const out = document.getElementById('output');
+  btn.disabled = true;
+  out.textContent = 'Running...';
+
+  const params = {};
+  currentTool.def.params.forEach(p => {
+    params[p.id] = document.getElementById('param-' + p.id)?.value || '';
+  });
+
+  const script = currentTool.def.params.length
+    ? currentTool.def.script(params)
+    : currentTool.def.script();
+
+  try {
+    const res = await fetch('/run', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'X-Api-Key': apiKey() },
+      body: JSON.stringify({ script })
+    });
+    if (res.status === 401) { out.textContent = 'Unauthorized — check your API key.'; return; }
+    const data = await res.json();
+    out.textContent = data.output || '(no output)';
+  } catch (err) {
+    out.textContent = 'Could not reach relay: ' + err.message;
+  } finally {
+    btn.disabled = false;
+  }
+}
+
+// ── Knowledge Base ─────────────────────────────────────────────────────────────
+document.getElementById('btn-kb').addEventListener('click', () =>
+  window.open('https://notebooklm.google.com/notebook/0d70e944-e6cc-4485-a888-f71f4419168b?authuser=1', '_blank'));
+
+// ── Clear creds ────────────────────────────────────────────────────────────────
+document.getElementById('btn-clear-creds').addEventListener('click', () => {
+  ['inp-target','inp-user','inp-pass'].forEach(id => document.getElementById(id).value = '');
+});
+
+// ── Ping relay on load ─────────────────────────────────────────────────────────
+(async function ping() {
+  const el = document.getElementById('relay-status');
+  try {
+    const r = await fetch('/ping');
+    const d = await r.json();
+    el.textContent = '● relay online ' + d.version;
+    el.className = 'ok';
+  } catch {
+    el.textContent = '● relay offline';
+    el.className = 'err';
+  }
+})();
+</script>
+</body>
+</html>

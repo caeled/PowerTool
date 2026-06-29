@@ -102,3 +102,27 @@ jobs:
           name: PowellTecTools-linux-flatpak
           path: PowellTecTools.flatpak
           if-no-files-found: error
+
+  build-relay:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish relay Windows Service
+        run: |
+          dotnet publish PowellTecRelay/PowellTecRelay.csproj `
+            -p:PublishProfile=win-x64 `
+            --nologo
+
+      - name: Upload relay exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: PowellTecRelay-win-x64
+          path: publish/relay-win-x64/PowellTecRelay.exe
+          if-no-files-found: error

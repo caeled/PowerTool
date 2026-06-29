@@ -1,0 +1,6 @@
+@PowellTecRelay_HostAddress = http://localhost:5027
+
+GET {{PowellTecRelay_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
