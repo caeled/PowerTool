@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -37,15 +37,17 @@
   /* Menu bar */
   #menubar { background: var(--surface); border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; padding: 0 8px; flex-shrink: 0; }
   #menu { display: flex; }
-  .menu-btn { background: transparent; border: none; color: var(--text); padding: 10px 14px; cursor: pointer; font-size: 13px; position: relative; }
+  .menu-btn { background: transparent; border: none; color: var(--text); padding: 10px 14px; cursor: pointer; font-size: 13px; }
   .menu-btn:hover, .menu-btn.active { background: #21262d; }
-  .dropdown { display: none; position: absolute; top: 100%; left: 0; background: #fff; color: #000; border: 1px solid #d0d7de; border-radius: 6px; min-width: 200px; z-index: 100; box-shadow: 0 8px 24px rgba(0,0,0,.4); }
-  .dropdown.open { display: block; }
-  .dropdown a { display: block; padding: 8px 16px; color: #24292f; text-decoration: none; font-size: 13px; }
-  .dropdown a:hover { background: #f6f8fa; }
-  .dropdown hr { border: none; border-top: 1px solid #d0d7de; margin: 4px 0; }
   #btn-kb { background: var(--blue); color: #fff; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; }
   #btn-kb:hover { background: var(--blue2); }
+  /* Dropdown rendered in a fixed overlay — no stacking issues */
+  #dropdown-overlay { display: none; position: fixed; top: 0; left: 0; right: 0; bottom: 0; z-index: 9999; }
+  #dropdown-overlay.open { display: block; }
+  #dropdown-menu { position: fixed; z-index: 10000; background: #fff; border: 1px solid #d0d7de; border-radius: 6px; min-width: 200px; box-shadow: 0 8px 24px rgba(0,0,0,.4); padding: 4px 0; }
+  #dropdown-menu a { display: block; padding: 8px 16px; color: #24292f; text-decoration: none; font-size: 13px; }
+  #dropdown-menu a:hover { background: #f6f8fa; }
+  #dropdown-menu hr { border: none; border-top: 1px solid #d0d7de; margin: 4px 0; }
 
   /* Content area */
   #content { flex: 1; display: flex; flex-direction: column; overflow: hidden; }
@@ -98,63 +100,19 @@
   <span id="relay-status">● checking...</span>
 </div>
 
+<!-- Dropdown overlay — single shared menu rendered at fixed position -->
+<div id="dropdown-overlay">
+  <div id="dropdown-menu"></div>
+</div>
+
 <!-- Menu bar -->
 <div id="menubar">
   <div id="menu">
-    <div class="menu-btn" id="m-system">System ▾
-      <div class="dropdown" id="d-system">
-        <a href="#" data-tool="apps">Installed Apps</a>
-        <a href="#" data-tool="services">Services</a>
-        <a href="#" data-tool="processes">Processes</a>
-        <a href="#" data-tool="disk">Disk Space</a>
-        <a href="#" data-tool="sysinfo">System Info</a>
-        <hr>
-        <a href="#" data-tool="eventlog">Event Log</a>
-        <a href="#" data-tool="scheduled">Scheduled Tasks</a>
-      </div>
-    </div>
-    <div class="menu-btn" id="m-network">Network ▾
-      <div class="dropdown" id="d-network">
-        <a href="#" data-tool="ipconfig">IP Configuration</a>
-        <a href="#" data-tool="adapters">Network Adapters</a>
-        <a href="#" data-tool="wifiinfo">WiFi Info</a>
-        <a href="#" data-tool="wifiprofiles">WiFi Profiles</a>
-        <hr>
-        <a href="#" data-tool="ping">Ping</a>
-        <a href="#" data-tool="pingsweep">Ping Sweep</a>
-        <a href="#" data-tool="porttester">Port Tester</a>
-        <a href="#" data-tool="traceroute">Traceroute</a>
-        <hr>
-        <a href="#" data-tool="dns">DNS Lookup</a>
-        <a href="#" data-tool="flushdns">Flush DNS</a>
-        <a href="#" data-tool="openconn">Open Connections</a>
-        <a href="#" data-tool="shares">Network Shares</a>
-        <a href="#" data-tool="proxy">Proxy Settings</a>
-        <a href="#" data-tool="resetnic">Reset NIC</a>
-        <a href="#" data-tool="dhcp">DHCP Stats</a>
-      </div>
-    </div>
-    <div class="menu-btn" id="m-security">Security ▾
-      <div class="dropdown" id="d-security">
-        <a href="#" data-tool="patches">Security Patches</a>
-        <a href="#" data-tool="firewall">Firewall Status</a>
-      </div>
-    </div>
-    <div class="menu-btn" id="m-manage">Manage ▾
-      <div class="dropdown" id="d-manage">
-        <a href="#" data-tool="users">Local Users</a>
-        <a href="#" data-tool="groups">Local Groups</a>
-        <a href="#" data-tool="adduser">Add User to Group</a>
-        <a href="#" data-tool="removeuser">Remove User from Group</a>
-        <a href="#" data-tool="createuser">Create Local User</a>
-        <a href="#" data-tool="psremote">PS-Remote Shell</a>
-      </div>
-    </div>
-    <div class="menu-btn" id="m-files">Files ▾
-      <div class="dropdown" id="d-files">
-        <a href="#" data-tool="copyfile">Copy File</a>
-      </div>
-    </div>
+    <button class="menu-btn" data-cat="system">System ▾</button>
+    <button class="menu-btn" data-cat="network">Network ▾</button>
+    <button class="menu-btn" data-cat="security">Security ▾</button>
+    <button class="menu-btn" data-cat="manage">Manage ▾</button>
+    <button class="menu-btn" data-cat="files">Files ▾</button>
   </div>
   <button id="btn-kb">📚 Knowledge Base</button>
 </div>
@@ -166,11 +124,11 @@
     <h1>PowellTec IT Support Tools</h1>
     <p>Select a tool from the menu above</p>
     <div class="cards">
-      <div class="card sys" onclick="openMenu('m-system')"><h3>System</h3><p>Apps · Services · Processes · Disk · Sys Info · Event Log · Scheduled Tasks</p></div>
-      <div class="card net" onclick="openMenu('m-network')"><h3>Network</h3><p>IP · Adapters · WiFi · Ping · Sweep · Port · Trace · DNS · Flush · NetStat · Proxy · NIC</p></div>
-      <div class="card sec" onclick="openMenu('m-security')"><h3>Security</h3><p>Security Patches · Firewall Status</p></div>
-      <div class="card mgr" onclick="openMenu('m-manage')"><h3>Manage</h3><p>Users · Groups · Add/Remove · Create · PS-Remote Shell</p></div>
-      <div class="card fil" onclick="openMenu('m-files')"><h3>Files</h3><p>Copy File (UNC path support)</p></div>
+      <div class="card sys" onclick="openMenuByName('system')"><h3>System</h3><p>Apps · Services · Processes · Disk · Sys Info · Event Log · Scheduled Tasks</p></div>
+      <div class="card net" onclick="openMenuByName('network')"><h3>Network</h3><p>IP · Adapters · WiFi · Ping · Sweep · Port · Trace · DNS · Flush · NetStat · Proxy · NIC</p></div>
+      <div class="card sec" onclick="openMenuByName('security')"><h3>Security</h3><p>Security Patches · Firewall Status</p></div>
+      <div class="card mgr" onclick="openMenuByName('manage')"><h3>Manage</h3><p>Users · Groups · Add/Remove · Create · PS-Remote Shell</p></div>
+      <div class="card fil" onclick="openMenuByName('files')"><h3>Files</h3><p>Copy File (UNC path support)</p></div>
     </div>
   </div>
 
@@ -218,7 +176,7 @@ const tools = {
   patches:      { name:'Security Patches',   desc:'Installed Windows security updates.', params:[], script:()=>wrap(`Get-HotFix | Where-Object {$_.Description -match 'Security'} | Sort-Object InstalledOn -Descending | Select-Object HotFixID,Description,InstalledOn,InstalledBy | Format-Table -AutoSize | Out-String -Width 220`) },
   firewall:     { name:'Firewall Status',    desc:'Windows Firewall status for all profiles.', params:[], script:()=>wrap(`Get-NetFirewallProfile | Select-Object Name,Enabled,DefaultInboundAction,DefaultOutboundAction | Format-Table -AutoSize | Out-String -Width 220`) },
   users:        { name:'Local Users',        desc:'All local user accounts.', params:[], script:()=>wrap(`Get-LocalUser | Select-Object Name,Enabled,LastLogon,PasswordLastSet,Description | Format-Table -AutoSize | Out-String -Width 220`) },
-  groups:       { name:'Local Groups',       desc:'All local groups and their members.', params:[], script:()=>wrap(`Get-LocalGroup | ForEach-Object { Write-Host "`n=== $($_.Name) ==="; Get-LocalGroupMember $_.Name -ErrorAction SilentlyContinue | Select-Object Name,ObjectClass | Format-Table -AutoSize | Out-String -Width 220 }`) },
+  groups:       { name:'Local Groups',       desc:'All local groups and their members.', params:[], script:()=>wrap('Get-LocalGroup | ForEach-Object { Write-Host ("=== " + $_.Name + " ==="); Get-LocalGroupMember $_.Name -ErrorAction SilentlyContinue | Select-Object Name,ObjectClass | Format-Table -AutoSize | Out-String -Width 220 }') },
   adduser:      { name:'Add User to Group',  desc:'Add a user to a local group.', params:[{id:'p1',label:'Username',placeholder:'username'},{id:'p2',label:'Group',placeholder:'Administrators'}], script:(p)=>wrap(`Add-LocalGroupMember -Group '${esc(p.p2)}' -Member '${esc(p.p1)}'; Write-Host 'Done.'`) },
   removeuser:   { name:'Remove from Group',  desc:'Remove a user from a local group.', params:[{id:'p1',label:'Username',placeholder:'username'},{id:'p2',label:'Group',placeholder:'Administrators'}], script:(p)=>wrap(`Remove-LocalGroupMember -Group '${esc(p.p2)}' -Member '${esc(p.p1)}'; Write-Host 'Done.'`) },
   createuser:   { name:'Create Local User',  desc:'Create a new local user account.', params:[{id:'p1',label:'Username',placeholder:'newuser'},{id:'p2',label:'Password',placeholder:'TempPass123!'}], script:(p)=>wrap(`$pw=ConvertTo-SecureString '${esc(p.p2)}' -AsPlainText -Force; New-LocalUser -Name '${esc(p.p1)}' -Password $pw -PasswordNeverExpires; Write-Host 'User created.'`) },
@@ -244,39 +202,63 @@ function wrap(cmd) {
   return `${cred}Invoke-Command -ComputerName '${esc(t)}'${credArg} -ScriptBlock {\n${cmd}\n}`;
 }
 
+// ── Menu definitions ──────────────────────────────────────────────────────────
+const menus = {
+  system:   [ ['apps','Installed Apps'],['services','Services'],['processes','Processes'],['disk','Disk Space'],['sysinfo','System Info'],null,['eventlog','Event Log'],['scheduled','Scheduled Tasks'] ],
+  network:  [ ['ipconfig','IP Configuration'],['adapters','Network Adapters'],['wifiinfo','WiFi Info'],['wifiprofiles','WiFi Profiles'],null,['ping','Ping'],['pingsweep','Ping Sweep'],['porttester','Port Tester'],['traceroute','Traceroute'],null,['dns','DNS Lookup'],['flushdns','Flush DNS'],['openconn','Open Connections'],['shares','Network Shares'],['proxy','Proxy Settings'],['resetnic','Reset NIC'],['dhcp','DHCP Stats'] ],
+  security: [ ['patches','Security Patches'],['firewall','Firewall Status'] ],
+  manage:   [ ['users','Local Users'],['groups','Local Groups'],['adduser','Add User to Group'],['removeuser','Remove User from Group'],['createuser','Create Local User'],['psremote','PS-Remote Shell'] ],
+  files:    [ ['copyfile','Copy File'] ],
+};
+
 // ── Menu logic ────────────────────────────────────────────────────────────────
 let currentTool = null;
+let activeMenuBtn = null;
+const overlay = document.getElementById('dropdown-overlay');
+const ddMenu  = document.getElementById('dropdown-menu');
+
+function closeAll() {
+  overlay.classList.remove('open');
+  if (activeMenuBtn) { activeMenuBtn.classList.remove('active'); activeMenuBtn = null; }
+}
+
+function openMenu(cat, btn) {
+  const items = menus[cat];
+  if (!items) return;
+  ddMenu.innerHTML = items.map(item =>
+    item === null
+      ? '<hr>'
+      : `<a href="#" data-tool="${item[0]}">${item[1]}</a>`
+  ).join('');
+  ddMenu.querySelectorAll('a').forEach(a => {
+    a.addEventListener('click', e => { e.preventDefault(); closeAll(); loadTool(a.dataset.tool); });
+  });
+  // Position under the button
+  const r = btn.getBoundingClientRect();
+  ddMenu.style.top  = r.bottom + 'px';
+  ddMenu.style.left = r.left + 'px';
+  overlay.classList.add('open');
+  btn.classList.add('active');
+  activeMenuBtn = btn;
+}
 
 document.querySelectorAll('.menu-btn').forEach(btn => {
   btn.addEventListener('click', e => {
     e.stopPropagation();
-    const dd = btn.querySelector('.dropdown');
-    const isOpen = dd.classList.contains('open');
+    const cat = btn.dataset.cat;
+    if (overlay.classList.contains('open') && activeMenuBtn === btn) { closeAll(); return; }
     closeAll();
-    if (!isOpen) { dd.classList.add('open'); btn.classList.add('active'); }
+    openMenu(cat, btn);
   });
 });
 
-document.addEventListener('click', closeAll);
-function closeAll() {
-  document.querySelectorAll('.dropdown').forEach(d => d.classList.remove('open'));
-  document.querySelectorAll('.menu-btn').forEach(b => b.classList.remove('active'));
-}
+// Click overlay background to close
+overlay.addEventListener('click', closeAll);
 
-function openMenu(id) {
-  closeAll();
-  const btn = document.getElementById(id);
-  btn.querySelector('.dropdown').classList.add('open');
-  btn.classList.add('active');
+function openMenuByName(cat) {
+  const btn = document.querySelector(`.menu-btn[data-cat="${cat}"]`);
+  if (btn) openMenu(cat, btn);
 }
-
-document.querySelectorAll('.dropdown a').forEach(a => {
-  a.addEventListener('click', e => {
-    e.preventDefault();
-    closeAll();
-    loadTool(a.dataset.tool);
-  });
-});
 
 function loadTool(key) {
   const def = tools[key];
