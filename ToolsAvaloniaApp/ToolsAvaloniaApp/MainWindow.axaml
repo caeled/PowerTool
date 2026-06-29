@@ -3,89 +3,295 @@
         xmlns:vm="using:ToolsAvaloniaApp.ViewModels"
         x:Class="ToolsAvaloniaApp.MainWindow"
         Title="PowellTec IT Support Tools"
-        Width="940" Height="680" MinWidth="700" MinHeight="520">
+        Width="1100" Height="720"
+        MinWidth="820" MinHeight="520"
+        Background="#0D1117">
 
-    <Window.DataContext>
-        <vm:MainViewModel/>
-    </Window.DataContext>
+  <Window.DataContext>
+    <vm:MainViewModel/>
+  </Window.DataContext>
 
-    <DockPanel Margin="10" LastChildFill="True">
+  <Window.Styles>
 
-        <!-- Target / Credentials Bar -->
-        <Border DockPanel.Dock="Top" BorderBrush="#0078D4" BorderThickness="2"
-                CornerRadius="4" Padding="10,8" Margin="0,0,0,8" Background="#F0F7FF">
+    <!-- TextBox dark theme -->
+    <Style Selector="TextBox">
+      <Setter Property="Background"     Value="#0D1117"/>
+      <Setter Property="Foreground"     Value="#E6EDF3"/>
+      <Setter Property="BorderBrush"    Value="#30363D"/>
+      <Setter Property="CaretBrush"     Value="#E6EDF3"/>
+      <Setter Property="SelectionBrush" Value="#264F78"/>
+    </Style>
+    <Style Selector="TextBox:pointerover /template/ Border#PART_BorderElement">
+      <Setter Property="BorderBrush" Value="#58A6FF"/>
+    </Style>
+    <Style Selector="TextBox:focus /template/ Border#PART_BorderElement">
+      <Setter Property="BorderBrush" Value="#58A6FF"/>
+    </Style>
+
+    <!-- Default button -->
+    <Style Selector="Button">
+      <Setter Property="Background"  Value="#21262D"/>
+      <Setter Property="Foreground"  Value="#C9D1D9"/>
+      <Setter Property="BorderBrush" Value="#30363D"/>
+      <Setter Property="Cursor"      Value="Hand"/>
+    </Style>
+    <Style Selector="Button:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background"  Value="#30363D"/>
+      <Setter Property="BorderBrush" Value="#8B949E"/>
+    </Style>
+    <Style Selector="Button:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background"  Value="#161B22"/>
+    </Style>
+
+    <!-- Green Run button -->
+    <Style Selector="Button.run">
+      <Setter Property="Background"  Value="#238636"/>
+      <Setter Property="Foreground"  Value="White"/>
+      <Setter Property="BorderBrush" Value="#2EA043"/>
+    </Style>
+    <Style Selector="Button.run:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background"  Value="#2EA043"/>
+      <Setter Property="BorderBrush" Value="#3FB950"/>
+    </Style>
+    <Style Selector="Button.run:pressed /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background"  Value="#196C2E"/>
+    </Style>
+
+    <!-- Menu -->
+    <Style Selector="Menu">
+      <Setter Property="Background" Value="#161B22"/>
+    </Style>
+    <Style Selector="MenuItem">
+      <Setter Property="Foreground" Value="#C9D1D9"/>
+      <Setter Property="Background" Value="Transparent"/>
+      <Setter Property="Padding"    Value="14,8"/>
+      <Setter Property="FontSize"   Value="13"/>
+    </Style>
+    <Style Selector="MenuItem:pointerover /template/ Panel">
+      <Setter Property="Background" Value="#1F6FEB22"/>
+    </Style>
+    <Style Selector="MenuItem:pointerover > /template/ ContentPresenter#PART_HeaderPresenter">
+      <Setter Property="TextElement.Foreground" Value="#58A6FF"/>
+    </Style>
+
+  </Window.Styles>
+
+  <DockPanel>
+
+    <!-- ── Credentials bar (navy) ───────────────────────────────────────── -->
+    <Border DockPanel.Dock="Top"
+            Background="#0C2340"
+            BorderBrush="#1F3A5F" BorderThickness="0,0,0,2"
+            Padding="12,8">
+      <WrapPanel Orientation="Horizontal" VerticalAlignment="Center">
+        <TextBlock Text="Target Computer:" Foreground="#7EB3D8"
+                   VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
+        <TextBox Text="{Binding Target}" Width="190" Margin="0,0,16,0"
+                 Watermark="Leave blank for local" Padding="6,4" CornerRadius="4"/>
+        <TextBlock Text="Username:" Foreground="#7EB3D8"
+                   VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
+        <TextBox Text="{Binding Username}" Width="155" Margin="0,0,16,0"
+                 Padding="6,4" CornerRadius="4"/>
+        <TextBlock Text="Password:" Foreground="#7EB3D8"
+                   VerticalAlignment="Center" Margin="0,0,6,0" FontSize="12"/>
+        <TextBox Text="{Binding Password}" PasswordChar="*" Width="140" Margin="0,0,16,0"
+                 Padding="6,4" CornerRadius="4"/>
+        <Button Content="Clear" Command="{Binding ClearCredsCommand}"
+                Padding="12,5" FontSize="12" CornerRadius="4"/>
+        <TextBlock Text="Credentials only needed for remote connections."
+                   Foreground="#3A5F7A" VerticalAlignment="Center" Margin="16,0,0,0" FontSize="11"/>
+      </WrapPanel>
+    </Border>
+
+    <!-- ── Menu bar (slightly lighter dark) ─────────────────────────────── -->
+    <Border DockPanel.Dock="Top"
+            Background="#161B22"
+            BorderBrush="#21262D" BorderThickness="0,0,0,1">
+      <Menu Background="Transparent" Padding="6,0">
+        <MenuItem Header="System">
+          <MenuItem Header="Installed Apps"  Command="{Binding SelectToolCommand}" CommandParameter="apps"/>
+          <MenuItem Header="Services"        Command="{Binding SelectToolCommand}" CommandParameter="services"/>
+          <MenuItem Header="Processes"       Command="{Binding SelectToolCommand}" CommandParameter="processes"/>
+          <MenuItem Header="Disk Space"      Command="{Binding SelectToolCommand}" CommandParameter="disk"/>
+          <Separator/>
+          <MenuItem Header="System Info"     Command="{Binding SelectToolCommand}" CommandParameter="sysinfo"/>
+          <MenuItem Header="Event Log"       Command="{Binding SelectToolCommand}" CommandParameter="eventlog"/>
+          <MenuItem Header="Scheduled Tasks" Command="{Binding SelectToolCommand}" CommandParameter="tasks"/>
+        </MenuItem>
+        <MenuItem Header="Network">
+          <MenuItem Header="IP Configuration"   Command="{Binding SelectToolCommand}" CommandParameter="ipconfig"/>
+          <MenuItem Header="Network Adapters"   Command="{Binding SelectToolCommand}" CommandParameter="adapters"/>
+          <MenuItem Header="WiFi Info"          Command="{Binding SelectToolCommand}" CommandParameter="wifiinfo"/>
+          <MenuItem Header="WiFi Profiles"      Command="{Binding SelectToolCommand}" CommandParameter="wifiprofiles"/>
+          <Separator/>
+          <MenuItem Header="Ping"               Command="{Binding SelectToolCommand}" CommandParameter="ping"/>
+          <MenuItem Header="Ping Sweep"         Command="{Binding SelectToolCommand}" CommandParameter="pingsweep"/>
+          <MenuItem Header="Port Tester"        Command="{Binding SelectToolCommand}" CommandParameter="porttester"/>
+          <MenuItem Header="Traceroute"         Command="{Binding SelectToolCommand}" CommandParameter="traceroute"/>
+          <Separator/>
+          <MenuItem Header="DNS Lookup"         Command="{Binding SelectToolCommand}" CommandParameter="dns"/>
+          <MenuItem Header="Flush DNS"          Command="{Binding SelectToolCommand}" CommandParameter="flushdns"/>
+          <MenuItem Header="Open Connections"   Command="{Binding SelectToolCommand}" CommandParameter="netstat"/>
+          <MenuItem Header="Network Shares"     Command="{Binding SelectToolCommand}" CommandParameter="shares"/>
+          <MenuItem Header="Proxy Settings"     Command="{Binding SelectToolCommand}" CommandParameter="proxy"/>
+          <Separator/>
+          <MenuItem Header="Reset NIC"          Command="{Binding SelectToolCommand}" CommandParameter="resetnic"/>
+          <MenuItem Header="DHCP Stats"         Command="{Binding SelectToolCommand}" CommandParameter="dhcpstats"/>
+        </MenuItem>
+        <MenuItem Header="Files">
+          <MenuItem Header="Copy File" Command="{Binding SelectToolCommand}" CommandParameter="copyfile"/>
+        </MenuItem>
+        <MenuItem Header="Security">
+          <MenuItem Header="Security Patches"  Command="{Binding SelectToolCommand}" CommandParameter="patches"/>
+          <MenuItem Header="Firewall Status"   Command="{Binding SelectToolCommand}" CommandParameter="firewall"/>
+        </MenuItem>
+        <MenuItem Header="Manage">
+          <MenuItem Header="Local Users"        Command="{Binding SelectToolCommand}" CommandParameter="localusers"/>
+          <MenuItem Header="Local Groups"       Command="{Binding SelectToolCommand}" CommandParameter="localgroups"/>
+          <MenuItem Header="Group Membership"   Command="{Binding SelectToolCommand}" CommandParameter="groupmembers"/>
+          <Separator/>
+          <MenuItem Header="Add to Group"       Command="{Binding SelectToolCommand}" CommandParameter="addtogroup"/>
+          <MenuItem Header="Remove from Group"  Command="{Binding SelectToolCommand}" CommandParameter="removefromgroup"/>
+          <Separator/>
+          <MenuItem Header="Create Local User"  Command="{Binding SelectToolCommand}" CommandParameter="createuser"/>
+          <Separator/>
+          <MenuItem Header="PS-Remote Shell"    Command="{Binding SelectToolCommand}" CommandParameter="psremote"/>
+        </MenuItem>
+        <MenuItem Header="Output">
+          <MenuItem Header="Clear Output" Command="{Binding ClearOutputCommand}"/>
+          <Separator/>
+          <MenuItem Header="Exit" Command="{Binding ExitCommand}"/>
+        </MenuItem>
+      </Menu>
+    </Border>
+
+    <!-- ── Main content ─────────────────────────────────────────────────── -->
+    <Grid>
+
+      <!-- Welcome screen -->
+      <StackPanel IsVisible="{Binding NoTool}"
+                  HorizontalAlignment="Center" VerticalAlignment="Center" Spacing="10">
+        <TextBlock Text="PowellTec IT Support Tools"
+                   FontSize="28" FontWeight="Bold" Foreground="#58A6FF"
+                   HorizontalAlignment="Center"/>
+        <TextBlock Text="Select a tool from the menu above"
+                   FontSize="14" Foreground="#484F58"
+                   HorizontalAlignment="Center" Margin="0,2,0,20"/>
+        <WrapPanel HorizontalAlignment="Center">
+          <Border Background="#0C1F35" CornerRadius="8" Padding="20,14" Width="180" Margin="6"
+                  BorderBrush="#1F3A5F" BorderThickness="1">
             <StackPanel Spacing="6">
-                <StackPanel Orientation="Horizontal" Spacing="8">
-                    <TextBlock Text="Target Computer:" FontWeight="Bold" VerticalAlignment="Center" Width="120"/>
-                    <TextBox Text="{Binding Target}" Watermark="hostname or IP  (blank = this machine)"
-                             Width="300" VerticalAlignment="Center"/>
-                    <TextBlock Text="Username:" FontWeight="Bold" VerticalAlignment="Center" Margin="8,0,0,0"/>
-                    <TextBox Text="{Binding Username}" Watermark="DOMAIN\user"
-                             Width="160" VerticalAlignment="Center"/>
-                    <TextBlock Text="Password:" FontWeight="Bold" VerticalAlignment="Center"/>
-                    <TextBox Text="{Binding Password}" PasswordChar="*"
-                             Width="130" VerticalAlignment="Center"/>
-                    <Button Content="Clear" Command="{Binding ClearCommand}"
-                            Background="Gray" Foreground="White" Padding="10,4" VerticalAlignment="Center"/>
-                    <ProgressBar IsIndeterminate="True" IsVisible="{Binding Loading}"
-                                 Width="100" Height="6" VerticalAlignment="Center"/>
-                </StackPanel>
-                <TextBlock Text="Leave target blank to query this machine. Credentials only needed for remote connections."
-                           Foreground="Gray" FontSize="11"/>
+              <TextBlock Text="System" FontWeight="Bold" Foreground="#58A6FF" FontSize="14"/>
+              <TextBlock Foreground="#6A737D" FontSize="12" TextWrapping="Wrap">
+                Apps · Services · Processes&#xA;Disk · Sys Info · Event Log&#xA;Scheduled Tasks
+              </TextBlock>
             </StackPanel>
+          </Border>
+          <Border Background="#0C2214" CornerRadius="8" Padding="20,14" Width="180" Margin="6"
+                  BorderBrush="#1A3D22" BorderThickness="1">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Network" FontWeight="Bold" Foreground="#3FB950" FontSize="14"/>
+              <TextBlock Foreground="#6A737D" FontSize="12" TextWrapping="Wrap">
+                IP · Adapters · WiFi · Ping&#xA;Sweep · Port · Trace · DNS&#xA;Flush · NetStat · Proxy · NIC
+              </TextBlock>
+            </StackPanel>
+          </Border>
+          <Border Background="#230C0C" CornerRadius="8" Padding="20,14" Width="180" Margin="6"
+                  BorderBrush="#3D1A1A" BorderThickness="1">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Security" FontWeight="Bold" Foreground="#F78166" FontSize="14"/>
+              <TextBlock Foreground="#6A737D" FontSize="12" TextWrapping="Wrap">
+                Security Patches&#xA;Firewall Status
+              </TextBlock>
+            </StackPanel>
+          </Border>
+          <Border Background="#1A0C2E" CornerRadius="8" Padding="20,14" Width="180" Margin="6"
+                  BorderBrush="#30194D" BorderThickness="1">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Manage" FontWeight="Bold" Foreground="#D2A8FF" FontSize="14"/>
+              <TextBlock Foreground="#6A737D" FontSize="12" TextWrapping="Wrap">
+                Users · Groups&#xA;Add/Remove · Create&#xA;PS-Remote Shell
+              </TextBlock>
+            </StackPanel>
+          </Border>
+          <Border Background="#0C1A14" CornerRadius="8" Padding="20,14" Width="180" Margin="6"
+                  BorderBrush="#1A3D2A" BorderThickness="1">
+            <StackPanel Spacing="6">
+              <TextBlock Text="Files" FontWeight="Bold" Foreground="#79C0FF" FontSize="14"/>
+              <TextBlock Foreground="#6A737D" FontSize="12" TextWrapping="Wrap">
+                Copy File&#xA;(UNC path support)
+              </TextBlock>
+            </StackPanel>
+          </Border>
+        </WrapPanel>
+      </StackPanel>
+
+      <!-- Tool panel -->
+      <DockPanel IsVisible="{Binding HasTool}" Margin="12">
+
+        <!-- Tool header card -->
+        <Border DockPanel.Dock="Top" Background="#161B22"
+                CornerRadius="6" Padding="16,12" Margin="0,0,0,8"
+                BorderBrush="#21262D" BorderThickness="1">
+          <DockPanel>
+            <StackPanel DockPanel.Dock="Right" Orientation="Horizontal"
+                        Spacing="10" VerticalAlignment="Center">
+              <ProgressBar IsIndeterminate="True" IsVisible="{Binding Loading}"
+                           Width="120" Height="4" Foreground="#58A6FF" Background="#21262D"/>
+              <Button Classes="run" Content="  Run  " Command="{Binding RunCommand}"
+                      Padding="18,8" FontWeight="Bold" FontSize="14" CornerRadius="6"/>
+            </StackPanel>
+            <StackPanel Spacing="3" VerticalAlignment="Center">
+              <TextBlock Text="{Binding ToolTitle}"
+                         FontSize="18" FontWeight="Bold" Foreground="#E6EDF3"/>
+              <TextBlock Text="{Binding ToolDescription}"
+                         Foreground="#6E7681" FontSize="12"/>
+            </StackPanel>
+          </DockPanel>
         </Border>
 
-        <!-- Results Panel -->
-        <Border DockPanel.Dock="Bottom" BorderBrush="#CCCCCC" BorderThickness="1"
-                CornerRadius="4" Padding="6" Height="280" Margin="0,8,0,0" Background="#1E1E1E">
-            <ScrollViewer HorizontalScrollBarVisibility="Auto" VerticalScrollBarVisibility="Auto">
-                <TextBlock Text="{Binding Output}" FontFamily="Courier New" FontSize="12"
-                           Foreground="#D4D4D4" TextWrapping="NoWrap"/>
-            </ScrollViewer>
+        <!-- Parameter fields -->
+        <Border DockPanel.Dock="Top" IsVisible="{Binding HasParams}"
+                Background="#161B22" CornerRadius="6"
+                Padding="14,10" Margin="0,0,0,8"
+                BorderBrush="#21262D" BorderThickness="1">
+          <WrapPanel Orientation="Horizontal">
+            <StackPanel IsVisible="{Binding HasP1}" Orientation="Horizontal"
+                        VerticalAlignment="Center" Margin="0,0,20,0">
+              <TextBlock Text="{Binding P1Label}" Foreground="#8B949E"
+                         VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
+              <TextBox Text="{Binding P1}" Watermark="{Binding P1Water}"
+                       Width="200" Padding="6,4" CornerRadius="4"/>
+            </StackPanel>
+            <StackPanel IsVisible="{Binding HasP2}" Orientation="Horizontal"
+                        VerticalAlignment="Center" Margin="0,0,20,0">
+              <TextBlock Text="{Binding P2Label}" Foreground="#8B949E"
+                         VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
+              <TextBox Text="{Binding P2}" Watermark="{Binding P2Water}"
+                       Width="200" Padding="6,4" CornerRadius="4"/>
+            </StackPanel>
+            <StackPanel IsVisible="{Binding HasP3}" Orientation="Horizontal"
+                        VerticalAlignment="Center" Margin="0,0,20,0">
+              <TextBlock Text="{Binding P3Label}" Foreground="#8B949E"
+                         VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
+              <TextBox Text="{Binding P3}" Watermark="{Binding P3Water}"
+                       Width="200" Padding="6,4" CornerRadius="4"/>
+            </StackPanel>
+          </WrapPanel>
         </Border>
 
-        <!-- Tool Tabs -->
-        <TabControl>
-            <TabItem Header="Installed Apps">
-                <StackPanel Margin="12" Spacing="8">
-                    <TextBlock Text="Lists all installed applications from the registry." Foreground="Gray" FontSize="12"/>
-                    <Button Content="Load Installed Apps" Command="{Binding LoadAppsCommand}"
-                            Background="#0078D4" Foreground="White" Padding="16,8" HorizontalAlignment="Left"/>
-                </StackPanel>
-            </TabItem>
+        <!-- Output -->
+        <Border CornerRadius="6" BorderBrush="#21262D" BorderThickness="1" ClipToBounds="True">
+          <ScrollViewer Background="#0D1117" HorizontalScrollBarVisibility="Auto">
+            <TextBlock Text="{Binding Output}"
+                       FontFamily="Cascadia Code,Consolas,Courier New,monospace"
+                       FontSize="12" Foreground="#C9D1D9"
+                       Padding="14" TextWrapping="NoWrap"/>
+          </ScrollViewer>
+        </Border>
 
-            <TabItem Header="Services">
-                <StackPanel Margin="12" Spacing="8">
-                    <TextBlock Text="Lists all Windows services with status and start type." Foreground="Gray" FontSize="12"/>
-                    <Button Content="Load Services" Command="{Binding LoadServicesCommand}"
-                            Background="#0078D4" Foreground="White" Padding="16,8" HorizontalAlignment="Left"/>
-                </StackPanel>
-            </TabItem>
+      </DockPanel>
+    </Grid>
 
-            <TabItem Header="Processes">
-                <StackPanel Margin="12" Spacing="8">
-                    <TextBlock Text="Top 50 processes by CPU usage." Foreground="Gray" FontSize="12"/>
-                    <Button Content="Load Processes" Command="{Binding LoadProcessesCommand}"
-                            Background="#0078D4" Foreground="White" Padding="16,8" HorizontalAlignment="Left"/>
-                </StackPanel>
-            </TabItem>
-
-            <TabItem Header="Disk Space">
-                <StackPanel Margin="12" Spacing="8">
-                    <TextBlock Text="Shows used, free and total space for all drives." Foreground="Gray" FontSize="12"/>
-                    <Button Content="Load Disk Space" Command="{Binding LoadDiskCommand}"
-                            Background="#0078D4" Foreground="White" Padding="16,8" HorizontalAlignment="Left"/>
-                </StackPanel>
-            </TabItem>
-
-            <TabItem Header="Security Patches">
-                <StackPanel Margin="12" Spacing="8">
-                    <TextBlock Text="Lists the 50 most recent Windows hotfixes installed." Foreground="Gray" FontSize="12"/>
-                    <Button Content="Load Patches" Command="{Binding LoadPatchesCommand}"
-                            Background="#0078D4" Foreground="White" Padding="16,8" HorizontalAlignment="Left"/>
-                </StackPanel>
-            </TabItem>
-        </TabControl>
-
-    </DockPanel>
+  </DockPanel>
 </Window>
