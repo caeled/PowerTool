@@ -42,7 +42,7 @@
 		<AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
 		<PackageCertificateThumbprint>AD7D59FE9A6A0832DDB1D9D64FDA6A5F92EA36DC</PackageCertificateThumbprint>
 		<PackageCertificateKeyFile>PowellTec.pfx</PackageCertificateKeyFile>
-		<PackageCertificatePassword>PowellTec2025!</PackageCertificatePassword>
+		<PackageCertificatePassword>$(PFX_PASSWORD)</PackageCertificatePassword>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
