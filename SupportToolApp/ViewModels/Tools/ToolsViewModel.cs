@@ -2840,8 +2840,28 @@ Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
         StatusMessage = $"{action}ed {serviceName} on {target}.";
     }
 
-    private static string RunPsSync(string script)
+    private string RunPsSync(string script)
     {
+        // On non-Windows, route through the relay service instead of local PowerShell
+        if (!OperatingSystem.IsWindows())
+        {
+            if (!_creds.HasRelay)
+                return "ERROR: No relay configured. Enter the relay URL in Credentials.";
+            try
+            {
+                using var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(120) };
+                if (!string.IsNullOrWhiteSpace(_creds.RelayApiKey))
+                    http.DefaultRequestHeaders.Add("X-Api-Key", _creds.RelayApiKey);
+                var body = System.Text.Json.JsonSerializer.Serialize(new { Script = script });
+                var content = new System.Net.Http.StringContent(body, System.Text.Encoding.UTF8, "application/json");
+                var response = http.PostAsync($"{_creds.RelayUrl.TrimEnd('/')}/run", content).GetAwaiter().GetResult();
+                var json = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
+                var result = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(json);
+                return result.TryGetProperty("Output", out var o) ? o.GetString() ?? "" : json;
+            }
+            catch (Exception ex) { return $"RELAY ERROR: {ex.Message}"; }
+        }
+
         var temp = Path.Combine(Path.GetTempPath(), $"tool_{Guid.NewGuid():N}.ps1");
         File.WriteAllText(temp, script, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
         try

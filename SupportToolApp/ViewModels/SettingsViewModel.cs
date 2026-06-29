@@ -16,6 +16,7 @@ public class SettingsViewModel : BaseViewModel
     private string _ql1Name, _ql1Url, _ql2Name, _ql2Url, _ql3Name, _ql3Url, _ql4Name, _ql4Url;
     private string _folderName, _localFolder, _libraryName, _libraryUrl;
     private string _logoPath, _logoInitials, _logoColor;
+    private string _relayUrl = "", _relayApiKey = "";
     private string _newServerName = "", _newServerHost = "";
     private bool _useMockData;
     private string _statusMessage = "";
@@ -49,6 +50,9 @@ public class SettingsViewModel : BaseViewModel
     public string LogoPath     { get => _logoPath;     set => SetProperty(ref _logoPath, value); }
     public string LogoInitials { get => _logoInitials; set => SetProperty(ref _logoInitials, value); }
     public string LogoColor    { get => _logoColor;    set => SetProperty(ref _logoColor, value); }
+
+    public string RelayUrl    { get => _relayUrl;    set => SetProperty(ref _relayUrl, value); }
+    public string RelayApiKey { get => _relayApiKey; set => SetProperty(ref _relayApiKey, value); }
 
     public string NewServerName { get => _newServerName; set => SetProperty(ref _newServerName, value); }
     public string NewServerHost { get => _newServerHost; set => SetProperty(ref _newServerHost, value); }
@@ -123,6 +127,7 @@ public class SettingsViewModel : BaseViewModel
         _folderName  = creds.FolderName;  _localFolder = creds.LocalFolder;
         _libraryName = creds.LibraryName; _libraryUrl  = creds.LibraryUrl;
         _logoPath = creds.LogoPath; _logoInitials = creds.LogoInitials; _logoColor = creds.LogoColor;
+        _relayUrl = creds.RelayUrl; _relayApiKey = creds.RelayApiKey;
 
         BrowseLogoCommand = new Command(async () =>
         {
@@ -157,6 +162,8 @@ public class SettingsViewModel : BaseViewModel
             _creds.LibraryName  = LibraryName;
             _creds.LibraryUrl   = string.IsNullOrWhiteSpace(LibraryUrl) ? "https://en.wikipedia.org/wiki/Main_Page" : LibraryUrl;
             _creds.LogoPath     = LogoPath;
+            _creds.RelayUrl     = RelayUrl.Trim();
+            _creds.RelayApiKey  = RelayApiKey.Trim();
             _creds.LogoInitials = string.IsNullOrWhiteSpace(LogoInitials) ? "IT" : LogoInitials;
             _creds.LogoColor    = string.IsNullOrWhiteSpace(LogoColor) ? "#0078D4" : LogoColor;
 

@@ -189,6 +189,23 @@
                 </VerticalStackLayout>
             </Border>
 
+            <!-- Relay Service (non-Windows platforms) -->
+            <Border Stroke="#0078D4" StrokeThickness="1" Padding="12" StrokeShape="RoundRectangle 6" BackgroundColor="#EEF4FF">
+                <VerticalStackLayout Spacing="8">
+                    <Label Text="Relay Service" FontAttributes="Bold" FontSize="15" TextColor="#0078D4"/>
+                    <Label Text="Required on macOS / Linux / Android. Install the PowellTec Relay service on one Windows machine on your network."
+                           TextColor="Gray" FontSize="12"/>
+                    <Grid ColumnDefinitions="80,*" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="Relay URL:" VerticalOptions="Center"/>
+                        <Entry Grid.Column="1" Text="{Binding RelayUrl}" Placeholder="http://192.168.1.100:5000"/>
+                    </Grid>
+                    <Grid ColumnDefinitions="80,*" ColumnSpacing="8">
+                        <Label Grid.Column="0" Text="API Key:" VerticalOptions="Center"/>
+                        <Entry Grid.Column="1" Text="{Binding RelayApiKey}" Placeholder="changeme" IsPassword="True"/>
+                    </Grid>
+                </VerticalStackLayout>
+            </Border>
+
             <!-- App Logo -->
             <Border Stroke="#CC5500" StrokeThickness="1" Padding="12" StrokeShape="RoundRectangle 6" BackgroundColor="#FFF5EE">
                 <VerticalStackLayout Spacing="8">

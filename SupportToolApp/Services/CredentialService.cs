@@ -83,6 +83,8 @@ public class CredentialService
         _logoPath     = Preferences.Get("logopath",     "");
         _logoInitials = Preferences.Get("logoinitials", "IT");
         _logoColor    = Preferences.Get("logocolor",    "#0078D4");
+        _relayUrl     = Preferences.Get("relayurl",     "");
+        _relayApiKey  = Preferences.Get("relayapikey",  "");
     }
 
     // Logo (image path or initials badge)
@@ -128,4 +130,18 @@ public class CredentialService
         get => _libraryName;
         set { _libraryName = value; Preferences.Set("libraryname", value); Changed?.Invoke(); }
     }
+
+    // Relay service (used on non-Windows platforms instead of local PowerShell)
+    private string _relayUrl = "", _relayApiKey = "";
+    public string RelayUrl
+    {
+        get => _relayUrl;
+        set { _relayUrl = value; Preferences.Set("relayurl", value); Changed?.Invoke(); }
+    }
+    public string RelayApiKey
+    {
+        get => _relayApiKey;
+        set { _relayApiKey = value; Preferences.Set("relayapikey", value); Changed?.Invoke(); }
+    }
+    public bool HasRelay => !string.IsNullOrWhiteSpace(_relayUrl);
 }
