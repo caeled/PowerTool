@@ -12,32 +12,24 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Show available Xcode versions
-        run: ls /Applications | grep -i xcode
-
-      - name: Select Xcode 26
+      - name: Select Xcode 26.3
         run: |
           sudo xcode-select --switch /Applications/Xcode_26.3.app
           xcodebuild -version
 
-      - name: Install .NET 10
+      - name: Install .NET 9
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
+          dotnet-version: '9.0.x'
 
-      - name: Install MAUI workloads (pinned to match Xcode 26.0)
-        run: |
-          dotnet workload install maui-maccatalyst --from-rollup-file https://aka.ms/dotnet/10.0.0/workloads/maccatalyst/rollup.json || \
-          dotnet workload install maui-maccatalyst
-
-      - name: Show installed Mac Catalyst SDK
-        run: ls ~/.dotnet/packs/ | grep -i maccatalyst || ls /usr/local/share/dotnet/packs/ | grep -i maccatalyst
+      - name: Install MAUI workloads
+        run: dotnet workload install maui-maccatalyst
 
       - name: Build Mac Catalyst
         run: |
           cd SupportToolApp
-          dotnet publish -f net10.0-maccatalyst -c Release \
-            -p:TargetFrameworks=net10.0-maccatalyst \
+          dotnet publish -f net9.0-maccatalyst -c Release \
+            -p:TargetFrameworks=net9.0-maccatalyst \
             -p:ApplicationTitle="PowellTec IT Support Tools" \
             -p:ApplicationId="com.powelltec.supporttools" \
             -p:ApplicationDisplayVersion="1.0.0" \
@@ -47,5 +39,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PowellTec-MacCatalyst
-          path: SupportToolApp/bin/Release/net10.0-maccatalyst/**/*.app
+          path: SupportToolApp/bin/Release/net9.0-maccatalyst/**/*.app
           if-no-files-found: warn
