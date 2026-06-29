@@ -12,6 +12,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Select Xcode 26
+        run: |
+          sudo xcode-select --switch /Applications/Xcode_26.0.app || \
+          sudo xcode-select --switch /Applications/Xcode_16.app || \
+          sudo xcode-select --switch /Applications/Xcode.app
+          xcodebuild -version
+
       - name: Install .NET 10
         uses: actions/setup-dotnet@v4
         with:
