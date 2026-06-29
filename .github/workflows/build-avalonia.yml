@@ -1,0 +1,55 @@
+name: Build PowellTec Tools (Avalonia)
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish single-file Windows exe
+        run: |
+          dotnet publish ToolsAvaloniaApp/ToolsAvaloniaApp/ToolsAvaloniaApp.csproj `
+            -p:PublishProfile=win-x64-single `
+            --nologo
+
+      - name: Upload Windows exe
+        uses: actions/upload-artifact@v4
+        with:
+          name: PowellTecTools-win-x64
+          path: publish/win-x64/PowellTecTools.exe
+          if-no-files-found: error
+
+  build-mac:
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish single-file Mac binary (arm64)
+        run: |
+          dotnet publish ToolsAvaloniaApp/ToolsAvaloniaApp/ToolsAvaloniaApp.csproj \
+            -p:PublishProfile=osx-arm64 \
+            --nologo
+
+      - name: Upload Mac binary
+        uses: actions/upload-artifact@v4
+        with:
+          name: PowellTecTools-osx-arm64
+          path: publish/osx-arm64/PowellTecTools
+          if-no-files-found: error
