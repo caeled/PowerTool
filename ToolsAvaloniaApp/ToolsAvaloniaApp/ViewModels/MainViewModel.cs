@@ -71,11 +71,12 @@ public class MainViewModel : INotifyPropertyChanged
     public string P2Water   => _currentTool?.P2Water ?? "";
     public string P3Water   => _currentTool?.P3Water ?? "";
 
-    public ICommand SelectToolCommand  { get; }
-    public ICommand RunCommand         { get; }
-    public ICommand ClearCredsCommand  { get; }
-    public ICommand ClearOutputCommand { get; }
-    public ICommand ExitCommand        { get; }
+    public ICommand SelectToolCommand    { get; }
+    public ICommand RunCommand           { get; }
+    public ICommand ClearCredsCommand    { get; }
+    public ICommand ClearOutputCommand   { get; }
+    public ICommand ExitCommand          { get; }
+    public ICommand KnowledgeBaseCommand { get; }
 
     private readonly Dictionary<string, ToolDef> _tools;
 
@@ -88,9 +89,15 @@ public class MainViewModel : INotifyPropertyChanged
             { CurrentTool = t; Output = ""; }
         });
         RunCommand         = new RelayCommand(async () => await RunCurrent());
-        ClearCredsCommand  = new RelayCommand(() => { Target = ""; Username = ""; Password = ""; });
-        ClearOutputCommand = new RelayCommand(() => Output = "");
-        ExitCommand        = new RelayCommand(() => Environment.Exit(0));
+        ClearCredsCommand    = new RelayCommand(() => { Target = ""; Username = ""; Password = ""; });
+        ClearOutputCommand   = new RelayCommand(() => Output = "");
+        ExitCommand          = new RelayCommand(() => Environment.Exit(0));
+        KnowledgeBaseCommand = new RelayCommand(() =>
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName        = "https://notebooklm.google.com/notebook/0d70e944-e6cc-4485-a888-f71f4419168b?authuser=1",
+                UseShellExecute = true
+            }));
     }
 
     private async Task RunCurrent()

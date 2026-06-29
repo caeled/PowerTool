@@ -57,6 +57,19 @@
       <Setter Property="Background"  Value="#196C2E"/>
     </Style>
 
+    <!-- Knowledge Base button -->
+    <Style Selector="Button.kb">
+      <Setter Property="Background"  Value="#1A3A6B"/>
+      <Setter Property="Foreground"  Value="#79C0FF"/>
+      <Setter Property="BorderBrush" Value="#2D5FA8"/>
+      <Setter Property="FontWeight"  Value="SemiBold"/>
+      <Setter Property="Cursor"      Value="Hand"/>
+    </Style>
+    <Style Selector="Button.kb:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background"  Value="#2D5FA8"/>
+      <Setter Property="BorderBrush" Value="#58A6FF"/>
+    </Style>
+
     <!-- Menu -->
     <Style Selector="Menu">
       <Setter Property="Background" Value="#161B22"/>
@@ -107,7 +120,12 @@
     <Border DockPanel.Dock="Top"
             Background="#161B22"
             BorderBrush="#21262D" BorderThickness="0,0,0,1">
-      <Menu Background="Transparent" Padding="6,0">
+      <DockPanel>
+        <Button Classes="kb" DockPanel.Dock="Right"
+                Content="&#128218;  Knowledge Base"
+                Command="{Binding KnowledgeBaseCommand}"
+                Padding="14,7" Margin="6,4" CornerRadius="5" FontSize="13"/>
+        <Menu Background="Transparent" Padding="6,0">
         <MenuItem Header="System">
           <MenuItem Header="Installed Apps"  Command="{Binding SelectToolCommand}" CommandParameter="apps"/>
           <MenuItem Header="Services"        Command="{Binding SelectToolCommand}" CommandParameter="services"/>
@@ -163,6 +181,7 @@
           <MenuItem Header="Exit" Command="{Binding ExitCommand}"/>
         </MenuItem>
       </Menu>
+      </DockPanel>
     </Border>
 
     <!-- ── Main content ─────────────────────────────────────────────────── -->
