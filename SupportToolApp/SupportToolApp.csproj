@@ -37,12 +37,12 @@
 		<ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
 
-		<!-- MSIX packaging -->
-		<WindowsPackageType>MSIX</WindowsPackageType>
-		<AppxPackageSigningEnabled>true</AppxPackageSigningEnabled>
-		<PackageCertificateThumbprint>AD7D59FE9A6A0832DDB1D9D64FDA6A5F92EA36DC</PackageCertificateThumbprint>
-		<PackageCertificateKeyFile>PowellTec.pfx</PackageCertificateKeyFile>
-		<PackageCertificatePassword>$(PFX_PASSWORD)</PackageCertificatePassword>
+		<!-- MSIX packaging (Windows only) -->
+		<WindowsPackageType Condition="$([MSBuild]::IsOSPlatform('windows'))">MSIX</WindowsPackageType>
+		<AppxPackageSigningEnabled Condition="$([MSBuild]::IsOSPlatform('windows'))">true</AppxPackageSigningEnabled>
+		<PackageCertificateThumbprint Condition="$([MSBuild]::IsOSPlatform('windows'))">AD7D59FE9A6A0832DDB1D9D64FDA6A5F92EA36DC</PackageCertificateThumbprint>
+		<PackageCertificateKeyFile Condition="$([MSBuild]::IsOSPlatform('windows'))">PowellTec.pfx</PackageCertificateKeyFile>
+		<PackageCertificatePassword Condition="$([MSBuild]::IsOSPlatform('windows'))">$(PFX_PASSWORD)</PackageCertificatePassword>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
