@@ -84,12 +84,17 @@ jobs:
             -p:PublishProfile=linux-x64 \
             --nologo
 
-      - name: Build Flatpak
-        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
-        with:
-          bundle: PowellTecTools.flatpak
-          manifest-path: com.powelltec.tools.yml
-          cache-key: flatpak-builder-${{ github.sha }}
+      - name: Install flatpak-builder
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y flatpak flatpak-builder
+          sudo flatpak remote-add --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          sudo flatpak install -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08
+
+      - name: Build Flatpak bundle
+        run: |
+          flatpak-builder --repo=repo --force-clean build-dir com.powelltec.tools.yml
+          flatpak build-bundle repo PowellTecTools.flatpak com.powelltec.PowellTecTools
 
       - name: Upload Flatpak
         uses: actions/upload-artifact@v4
