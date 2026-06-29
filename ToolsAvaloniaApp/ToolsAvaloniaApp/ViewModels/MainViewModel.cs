@@ -29,6 +29,7 @@ public class MainViewModel : INotifyPropertyChanged
     private string   _output   = "";
     private bool     _loading;
     private ToolDef? _currentTool;
+    private string   _currentKey = "";
     private string   _p1 = "", _p2 = "", _p3 = "";
 
     public string  Target   { get => _target;   set => Set(ref _target,   value); }
@@ -51,7 +52,8 @@ public class MainViewModel : INotifyPropertyChanged
                    nameof(HasTool), nameof(NoTool),
                    nameof(HasP1), nameof(HasP2), nameof(HasP3), nameof(HasParams),
                    nameof(P1Label), nameof(P2Label), nameof(P3Label),
-                   nameof(P1Water), nameof(P2Water), nameof(P3Water));
+                   nameof(P1Water), nameof(P2Water), nameof(P3Water),
+                   nameof(ShowBrowseP1), nameof(ShowBrowseP2));
         }
     }
 
@@ -60,10 +62,12 @@ public class MainViewModel : INotifyPropertyChanged
     public bool   HasTool         => _currentTool != null;
     public bool   NoTool          => _currentTool == null;
 
-    public bool   HasP1     => !string.IsNullOrEmpty(_currentTool?.P1Label);
-    public bool   HasP2     => !string.IsNullOrEmpty(_currentTool?.P2Label);
-    public bool   HasP3     => !string.IsNullOrEmpty(_currentTool?.P3Label);
-    public bool   HasParams => HasP1 || HasP2 || HasP3;
+    public bool   HasP1        => !string.IsNullOrEmpty(_currentTool?.P1Label);
+    public bool   HasP2        => !string.IsNullOrEmpty(_currentTool?.P2Label);
+    public bool   HasP3        => !string.IsNullOrEmpty(_currentTool?.P3Label);
+    public bool   HasParams    => HasP1 || HasP2 || HasP3;
+    public bool   ShowBrowseP1 => _currentKey == "copyfile" && HasP1;
+    public bool   ShowBrowseP2 => _currentKey == "copyfile" && HasP2;
     public string P1Label   => _currentTool?.P1Label ?? "";
     public string P2Label   => _currentTool?.P2Label ?? "";
     public string P3Label   => _currentTool?.P3Label ?? "";
@@ -86,7 +90,7 @@ public class MainViewModel : INotifyPropertyChanged
         SelectToolCommand  = new RelayCommand<string>(key =>
         {
             if (key != null && _tools.TryGetValue(key, out var t))
-            { CurrentTool = t; Output = ""; }
+            { _currentKey = key; CurrentTool = t; Output = ""; }
         });
         RunCommand         = new RelayCommand(async () => await RunCurrent());
         ClearCredsCommand    = new RelayCommand(() => { Target = ""; Username = ""; Password = ""; });

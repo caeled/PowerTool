@@ -280,14 +280,20 @@
               <TextBlock Text="{Binding P1Label}" Foreground="#8B949E"
                          VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
               <TextBox Text="{Binding P1}" Watermark="{Binding P1Water}"
-                       Width="200" Padding="6,4" CornerRadius="4"/>
+                       Width="220" Padding="6,4" CornerRadius="4"/>
+              <Button IsVisible="{Binding ShowBrowseP1}" Content="Browse..."
+                      Click="OnBrowseP1" Padding="8,4" Margin="6,0,0,0"
+                      CornerRadius="4" FontSize="12"/>
             </StackPanel>
             <StackPanel IsVisible="{Binding HasP2}" Orientation="Horizontal"
                         VerticalAlignment="Center" Margin="0,0,20,0">
               <TextBlock Text="{Binding P2Label}" Foreground="#8B949E"
                          VerticalAlignment="Center" Margin="0,0,8,0" FontSize="12"/>
               <TextBox Text="{Binding P2}" Watermark="{Binding P2Water}"
-                       Width="200" Padding="6,4" CornerRadius="4"/>
+                       Width="220" Padding="6,4" CornerRadius="4"/>
+              <Button IsVisible="{Binding ShowBrowseP2}" Content="Browse..."
+                      Click="OnBrowseP2" Padding="8,4" Margin="6,0,0,0"
+                      CornerRadius="4" FontSize="12"/>
             </StackPanel>
             <StackPanel IsVisible="{Binding HasP3}" Orientation="Horizontal"
                         VerticalAlignment="Center" Margin="0,0,20,0">
