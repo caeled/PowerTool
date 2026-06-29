@@ -47,9 +47,22 @@ jobs:
             -p:PublishProfile=osx-arm64 \
             --nologo
 
-      - name: Upload Mac binary
+      - name: Upload Mac binary (arm64)
         uses: actions/upload-artifact@v4
         with:
           name: PowellTecTools-osx-arm64
           path: publish/osx-arm64/PowellTecTools
+          if-no-files-found: error
+
+      - name: Publish single-file Mac binary (Intel x64)
+        run: |
+          dotnet publish ToolsAvaloniaApp/ToolsAvaloniaApp/ToolsAvaloniaApp.csproj \
+            -p:PublishProfile=osx-x64 \
+            --nologo
+
+      - name: Upload Mac binary (Intel x64)
+        uses: actions/upload-artifact@v4
+        with:
+          name: PowellTecTools-osx-x64
+          path: publish/osx-x64/PowellTecTools
           if-no-files-found: error
