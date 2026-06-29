@@ -66,3 +66,34 @@ jobs:
           name: PowellTecTools-osx-x64
           path: publish/osx-x64/PowellTecTools
           if-no-files-found: error
+
+  build-linux:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install .NET 9
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '9.0.x'
+
+      - name: Publish linux-x64 binary
+        run: |
+          dotnet publish ToolsAvaloniaApp/ToolsAvaloniaApp/ToolsAvaloniaApp.csproj \
+            -p:PublishProfile=linux-x64 \
+            --nologo
+
+      - name: Build Flatpak
+        uses: flatpak/flatpak-github-actions/flatpak-builder@v6
+        with:
+          bundle: PowellTecTools.flatpak
+          manifest-path: com.powelltec.tools.yml
+          cache-key: flatpak-builder-${{ github.sha }}
+
+      - name: Upload Flatpak
+        uses: actions/upload-artifact@v4
+        with:
+          name: PowellTecTools-linux-flatpak
+          path: PowellTecTools.flatpak
+          if-no-files-found: error
