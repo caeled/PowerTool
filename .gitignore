@@ -1,11 +1,10 @@
-# MAUI / .NET build output
-SupportToolApp/bin/
-SupportToolApp/obj/
-SoundCombineApp/bin/Release/
-SoundCombineApp/obj/
+# .NET build output (all projects)
+**/bin/
+**/obj/
+publish/
+
+# Legacy explicit entries (now covered above)
 SoundCombineApp/publish/
-CompareApp/bin/
-CompareApp/obj/
 CompareApp/publish/
 *.user
 
