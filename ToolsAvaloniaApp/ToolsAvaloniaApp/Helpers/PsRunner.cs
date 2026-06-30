@@ -96,7 +96,12 @@ public static class PsRunner
         try
         {
             var fileName = Path.GetFileName(localPath);
-            using var http    = MakeClient();
+            var fileSize = new FileInfo(localPath).Length;
+            // 30 seconds base + 1 second per MB — handles large files on slow LAN
+            var timeout  = TimeSpan.FromSeconds(30 + fileSize / 1024.0 / 1024.0);
+            using var http    = new HttpClient { Timeout = timeout };
+            if (!string.IsNullOrWhiteSpace(_relayApiKey))
+                http.DefaultRequestHeaders.Add("X-Api-Key", _relayApiKey);
             using var form    = new MultipartFormDataContent();
             using var stream  = File.OpenRead(localPath);
             using var fileContent = new StreamContent(stream);
