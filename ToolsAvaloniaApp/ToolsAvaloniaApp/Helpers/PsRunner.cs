@@ -95,7 +95,8 @@ public static class PsRunner
         finally { try { File.Delete(tmp); } catch { } }
     }
 
-    public static async Task<string> UploadFileAsync(string localPath, string destPath)
+    public static async Task<string> UploadFileAsync(string localPath, string destPath,
+        string? target = null, string? username = null, string? password = null)
     {
         LoadConfig();
         if (string.IsNullOrWhiteSpace(_relayUrl))
@@ -104,7 +105,6 @@ public static class PsRunner
         {
             var fileName = Path.GetFileName(localPath);
             var fileSize = new FileInfo(localPath).Length;
-            // 30 seconds base + 1 second per MB — handles large files on slow LAN
             var timeout  = TimeSpan.FromSeconds(30 + fileSize / 1024.0 / 1024.0);
             using var http    = new HttpClient { Timeout = timeout };
             if (!string.IsNullOrWhiteSpace(_relayApiKey))
@@ -114,6 +114,9 @@ public static class PsRunner
             using var fileContent = new StreamContent(stream);
             form.Add(new StringContent(destPath), "destPath");
             form.Add(fileContent, "file", fileName);
+            if (!string.IsNullOrWhiteSpace(target))   form.Add(new StringContent(target),   "target");
+            if (!string.IsNullOrWhiteSpace(username)) form.Add(new StringContent(username), "username");
+            if (!string.IsNullOrWhiteSpace(password)) form.Add(new StringContent(password), "password");
             var resp   = await http.PostAsync($"{RelayBase}/upload", form);
             var json   = await resp.Content.ReadAsStringAsync();
             var result = JsonSerializer.Deserialize<RelayResponse>(json, _jsonOpts);

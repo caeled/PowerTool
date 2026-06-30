@@ -117,7 +117,10 @@ public class MainViewModel : INotifyPropertyChanged
                 if (string.IsNullOrWhiteSpace(_p1) || string.IsNullOrWhiteSpace(_p2))
                     Output = "Enter Source (local path) and Destination (server path) above, then click Run.";
                 else
-                    Output = await PsRunner.UploadFileAsync(_p1, _p2);
+                    Output = await PsRunner.UploadFileAsync(_p1, _p2,
+                        IsRemote ? _target : null,
+                        HasCreds  ? _username : null,
+                        HasCreds  ? _password : null);
             }
             else
             {
