@@ -1,4 +1,4 @@
-﻿using System.Diagnostics;
+using System.Diagnostics;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -7,7 +7,6 @@ namespace ToolsAvaloniaApp.Helpers;
 
 public static class PsRunner
 {
-    // Relay config — loaded once from relay.json next to the app
     private static string? _relayUrl;
     private static string? _relayApiKey;
     private static bool    _configLoaded;
@@ -18,8 +17,7 @@ public static class PsRunner
         _configLoaded = true;
         try
         {
-            var dir  = AppContext.BaseDirectory;
-            var path = Path.Combine(dir, "relay.json");
+            var path = Path.Combine(AppContext.BaseDirectory, "relay.json");
             if (!File.Exists(path)) return;
             var doc = JsonDocument.Parse(File.ReadAllText(path));
             doc.RootElement.TryGetProperty("RelayUrl",    out var u); _relayUrl    = u.GetString();
@@ -28,25 +26,35 @@ public static class PsRunner
         catch { }
     }
 
+    private static HttpClient MakeClient()
+    {
+        var http = new HttpClient { Timeout = TimeSpan.FromSeconds(120) };
+        if (!string.IsNullOrWhiteSpace(_relayApiKey))
+            http.DefaultRequestHeaders.Add("X-Api-Key", _relayApiKey);
+        return http;
+    }
+
+    private static string RelayBase => _relayUrl!.TrimEnd('/');
+
+    private static readonly JsonSerializerOptions _jsonOpts =
+        new() { PropertyNameCaseInsensitive = true };
+
     public static async Task<string> RunAsync(string script)
     {
         LoadConfig();
 
-        // On non-Windows, route through the relay service
         if (!OperatingSystem.IsWindows())
         {
             if (string.IsNullOrWhiteSpace(_relayUrl))
                 return "ERROR: No relay configured.\nCreate relay.json next to the app:\n{\"RelayUrl\":\"http://192.168.1.x:5000\",\"RelayApiKey\":\"changeme\"}";
             try
             {
-                using var http = new HttpClient { Timeout = TimeSpan.FromSeconds(120) };
-                if (!string.IsNullOrWhiteSpace(_relayApiKey))
-                    http.DefaultRequestHeaders.Add("X-Api-Key", _relayApiKey);
+                using var http = MakeClient();
                 var body    = JsonSerializer.Serialize(new { Script = script });
                 var content = new StringContent(body, Encoding.UTF8, "application/json");
-                var resp    = await http.PostAsync($"{_relayUrl.TrimEnd('/')}/run", content);
+                var resp    = await http.PostAsync($"{RelayBase}/run", content);
                 var json    = await resp.Content.ReadAsStringAsync();
-                var result  = JsonSerializer.Deserialize<RelayResponse>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                var result  = JsonSerializer.Deserialize<RelayResponse>(json, _jsonOpts);
                 return (result?.Output ?? json).Trim();
             }
             catch (Exception ex) { return $"RELAY ERROR: {ex.Message}"; }
@@ -66,9 +74,9 @@ public static class PsRunner
                 UseShellExecute        = false,
                 CreateNoWindow         = true
             };
-            using var proc   = Process.Start(psi)!;
-            var outTask      = proc.StandardOutput.ReadToEndAsync();
-            var errTask      = proc.StandardError.ReadToEndAsync();
+            using var proc  = Process.Start(psi)!;
+            var outTask     = proc.StandardOutput.ReadToEndAsync();
+            var errTask     = proc.StandardError.ReadToEndAsync();
             await proc.WaitForExitAsync();
             var stdout = await outTask;
             var stderr = await errTask;
@@ -78,6 +86,27 @@ public static class PsRunner
             return sb.ToString().Trim();
         }
         finally { try { File.Delete(tmp); } catch { } }
+    }
+
+    public static async Task<string> UploadFileAsync(string localPath, string destPath)
+    {
+        LoadConfig();
+        if (string.IsNullOrWhiteSpace(_relayUrl))
+            return "ERROR: No relay configured.";
+        try
+        {
+            var bytes    = await File.ReadAllBytesAsync(localPath);
+            var b64      = Convert.ToBase64String(bytes);
+            var fileName = Path.GetFileName(localPath);
+            using var http = MakeClient();
+            var body    = JsonSerializer.Serialize(new { DestPath = destPath, FileBase64 = b64, FileName = fileName });
+            var content = new StringContent(body, Encoding.UTF8, "application/json");
+            var resp    = await http.PostAsync($"{RelayBase}/upload", content);
+            var json    = await resp.Content.ReadAsStringAsync();
+            var result  = JsonSerializer.Deserialize<RelayResponse>(json, _jsonOpts);
+            return (result?.Output ?? json).Trim();
+        }
+        catch (Exception ex) { return $"UPLOAD ERROR: {ex.Message}"; }
     }
 }
 

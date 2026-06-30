@@ -52,6 +52,26 @@ app.MapPost("/run", async (RunRequest req) =>
     }
 });
 
+// ── POST /upload ──────────────────────────────────────────────────────────────
+app.MapPost("/upload", async (UploadRequest req) =>
+{
+    if (string.IsNullOrWhiteSpace(req.DestPath) || string.IsNullOrWhiteSpace(req.FileBase64))
+        return Results.BadRequest(new RunResponse("DestPath and FileBase64 are required.", false));
+    try
+    {
+        var bytes = Convert.FromBase64String(req.FileBase64);
+        var dir   = Path.GetDirectoryName(req.DestPath);
+        if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
+        await File.WriteAllBytesAsync(req.DestPath, bytes);
+        var kb = Math.Round(bytes.Length / 1024.0, 1);
+        return Results.Ok(new RunResponse($"Uploaded {req.FileName} ({kb} KB) → {req.DestPath}", true));
+    }
+    catch (Exception ex)
+    {
+        return Results.Ok(new RunResponse($"Upload error: {ex.Message}", false));
+    }
+});
+
 // ── GET /ping — health check ───────────────────────────────────────────────────
 app.MapGet("/ping", () => Results.Ok(new { status = "ok", version = "1.0.0" }));
 
@@ -61,4 +81,5 @@ namespace PowellTecRelay
 {
     record RunRequest(string Script);
     record RunResponse(string Output, bool Success);
+    record UploadRequest(string DestPath, string FileBase64, string FileName);
 }

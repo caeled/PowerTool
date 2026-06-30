@@ -109,7 +109,21 @@ public class MainViewModel : INotifyPropertyChanged
         if (_currentTool == null || Loading) return;
         Loading = true;
         Output  = "Running...";
-        try   { Output = await PsRunner.RunAsync(_currentTool.Script()); }
+        try
+        {
+            // On non-Windows, Copy File uploads the local file through the relay
+            if (_currentKey == "copyfile" && !OperatingSystem.IsWindows())
+            {
+                if (string.IsNullOrWhiteSpace(_p1) || string.IsNullOrWhiteSpace(_p2))
+                    Output = "Enter Source (local path) and Destination (server path) above, then click Run.";
+                else
+                    Output = await PsRunner.UploadFileAsync(_p1, _p2);
+            }
+            else
+            {
+                Output = await PsRunner.RunAsync(_currentTool.Script());
+            }
+        }
         catch (Exception ex) { Output = $"Error: {ex.Message}"; }
         finally { Loading = false; }
     }
@@ -448,8 +462,8 @@ Write-Host ""     To: $dst""
 Copy-Item -Path $src -Destination $dst -Force -ErrorAction Stop
 $size = (Get-Item $src -ErrorAction SilentlyContinue).Length
 Write-Host ""Done. $([math]::Round($size/1KB,1)) KB copied.""",
-            P1Label: "Source",      P1Water: @"C:\path\file.txt  or  \\server\share\file",
-            P2Label: "Destination", P2Water: @"C:\dest\  or  \\server\share\"),
+            P1Label: "Source",      P1Water: @"C:\path\file.txt  or  /Users/name/file  or  \\server\share\file",
+            P2Label: "Destination", P2Water: @"C:\dest\folder\  or  \\server\share\"),
     };
 
     private void OnMany(params string[] names)
