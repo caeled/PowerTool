@@ -2,6 +2,7 @@ using System.ComponentModel;
 using System.Runtime.CompilerServices;
 using System.Windows.Input;
 using ToolsAvaloniaApp.Helpers;
+using ToolsAvaloniaApp.Models;
 
 namespace ToolsAvaloniaApp.ViewModels;
 
@@ -81,6 +82,12 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ClearOutputCommand   { get; }
     public ICommand ExitCommand          { get; }
     public ICommand KnowledgeBaseCommand { get; }
+    public ICommand SettingsCommand      { get; }
+
+    private QuickLinksConfig _quickLinks = QuickLinksConfig.Load();
+    public QuickLinksConfig QuickLinks { get => _quickLinks; set => Set(ref _quickLinks, value); }
+
+    public ICommand[] QuickLinkCommands { get; }
 
     private readonly Dictionary<string, ToolDef> _tools;
 
@@ -102,6 +109,24 @@ public class MainViewModel : INotifyPropertyChanged
                 FileName        = "https://notebooklm.google.com/notebook/0d70e944-e6cc-4485-a888-f71f4419168b?authuser=1",
                 UseShellExecute = true
             }));
+        SettingsCommand = new RelayCommand(() => OnSettingsRequested?.Invoke());
+        QuickLinkCommands = Enumerable.Range(0, 4).Select(i => new RelayCommand(() =>
+        {
+            var link = _quickLinks.Links[i];
+            if (!link.IsConfigured) return;
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName = link.Url, UseShellExecute = true
+            });
+        })).ToArray<ICommand>();
+    }
+
+    public event Action? OnSettingsRequested;
+
+    public void ReloadQuickLinks()
+    {
+        QuickLinks = QuickLinksConfig.Load();
+        OnMany(nameof(QuickLinks));
     }
 
     private async Task RunCurrent()

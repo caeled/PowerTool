@@ -70,6 +70,25 @@
       <Setter Property="BorderBrush" Value="#58A6FF"/>
     </Style>
 
+    <!-- Quick link buttons — configured -->
+    <Style Selector="Button.ql">
+      <Setter Property="Background"  Value="#1A3A6B"/>
+      <Setter Property="Foreground"  Value="#79C0FF"/>
+      <Setter Property="BorderBrush" Value="#2D5FA8"/>
+      <Setter Property="FontWeight"  Value="SemiBold"/>
+      <Setter Property="Cursor"      Value="Hand"/>
+    </Style>
+    <Style Selector="Button.ql:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background"  Value="#2D5FA8"/>
+    </Style>
+    <!-- Quick link buttons — unconfigured (grayed out) -->
+    <Style Selector="Button.ql-empty">
+      <Setter Property="Background"  Value="#161B22"/>
+      <Setter Property="Foreground"  Value="#484F58"/>
+      <Setter Property="BorderBrush" Value="#21262D"/>
+      <Setter Property="Cursor"      Value="Arrow"/>
+    </Style>
+
     <!-- Menu -->
     <Style Selector="Menu">
       <Setter Property="Background" Value="#161B22"/>
@@ -121,11 +140,31 @@
             Background="#161B22"
             BorderBrush="#21262D" BorderThickness="0,0,0,1">
       <DockPanel>
-        <Button Classes="kb" DockPanel.Dock="Right"
-                Content="&#128218;  Knowledge Base"
-                Command="{Binding KnowledgeBaseCommand}"
-                Padding="14,7" Margin="6,4" CornerRadius="5" FontSize="13"/>
+        <!-- Right side: KB + quick links -->
+        <StackPanel DockPanel.Dock="Right" Orientation="Horizontal" Spacing="4" Margin="6,4">
+          <Button Classes="kb"
+                  Content="&#128218;  Knowledge Base"
+                  Command="{Binding KnowledgeBaseCommand}"
+                  Padding="14,7" CornerRadius="5" FontSize="13"/>
+          <Button Name="Ql0" Padding="14,7" CornerRadius="5" FontSize="13"
+                  Command="{Binding QuickLinkCommands[0]}"
+                  ToolTip.Tip="Configure in File → Settings"/>
+          <Button Name="Ql1" Padding="14,7" CornerRadius="5" FontSize="13"
+                  Command="{Binding QuickLinkCommands[1]}"
+                  ToolTip.Tip="Configure in File → Settings"/>
+          <Button Name="Ql2" Padding="14,7" CornerRadius="5" FontSize="13"
+                  Command="{Binding QuickLinkCommands[2]}"
+                  ToolTip.Tip="Configure in File → Settings"/>
+          <Button Name="Ql3" Padding="14,7" CornerRadius="5" FontSize="13"
+                  Command="{Binding QuickLinkCommands[3]}"
+                  ToolTip.Tip="Configure in File → Settings"/>
+        </StackPanel>
         <Menu Background="Transparent" Padding="6,0">
+        <MenuItem Header="File">
+          <MenuItem Header="Settings..." Command="{Binding SettingsCommand}"/>
+          <Separator/>
+          <MenuItem Header="Exit"        Command="{Binding ExitCommand}"/>
+        </MenuItem>
         <MenuItem Header="System">
           <MenuItem Header="Installed Apps"  Command="{Binding SelectToolCommand}" CommandParameter="apps"/>
           <MenuItem Header="Services"        Command="{Binding SelectToolCommand}" CommandParameter="services"/>
