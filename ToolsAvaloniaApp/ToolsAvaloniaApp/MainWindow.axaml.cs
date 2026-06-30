@@ -55,7 +55,7 @@ public partial class MainWindow : Window
     private async void OpenSettings()
     {
         if (DataContext is not MainViewModel vm) return;
-        var win    = new SettingsWindow { Owner = this };
+        var win    = new SettingsWindow();
         var result = await win.ShowDialog<object?>(this);
         if (result != null) vm.ReloadQuickLinks();
     }
