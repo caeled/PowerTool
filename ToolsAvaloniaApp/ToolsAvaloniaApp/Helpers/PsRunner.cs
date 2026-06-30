@@ -50,10 +50,9 @@ public static class PsRunner
     {
         LoadConfig();
 
-        if (!OperatingSystem.IsWindows())
+        // Use relay on any platform when configured
+        if (!string.IsNullOrWhiteSpace(_relayUrl))
         {
-            if (string.IsNullOrWhiteSpace(_relayUrl))
-                return "ERROR: No relay configured.\nCreate relay.json next to the app:\n{\"RelayUrl\":\"http://192.168.1.x:5000\",\"RelayApiKey\":\"changeme\"}";
             try
             {
                 using var http = MakeClient();
@@ -67,7 +66,10 @@ public static class PsRunner
             catch (Exception ex) { return $"RELAY ERROR: {ex.Message}"; }
         }
 
-        // Windows — run locally
+        if (!OperatingSystem.IsWindows())
+            return "ERROR: No relay configured.\nCreate relay.json next to the app:\n{\"RelayUrl\":\"http://192.168.1.x:5000\",\"RelayApiKey\":\"changeme\"}";
+
+        // Windows with no relay — run locally
         var tmp = Path.Combine(Path.GetTempPath(), $"pttools_{Guid.NewGuid():N}.ps1");
         await File.WriteAllTextAsync(tmp, script, new UTF8Encoding(false));
         try
