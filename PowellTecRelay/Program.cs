@@ -56,21 +56,24 @@ app.MapPost("/run", async (RunRequest req) =>
     }
 });
 
-// ── POST /upload ──────────────────────────────────────────────────────────────
-app.MapPost("/upload", async (HttpContext ctx, UploadRequest req) =>
+// ── POST /upload — multipart/form-data: fields "destPath" + file ─────────────
+app.MapPost("/upload", async (HttpContext ctx) =>
 {
     var sizeFeat = ctx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
     if (sizeFeat != null) sizeFeat.MaxRequestBodySize = null;
-    if (string.IsNullOrWhiteSpace(req.DestPath) || string.IsNullOrWhiteSpace(req.FileBase64))
-        return Results.BadRequest(new RunResponse("DestPath and FileBase64 are required.", false));
     try
     {
-        var bytes = Convert.FromBase64String(req.FileBase64);
-        var dir   = Path.GetDirectoryName(req.DestPath);
+        var form     = await ctx.Request.ReadFormAsync();
+        var destPath = form["destPath"].FirstOrDefault();
+        var file     = form.Files.GetFile("file");
+        if (string.IsNullOrWhiteSpace(destPath) || file == null)
+            return Results.BadRequest(new RunResponse("destPath and file are required.", false));
+        var dir = Path.GetDirectoryName(destPath);
         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
-        await File.WriteAllBytesAsync(req.DestPath, bytes);
-        var kb = Math.Round(bytes.Length / 1024.0, 1);
-        return Results.Ok(new RunResponse($"Uploaded {req.FileName} ({kb} KB) → {req.DestPath}", true));
+        await using var fs = File.Create(destPath);
+        await file.CopyToAsync(fs);
+        var mb = Math.Round(file.Length / 1024.0 / 1024.0, 1);
+        return Results.Ok(new RunResponse($"Uploaded {file.FileName} ({mb} MB) → {destPath}", true));
     }
     catch (Exception ex)
     {
@@ -87,5 +90,4 @@ namespace PowellTecRelay
 {
     record RunRequest(string Script);
     record RunResponse(string Output, bool Success);
-    record UploadRequest(string DestPath, string FileBase64, string FileName);
 }

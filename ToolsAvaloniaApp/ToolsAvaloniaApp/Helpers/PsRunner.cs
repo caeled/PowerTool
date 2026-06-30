@@ -95,15 +95,16 @@ public static class PsRunner
             return "ERROR: No relay configured.";
         try
         {
-            var bytes    = await File.ReadAllBytesAsync(localPath);
-            var b64      = Convert.ToBase64String(bytes);
             var fileName = Path.GetFileName(localPath);
-            using var http = MakeClient();
-            var body    = JsonSerializer.Serialize(new { DestPath = destPath, FileBase64 = b64, FileName = fileName });
-            var content = new StringContent(body, Encoding.UTF8, "application/json");
-            var resp    = await http.PostAsync($"{RelayBase}/upload", content);
-            var json    = await resp.Content.ReadAsStringAsync();
-            var result  = JsonSerializer.Deserialize<RelayResponse>(json, _jsonOpts);
+            using var http    = MakeClient();
+            using var form    = new MultipartFormDataContent();
+            using var stream  = File.OpenRead(localPath);
+            using var fileContent = new StreamContent(stream);
+            form.Add(new StringContent(destPath), "destPath");
+            form.Add(fileContent, "file", fileName);
+            var resp   = await http.PostAsync($"{RelayBase}/upload", form);
+            var json   = await resp.Content.ReadAsStringAsync();
+            var result = JsonSerializer.Deserialize<RelayResponse>(json, _jsonOpts);
             return (result?.Output ?? json).Trim();
         }
         catch (Exception ex) { return $"UPLOAD ERROR: {ex.Message}"; }
