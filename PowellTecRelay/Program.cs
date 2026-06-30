@@ -63,7 +63,12 @@ app.MapPost("/upload", async (HttpContext ctx) =>
     if (sizeFeat != null) sizeFeat.MaxRequestBodySize = null;
     try
     {
-        var form     = await ctx.Request.ReadFormAsync();
+        var form     = await ctx.Request.ReadFormAsync(new Microsoft.AspNetCore.Http.Features.FormOptions
+        {
+            MultipartBodyLengthLimit = long.MaxValue,
+            ValueLengthLimit         = int.MaxValue,
+            MultipartHeadersLengthLimit = int.MaxValue
+        });
         var destPath = form["destPath"].FirstOrDefault();
         var file     = form.Files.GetFile("file");
         if (string.IsNullOrWhiteSpace(destPath) || file == null)
