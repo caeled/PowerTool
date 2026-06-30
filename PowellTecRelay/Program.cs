@@ -7,7 +7,11 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Host.UseWindowsService(o => o.ServiceName = "PowellTecRelay");
 
 // Bind to all interfaces so LAN devices can reach it
-builder.WebHost.ConfigureKestrel(o => o.ListenAnyIP(5000));
+builder.WebHost.ConfigureKestrel(o =>
+{
+    o.ListenAnyIP(5000);
+    o.Limits.MaxRequestBodySize = null; // no size cap — LAN only, ntadmin controls access
+});
 
 var app = builder.Build();
 
