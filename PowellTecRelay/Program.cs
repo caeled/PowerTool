@@ -94,22 +94,24 @@ app.MapPost("/upload", async (HttpContext ctx) =>
                     ? $"$secpw = ConvertTo-SecureString '{password.Replace("'", "''")}' -AsPlainText -Force\n$cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList '{username.Replace("'", "''")}', $secpw\n"
                     : "";
                 var credArg = !string.IsNullOrWhiteSpace(username) ? " -Credential $cred" : "";
-                // Build UNC path so the target machine can reach the staging file on this relay host
-                var stageUnc = $@"\\{Environment.MachineName}\{stagePath[0]}$\{stagePath.Substring(3)}";
+                // Push from relay host to target via UNC — avoids double-hop credential issue
+                var targetName = target!.Trim();
+                var destDrive  = destPath.Length >= 2 && destPath[1] == ':' ? $"{destPath[0]}$" : null;
+                var destRest   = destDrive != null ? destPath.Substring(3) : destPath.TrimStart('\\');
+                var destUnc    = destDrive != null
+                    ? $@"\\{targetName}\{destDrive}\{destRest}"
+                    : $@"\\{targetName}\{destRest}";
                 var script  = $@"{credBlock}
-$src = '{stageUnc.Replace("'", "''")}'
-$dst = '{destPath.Replace("'", "''")}'
-Invoke-Command -ComputerName '{target!.Trim()}'{credArg} -ScriptBlock {{
-    param($src, $dst)
-    $dir = Split-Path $dst
-    if ($dir) {{ New-Item -ItemType Directory -Force -Path $dir | Out-Null }}
-    Copy-Item -Path $src -Destination $dst -Force -ErrorAction Stop
-    $mb = [math]::Round((Get-Item $dst).Length/1MB, 1)
-    Write-Host ""Copied $($mb) MB to $dst""
-}} -ArgumentList $src, $dst";
+$src = '{stagePath.Replace("'", "''")}'
+$dst = '{destUnc.Replace("'", "''")}'
+$dir = Split-Path $dst
+if ($dir) {{ New-Item -ItemType Directory -Force -Path $dir | Out-Null }}
+Copy-Item -Path $src -Destination $dst -Force -ErrorAction Stop
+$mb = [math]::Round((Get-Item $dst).Length/1MB, 1)
+Write-Host ""Copied $mb MB to $dst""";
                 var output = await PsRunner.RunAsync(script);
                 var mb     = Math.Round(file.Length / 1024.0 / 1024.0, 1);
-                return Results.Ok(new RunResponse($"Uploaded {file.FileName} ({mb} MB) → {target}:{destPath}\n{output}", true));
+                return Results.Ok(new RunResponse($"Uploaded {file.FileName} ({mb} MB) → {destUnc}\n{output}", true));
             }
             finally { try { File.Delete(stagePath); } catch { } }
         }
