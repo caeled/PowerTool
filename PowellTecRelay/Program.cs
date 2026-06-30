@@ -94,15 +94,17 @@ app.MapPost("/upload", async (HttpContext ctx) =>
                     ? $"$secpw = ConvertTo-SecureString '{password.Replace("'", "''")}' -AsPlainText -Force\n$cred = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList '{username.Replace("'", "''")}', $secpw\n"
                     : "";
                 var credArg = !string.IsNullOrWhiteSpace(username) ? " -Credential $cred" : "";
+                // Build UNC path so the target machine can reach the staging file on this relay host
+                var stageUnc = $@"\\{Environment.MachineName}\{stagePath[0]}$\{stagePath.Substring(3)}";
                 var script  = $@"{credBlock}
-$src = '{stagePath.Replace("'", "''")}'
+$src = '{stageUnc.Replace("'", "''")}'
 $dst = '{destPath.Replace("'", "''")}'
 Invoke-Command -ComputerName '{target!.Trim()}'{credArg} -ScriptBlock {{
     param($src, $dst)
     $dir = Split-Path $dst
     if ($dir) {{ New-Item -ItemType Directory -Force -Path $dir | Out-Null }}
     Copy-Item -Path $src -Destination $dst -Force -ErrorAction Stop
-    $mb = [math]::Round((Get-Item $src).Length/1MB, 1)
+    $mb = [math]::Round((Get-Item $dst).Length/1MB, 1)
     Write-Host ""Copied $($mb) MB to $dst""
 }} -ArgumentList $src, $dst";
                 var output = await PsRunner.RunAsync(script);
