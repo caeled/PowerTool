@@ -46,11 +46,30 @@ public static class PsRunner
     private static readonly JsonSerializerOptions _jsonOpts =
         new() { PropertyNameCaseInsensitive = true };
 
+    public static bool HasRelay { get { LoadConfig(); return !string.IsNullOrWhiteSpace(_relayUrl); } }
+
     public static async Task<string> RunAsync(string script)
     {
         LoadConfig();
 
-        // Use relay on any platform when configured
+        if (!OperatingSystem.IsWindows())
+        {
+            if (string.IsNullOrWhiteSpace(_relayUrl))
+                return "ERROR: No relay configured.\nCreate relay.json next to the app:\n{\"RelayUrl\":\"http://192.168.1.x:5000\",\"RelayApiKey\":\"changeme\"}";
+            try
+            {
+                using var http = MakeClient();
+                var body    = JsonSerializer.Serialize(new { Script = script });
+                var content = new StringContent(body, Encoding.UTF8, "application/json");
+                var resp    = await http.PostAsync($"{RelayBase}/run", content);
+                var json    = await resp.Content.ReadAsStringAsync();
+                var result  = JsonSerializer.Deserialize<RelayResponse>(json, _jsonOpts);
+                return (result?.Output ?? json).Trim();
+            }
+            catch (Exception ex) { return $"RELAY ERROR: {ex.Message}"; }
+        }
+
+        // Windows — use relay if configured, otherwise run locally
         if (!string.IsNullOrWhiteSpace(_relayUrl))
         {
             try
@@ -66,10 +85,7 @@ public static class PsRunner
             catch (Exception ex) { return $"RELAY ERROR: {ex.Message}"; }
         }
 
-        if (!OperatingSystem.IsWindows())
-            return "ERROR: No relay configured.\nCreate relay.json next to the app:\n{\"RelayUrl\":\"http://192.168.1.x:5000\",\"RelayApiKey\":\"changeme\"}";
-
-        // Windows with no relay — run locally
+        // Windows standalone — run locally
         var tmp = Path.Combine(Path.GetTempPath(), $"pttools_{Guid.NewGuid():N}.ps1");
         await File.WriteAllTextAsync(tmp, script, new UTF8Encoding(false));
         try

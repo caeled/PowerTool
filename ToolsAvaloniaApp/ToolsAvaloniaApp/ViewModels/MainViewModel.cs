@@ -171,7 +171,8 @@ $cred  = New-Object -TypeName System.Management.Automation.PSCredential -Argumen
 
     private string Wrap(string cmd)
     {
-        if (!IsRemote) return cmd;
+        // On Windows with no relay configured, run locally — no Invoke-Command
+        if (!IsRemote || (OperatingSystem.IsWindows() && !PsRunner.HasRelay)) return cmd;
         var cred = HasCreds ? " -Credential $cred" : "";
         return $"{CredBlock()}Invoke-Command -ComputerName '{_target.Trim()}'{cred} -ScriptBlock {{\n{cmd}\n}}";
     }
