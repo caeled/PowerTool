@@ -13,6 +13,7 @@ public partial class MainWindow : Window
     {
         InitializeComponent();
         DataContextChanged += (_, _) => WireViewModel();
+        WireViewModel();
     }
 
     private void WireViewModel()
