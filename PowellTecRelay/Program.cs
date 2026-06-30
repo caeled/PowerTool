@@ -59,8 +59,8 @@ app.MapPost("/run", async (RunRequest req) =>
 // ── POST /upload ──────────────────────────────────────────────────────────────
 app.MapPost("/upload", async (HttpContext ctx, UploadRequest req) =>
 {
-    ctx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>()
-       ?.MaxRequestBodySize = null;
+    var sizeFeat = ctx.Features.Get<Microsoft.AspNetCore.Http.Features.IHttpMaxRequestBodySizeFeature>();
+    if (sizeFeat != null) sizeFeat.MaxRequestBodySize = null;
     if (string.IsNullOrWhiteSpace(req.DestPath) || string.IsNullOrWhiteSpace(req.FileBase64))
         return Results.BadRequest(new RunResponse("DestPath and FileBase64 are required.", false));
     try
