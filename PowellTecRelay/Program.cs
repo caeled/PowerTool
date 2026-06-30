@@ -73,6 +73,8 @@ app.MapPost("/upload", async (HttpContext ctx) =>
         var file     = form.Files.GetFile("file");
         if (string.IsNullOrWhiteSpace(destPath) || file == null)
             return Results.BadRequest(new RunResponse("destPath and file are required.", false));
+        if (destPath.EndsWith("\\") || destPath.EndsWith("/"))
+            destPath = Path.Combine(destPath, file.FileName);
         var dir = Path.GetDirectoryName(destPath);
         if (!string.IsNullOrEmpty(dir)) Directory.CreateDirectory(dir);
         await using var fs = File.Create(destPath);
