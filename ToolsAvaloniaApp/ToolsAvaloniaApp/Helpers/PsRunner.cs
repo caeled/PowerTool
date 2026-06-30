@@ -46,8 +46,8 @@ public static class PsRunner
                 var content = new StringContent(body, Encoding.UTF8, "application/json");
                 var resp    = await http.PostAsync($"{_relayUrl.TrimEnd('/')}/run", content);
                 var json    = await resp.Content.ReadAsStringAsync();
-                var result  = JsonSerializer.Deserialize<JsonElement>(json);
-                return result.TryGetProperty("Output", out var o) ? (o.GetString() ?? "").Trim() : json;
+                var result  = JsonSerializer.Deserialize<JsonElement>(json, new JsonSerializerOptions { PropertyNameCaseInsensitive = true });
+                return result.TryGetProperty("output", out var o) || result.TryGetProperty("Output", out o) ? (o.GetString() ?? "").Trim() : json;
             }
             catch (Exception ex) { return $"RELAY ERROR: {ex.Message}"; }
         }
