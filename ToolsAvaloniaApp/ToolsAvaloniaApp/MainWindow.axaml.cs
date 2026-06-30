@@ -55,9 +55,23 @@ public partial class MainWindow : Window
     private async void OpenSettings()
     {
         if (DataContext is not MainViewModel vm) return;
-        var win    = new SettingsWindow();
-        var result = await win.ShowDialog<object?>(this);
-        if (result != null) vm.ReloadQuickLinks();
+        try
+        {
+            var win    = new SettingsWindow();
+            var result = await win.ShowDialog<object?>(this);
+            if (result != null) vm.ReloadQuickLinks();
+        }
+        catch (Exception ex)
+        {
+            await new Window
+            {
+                Width = 500, Height = 200,
+                Content = new Avalonia.Controls.TextBox
+                {
+                    Text = ex.ToString(), IsReadOnly = true, AcceptsReturn = true, TextWrapping = Avalonia.Media.TextWrapping.Wrap
+                }
+            }.ShowDialog(this);
+        }
     }
 
     private async void OnBrowseP1(object? sender, RoutedEventArgs e)
