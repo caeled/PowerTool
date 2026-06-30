@@ -17,8 +17,15 @@ public static class PsRunner
         _configLoaded = true;
         try
         {
-            var path = Path.Combine(AppContext.BaseDirectory, "relay.json");
-            if (!File.Exists(path)) return;
+            var candidates = new[]
+            {
+                Path.Combine(AppContext.BaseDirectory, "relay.json"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "relay.json"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "PowellTecTools", "relay.json"),
+                Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), ".config", "PowellTecTools", "relay.json"),
+            };
+            var path = candidates.FirstOrDefault(File.Exists);
+            if (path == null) return;
             var doc = JsonDocument.Parse(File.ReadAllText(path));
             doc.RootElement.TryGetProperty("RelayUrl",    out var u); _relayUrl    = u.GetString();
             doc.RootElement.TryGetProperty("RelayApiKey", out var k); _relayApiKey = k.GetString();
