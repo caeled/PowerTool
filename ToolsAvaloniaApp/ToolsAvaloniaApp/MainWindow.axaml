@@ -89,6 +89,18 @@
       <Setter Property="Cursor"      Value="Arrow"/>
     </Style>
 
+    <!-- RDP button -->
+    <Style Selector="Button.rdp">
+      <Setter Property="Background"  Value="#3D1F6B"/>
+      <Setter Property="Foreground"  Value="#D2A8FF"/>
+      <Setter Property="BorderBrush" Value="#6E40C9"/>
+      <Setter Property="FontWeight"  Value="SemiBold"/>
+      <Setter Property="Cursor"      Value="Hand"/>
+    </Style>
+    <Style Selector="Button.rdp:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background"  Value="#6E40C9"/>
+    </Style>
+
     <!-- Menu -->
     <Style Selector="Menu">
       <Setter Property="Background" Value="#161B22"/>
@@ -146,6 +158,11 @@
                   Content="&#128218;  Knowledge Base"
                   Command="{Binding KnowledgeBaseCommand}"
                   Padding="14,7" CornerRadius="5" FontSize="13"/>
+          <Button Classes="rdp"
+                  Content="&#128187;  RDP"
+                  Command="{Binding RdpCommand}"
+                  Padding="14,7" CornerRadius="5" FontSize="13"
+                  ToolTip.Tip="Launch Remote Desktop (configure default in File → Settings)"/>
           <Button Name="Ql0" Padding="14,7" CornerRadius="5" FontSize="13"
                   Command="{Binding QuickLinkCommands[0]}"
                   ToolTip.Tip="Configure in File → Settings"/>

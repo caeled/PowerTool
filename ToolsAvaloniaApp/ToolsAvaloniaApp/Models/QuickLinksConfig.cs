@@ -10,13 +10,14 @@ public class QuickLink
     public bool IsConfigured =>
         !string.IsNullOrWhiteSpace(Name) &&
         !string.IsNullOrWhiteSpace(Url) &&
-        (Url.StartsWith("http://", StringComparison.OrdinalIgnoreCase) ||
-         Url.StartsWith("https://", StringComparison.OrdinalIgnoreCase));
+        Url.Contains("://");
 }
 
 public class QuickLinksConfig
 {
-    public QuickLink[] Links { get; set; } = Enumerable.Range(0, 4).Select(_ => new QuickLink()).ToArray();
+    public QuickLink[] Links       { get; set; } = Enumerable.Range(0, 4).Select(_ => new QuickLink()).ToArray();
+    public bool        NewWindow   { get; set; } = false;
+    public string      RdpDefault  { get; set; } = "";
 
     private static string ConfigPath()
     {

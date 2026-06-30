@@ -26,6 +26,7 @@ public partial class MainWindow : Window
             this.FindControl<Button>("Ql3")!,
         ];
         vm.OnSettingsRequested += OpenSettings;
+        vm.OnRdpRequested      += OpenRdp;
         vm.PropertyChanged     += (_, e) => { if (e.PropertyName == nameof(vm.QuickLinks)) RefreshQuickLinks(vm); };
         RefreshQuickLinks(vm);
     }
@@ -72,6 +73,54 @@ public partial class MainWindow : Window
                     Text = ex.ToString(), IsReadOnly = true, AcceptsReturn = true, TextWrapping = Avalonia.Media.TextWrapping.Wrap
                 }
             }.ShowDialog(this);
+        }
+    }
+
+    private async void OpenRdp(string defaultHost)
+    {
+        var win    = new RdpDialog(defaultHost);
+        var result = await win.ShowDialog<string?>(this);
+        if (string.IsNullOrWhiteSpace(result)) return;
+
+        var host = result.Trim();
+        if (OperatingSystem.IsWindows())
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName        = "mstsc.exe",
+                Arguments       = $"/v:{host}",
+                UseShellExecute = false
+            });
+        }
+        else if (OperatingSystem.IsMacOS())
+        {
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName        = "open",
+                Arguments       = $"rdp://full%20address=s:{host}",
+                UseShellExecute = false
+            });
+        }
+        else
+        {
+            // Linux — try xfreerdp, fall back to rdp:// URI
+            try
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName        = "xfreerdp",
+                    Arguments       = $"/v:{host}",
+                    UseShellExecute = false
+                });
+            }
+            catch
+            {
+                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                {
+                    FileName        = $"rdp://full%20address=s:{host}",
+                    UseShellExecute = true
+                });
+            }
         }
     }
 

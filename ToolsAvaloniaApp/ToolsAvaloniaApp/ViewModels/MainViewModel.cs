@@ -83,6 +83,7 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand ExitCommand          { get; }
     public ICommand KnowledgeBaseCommand { get; }
     public ICommand SettingsCommand      { get; }
+    public ICommand RdpCommand           { get; }
 
     private QuickLinksConfig _quickLinks = QuickLinksConfig.Load();
     public QuickLinksConfig QuickLinks { get => _quickLinks; set => Set(ref _quickLinks, value); }
@@ -110,6 +111,7 @@ public class MainViewModel : INotifyPropertyChanged
                 UseShellExecute = true
             }));
         SettingsCommand = new RelayCommand(() => OnSettingsRequested?.Invoke());
+        RdpCommand      = new RelayCommand(() => OnRdpRequested?.Invoke(_quickLinks.RdpDefault));
         QuickLinkCommands = Enumerable.Range(0, 4).Select(i => new RelayCommand(() =>
         {
             var link = _quickLinks.Links[i];
@@ -122,6 +124,7 @@ public class MainViewModel : INotifyPropertyChanged
     }
 
     public event Action? OnSettingsRequested;
+    public event Action<string>? OnRdpRequested;
 
     public void ReloadQuickLinks()
     {

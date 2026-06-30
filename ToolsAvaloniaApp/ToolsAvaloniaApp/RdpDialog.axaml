@@ -1,0 +1,57 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="ToolsAvaloniaApp.RdpDialog"
+        Title="Remote Desktop"
+        Width="400" Height="160"
+        CanResize="False"
+        WindowStartupLocation="CenterOwner"
+        Background="#0D1117">
+
+  <Window.Styles>
+    <Style Selector="TextBox">
+      <Setter Property="Background"      Value="#161B22"/>
+      <Setter Property="Foreground"      Value="#E6EDF3"/>
+      <Setter Property="BorderBrush"     Value="#30363D"/>
+      <Setter Property="BorderThickness" Value="1"/>
+      <Setter Property="CornerRadius"    Value="4"/>
+      <Setter Property="Padding"         Value="8,5"/>
+      <Setter Property="FontSize"        Value="13"/>
+    </Style>
+    <Style Selector="Button.connect">
+      <Setter Property="Background"   Value="#6E40C9"/>
+      <Setter Property="Foreground"   Value="White"/>
+      <Setter Property="Padding"      Value="20,8"/>
+      <Setter Property="CornerRadius" Value="5"/>
+      <Setter Property="FontSize"     Value="13"/>
+      <Setter Property="Cursor"       Value="Hand"/>
+    </Style>
+    <Style Selector="Button.connect:pointerover /template/ ContentPresenter#PART_ContentPresenter">
+      <Setter Property="Background" Value="#8957E5"/>
+    </Style>
+    <Style Selector="Button.cancel">
+      <Setter Property="Background"   Value="#21262D"/>
+      <Setter Property="Foreground"   Value="#E6EDF3"/>
+      <Setter Property="Padding"      Value="20,8"/>
+      <Setter Property="CornerRadius" Value="5"/>
+      <Setter Property="FontSize"     Value="13"/>
+      <Setter Property="Cursor"       Value="Hand"/>
+    </Style>
+  </Window.Styles>
+
+  <DockPanel Margin="24">
+    <StackPanel DockPanel.Dock="Bottom" Orientation="Horizontal"
+                HorizontalAlignment="Right" Spacing="10" Margin="0,16,0,0">
+      <Button Classes="cancel"  Content="Cancel"  Click="Cancel_Click"/>
+      <Button Classes="connect" Content="Connect" Click="Connect_Click"/>
+    </StackPanel>
+
+    <TextBlock DockPanel.Dock="Top" Text="Remote Desktop Connection"
+               Foreground="#D2A8FF" FontSize="15" FontWeight="SemiBold"
+               Margin="0,0,0,12"/>
+
+    <StackPanel Spacing="6">
+      <TextBlock Text="Host / IP Address:" Foreground="#8B949E" FontSize="12"/>
+      <TextBox Name="HostBox" Watermark="hostname or IP address" KeyDown="OnKeyDown"/>
+    </StackPanel>
+  </DockPanel>
+</Window>
