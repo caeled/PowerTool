@@ -103,12 +103,14 @@ public partial class MainWindow : Window
         }
         else
         {
-            // Linux — try Remmina, then xfreerdp, then xdg-open
+            // Linux — escape flatpak sandbox via flatpak-spawn, fall back to direct exec
             var launched = false;
             foreach (var (exe, args) in new[]
             {
-                ("remmina",  $"-c rdp://{host}"),
-                ("xfreerdp", $"/v:{host}"),
+                ("flatpak-spawn", $"--host remmina -c rdp://{host}"),
+                ("flatpak-spawn", $"--host xdg-open rdp://{host}"),
+                ("remmina",       $"-c rdp://{host}"),
+                ("xdg-open",      $"rdp://{host}"),
             })
             {
                 try
@@ -117,21 +119,13 @@ public partial class MainWindow : Window
                     {
                         FileName        = exe,
                         Arguments       = args,
-                        UseShellExecute = true
+                        UseShellExecute = false,
+                        CreateNoWindow  = true
                     });
                     launched = true;
                     break;
                 }
                 catch { }
-            }
-            if (!launched)
-            {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
-                {
-                    FileName        = "xdg-open",
-                    Arguments       = $"rdp://{host}",
-                    UseShellExecute = false
-                });
             }
         }
     }
