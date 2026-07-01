@@ -78,8 +78,6 @@ public partial class ToolsPage : ContentPage
             { TabPing,            PanelPing },
             { TabWifiSetup,       PanelWifiSetup },
             { TabDhcpStats,       PanelDhcpStats },
-            { TabPowerCopy,        PanelPowerCopy },
-            { TabPowerCopyGeneral, PanelPowerCopy },
             { TabAutoLogon,       PanelAutoLogon },
             { TabSetPrinter,      PanelSetPrinter },
             { TabTrustedSites,    PanelTrustedSites },
@@ -124,6 +122,11 @@ public partial class ToolsPage : ContentPage
 
     private async void OnSoundCombineClicked(object? sender, EventArgs e)
         => await Shell.Current.GoToAsync("SoundCombine");
+
+    private void OnPowerCopyClicked(object? sender, EventArgs e)
+        => BindingContext is ViewModels.Tools.ToolsViewModel vm
+            ? vm.LaunchPowerCopyCommand.Execute(null)
+            : null;
 
     private void SelectCategory(Button cat, Button firstTab)
     {
