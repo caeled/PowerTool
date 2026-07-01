@@ -76,6 +76,15 @@ public class UpdateEntry
     public string Severity { get; set; } = "";
     public string InstalledOn { get; set; } = "";
     public bool IsInstalled { get; set; }
+
+    public string KbNumber
+    {
+        get
+        {
+            var m = System.Text.RegularExpressions.Regex.Match(Title, @"KB\d+");
+            return m.Success ? m.Value : "";
+        }
+    }
 }
 
 public class NetworkAdapterEntry
@@ -324,6 +333,11 @@ public class ToolsViewModel : BaseViewModel
     public bool PatchesLoading { get => _patchesLoading; set => SetProperty(ref _patchesLoading, value); }
     public ObservableCollection<PatchEntry> Patches { get; } = [];
     public ICommand LoadPatchesCommand { get; }
+    public ICommand OpenKbCommand { get; } = new Command<string>(async kb =>
+    {
+        if (string.IsNullOrWhiteSpace(kb)) return;
+        await Launcher.OpenAsync(new Uri($"https://catalog.update.microsoft.com/Search.aspx?q={kb}"));
+    });
 
     // ── Process Manager ──────────────────────────────────────────────────────
     private bool _processesLoading;
@@ -1220,9 +1234,30 @@ public class ToolsViewModel : BaseViewModel
                 "Reboot", $"Reboot {target} now?", "Reboot", "Cancel");
             if (!confirm) return;
             RebootActionLoading = true;
-            var result = await Task.Run(() => RunPsSync(PsScripts.RemoteReboot(target)));
-            RebootOutput = string.IsNullOrWhiteSpace(result) ? $"Reboot initiated on {target}." : result.Trim();
+            await Task.Run(() => RunPsSync(PsScripts.RemoteReboot(target)));
             RebootActionLoading = false;
+            for (int i = 30; i >= 0; i--)
+            {
+                RebootOutput = i > 0
+                    ? $"Reboot command sent to {target}. Shutting down in {i}s..."
+                    : $"{target} is rebooting — waiting for it to come back...";
+                if (i > 0) await Task.Delay(1000);
+            }
+            // Ping every 15s for up to 5 minutes
+            var deadline = DateTime.UtcNow.AddMinutes(5);
+            while (DateTime.UtcNow < deadline)
+            {
+                await Task.Delay(15000);
+                var up = await Task.Run(() => RunPsSync(
+                    $"Test-Connection -ComputerName '{target}' -Count 1 -Quiet -ErrorAction SilentlyContinue"));
+                if (up?.Trim() == "True")
+                {
+                    RebootOutput = $"{target} is back online.";
+                    break;
+                }
+                var remaining = (int)(deadline - DateTime.UtcNow).TotalSeconds;
+                RebootOutput = $"{target} is rebooting — checking again in 15s (timeout in {remaining}s)...";
+            }
         });
 
         CancelRebootCommand = new Command(async () =>
@@ -3060,11 +3095,14 @@ internal static class PsScripts
             }
         """, 3);
 
-    public static string Printers(string target) => ScriptWithTarget(target, """
-            Get-WmiObject Win32_Printer | Select-Object Name, DriverName, PortName,
-                @{N='IsDefault';E={$_.Default}},
-                @{N='Status';E={$_.PrinterStatus}}
-        """, 2);
+    public static string Printers(string target) =>
+        "$ErrorActionPreference = 'SilentlyContinue'\n" +
+        $"$isLocal = ('{target}' -eq 'localhost' -or '{target}' -eq $env:COMPUTERNAME)\n" +
+        "$def = if ($isLocal) { try { [System.Drawing.Printing.PrinterSettings]::new().PrinterName } catch { '' } } else { '' }\n" +
+        $"@(if ($isLocal) {{ Get-Printer -ErrorAction SilentlyContinue }} else {{ Get-Printer -ComputerName '{target}' -ErrorAction SilentlyContinue }}) |\n" +
+        "    Select-Object Name, DriverName, PortName,\n" +
+        "        @{N='IsDefault';E={$_.Name -eq $def}},\n" +
+        "        @{N='Status';E={[string]$_.PrinterStatus}} | ConvertTo-Json -Depth 2\n";
 
     // Wraps a script body in local/remote dispatch boilerplate.
     // On Windows uses WinRM (Invoke-Command -ComputerName).
@@ -3643,45 +3681,20 @@ internal static class PsScripts
 
     public static string AddPrinter(string target, string path)
     {
-        // Schedule as NT AUTHORITY\INTERACTIVE — runs as whoever is logged in, no password needed.
-        // Schedule 10s out, drop the WinRM session, wait locally, reconnect fresh to verify.
         return
-            "$ErrorActionPreference = 'Continue'\n" +
+            "$ErrorActionPreference = 'Stop'\n" +
             $"$t = '{target}'; $p = '{path}'\n" +
             "$isLocal = ($t -eq 'localhost' -or $t -eq $env:COMPUTERNAME)\n" +
-            // Step 1: register the task on the remote machine and exit the session
-            "$register = {\n" +
+            "$sb = {\n" +
             "    param($p)\n" +
-            "    $taskName = '_SupportToolAddPrinter'\n" +
-            "    $inner = \"Add-Printer -ConnectionName '$p'\"\n" +
-            "    $enc = [Convert]::ToBase64String([Text.Encoding]::Unicode.GetBytes($inner))\n" +
-            "    $action = New-ScheduledTaskAction -Execute 'powershell.exe' -Argument \"-NonInteractive -ExecutionPolicy Bypass -EncodedCommand $enc\"\n" +
-            "    $trigger = New-ScheduledTaskTrigger -Once -At (Get-Date).AddSeconds(10)\n" +
-            "    $principal = New-ScheduledTaskPrincipal -UserId 'NT AUTHORITY\\INTERACTIVE' -LogonType Interactive -RunLevel Highest\n" +
-            "    Unregister-ScheduledTask -TaskName $taskName -Confirm:$false -ErrorAction SilentlyContinue\n" +
-            "    Register-ScheduledTask -TaskName $taskName -Action $action -Trigger $trigger -Principal $principal -Force -ErrorAction Stop | Out-Null\n" +
-            "    Write-Output 'Task registered — firing in 10s'\n" +
+            "    Add-Printer -ConnectionName $p\n" +
+            "    $share = $p.TrimStart('\\\\').Split('\\\\')[-1]\n" +
+            "    $found = Get-Printer -ErrorAction SilentlyContinue | Where-Object { $_.Name -like \"*$share*\" }\n" +
+            "    if ($found) { \"Added and verified: $($found.Name)\" }\n" +
+            "    else { 'Printer added — driver may still be installing. Run Load Printers to confirm.' }\n" +
             "}\n" +
-            // Step 2: check the printer after the task has had time to run
-            "$check = {\n" +
-            "    param($p)\n" +
-            "    $share = $p.TrimStart('\\').Split('\\')[-1]\n" +
-            "    $found = Get-WmiObject Win32_Printer | Where-Object { $_.Name -like \"*$share*\" }\n" +
-            "    if ($found) { Write-Output \"Verified in WMI: $($found.Name)\" }\n" +
-            "    else { Write-Output 'Printer not found in WMI — add may have failed or driver still installing' }\n" +
-            "    Unregister-ScheduledTask -TaskName '_SupportToolAddPrinter' -Confirm:$false -ErrorAction SilentlyContinue\n" +
-            "}\n" +
-            "if ($isLocal) {\n" +
-            "    & $register $p\n" +
-            "    Start-Sleep -Seconds 15\n" +
-            "    & $check $p\n" +
-            "} else {\n" +
-            "    Invoke-Command -ComputerName $t -ScriptBlock $register -ArgumentList $p | ForEach-Object { \"$_\" }\n" +
-            "    Write-Output 'Waiting 15s for task to fire...'\n" +
-            "    Start-Sleep -Seconds 15\n" +
-            "    Write-Output 'Reconnecting to verify...'\n" +
-            "    Invoke-Command -ComputerName $t -ScriptBlock $check -ArgumentList $p | ForEach-Object { \"$_\" }\n" +
-            "}\n";
+            "if ($isLocal) { & $sb $p }\n" +
+            "else { Invoke-Command -ComputerName $t -ScriptBlock $sb -ArgumentList $p | ForEach-Object { \"$_\" } }\n";
     }
 
     public static string RemovePrinter(string target, string name)
@@ -4104,17 +4117,20 @@ internal static class PsScripts
             "AutoLogonCount : $($v.AutoLogonCount)"
         """);
 
-    public static string PrinterNames(string target) => ScriptWithTarget(target, """
-            Get-WmiObject Win32_Printer |
-                Select-Object -ExpandProperty Name |
-                Sort-Object
-        """, 1);
+    public static string PrinterNames(string target) =>
+        "$ErrorActionPreference = 'SilentlyContinue'\n" +
+        $"$isLocal = ('{target}' -eq 'localhost' -or '{target}' -eq $env:COMPUTERNAME)\n" +
+        $"@(if ($isLocal) {{ Get-Printer -ErrorAction SilentlyContinue }} else {{ Get-Printer -ComputerName '{target}' -ErrorAction SilentlyContinue }}) |\n" +
+        "    Select-Object -ExpandProperty Name | Sort-Object | ConvertTo-Json -Depth 1\n";
 
     public static string SetDefaultPrinter(string target, string name) =>
         TextScriptWithTarget(target, $$"""
-            $p = Get-WmiObject Win32_Printer | Where-Object { $_.Name -eq "{{name}}" }
-            if ($p) { $p.SetDefaultPrinter() | Out-Null; "OK" }
-            else    { "Printer not found: {{name}}" }
+            $p = Get-Printer -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq "{{name}}" }
+            if ($p) {
+                (New-Object -ComObject WScript.Network).SetDefaultPrinter("{{name}}")
+                "Default printer set to: {{name}}"
+            }
+            else { "Printer not found: {{name}}" }
         """);
 
     public static string AddTrustedSite(string target, string domain, bool useHttp) =>

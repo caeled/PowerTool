@@ -27,6 +27,7 @@ public partial class AppShell : Shell
         creds.LoadQuickLinks();
         creds.Changed += () => MainThread.BeginInvokeOnMainThread(RefreshQuickLinks);
         RefreshQuickLinks();
+        Navigated += (_, _) => FlyoutIsPresented = false;
         Loaded += async (_, _) =>
         {
             await GoToAsync("//Tools");

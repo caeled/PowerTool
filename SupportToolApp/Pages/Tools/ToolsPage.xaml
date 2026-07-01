@@ -184,9 +184,9 @@
                 </Grid>
                 <Entry Grid.Row="1" Text="{Binding ServiceSearch}" Placeholder="Filter services..."/>
                 <HorizontalStackLayout Grid.Row="2" Spacing="8">
-                    <Button Text="â–¶ Start" Command="{Binding StartServiceCommand}" BackgroundColor="#228B22" Padding="16,6"/>
-                    <Button Text="â–  Stop" Command="{Binding StopServiceCommand}" BackgroundColor="#CC4400" Padding="16,6"/>
-                    <Button Text="â†º Restart" Command="{Binding RestartServiceCommand}" BackgroundColor="#1565C0" Padding="16,6"/>
+                    <Button Text="Start" Command="{Binding StartServiceCommand}" BackgroundColor="#228B22" Padding="16,6"/>
+                    <Button Text="Stop" Command="{Binding StopServiceCommand}" BackgroundColor="#CC4400" Padding="16,6"/>
+                    <Button Text="Restart" Command="{Binding RestartServiceCommand}" BackgroundColor="#1565C0" Padding="16,6"/>
                     <Label Text="{Binding SelectedService.DisplayName, StringFormat='Selected: {0}'}"
                            VerticalOptions="Center" TextColor="Gray" FontSize="12"/>
                 </HorizontalStackLayout>
@@ -394,18 +394,28 @@
                 <Border Grid.Row="1" Stroke="LightGray" StrokeThickness="1" StrokeShape="RoundRectangle 4">
                     <CollectionView ItemsSource="{Binding Updates}">
                         <CollectionView.Header>
-                            <Grid ColumnDefinitions="*,140,110" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
+                            <Grid ColumnDefinitions="*,80,140,110" Padding="8,6" BackgroundColor="#F5F5F5" ColumnSpacing="8">
                                 <Label Grid.Column="0" Text="Update" FontAttributes="Bold" FontSize="12"/>
-                                <Label Grid.Column="1" Text="Category" FontAttributes="Bold" FontSize="12"/>
-                                <Label Grid.Column="2" Text="Installed On" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="1" Text="KB" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="2" Text="Category" FontAttributes="Bold" FontSize="12"/>
+                                <Label Grid.Column="3" Text="Installed On" FontAttributes="Bold" FontSize="12"/>
                             </Grid>
                         </CollectionView.Header>
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
-                                <Grid ColumnDefinitions="*,140,110" Padding="8,5" ColumnSpacing="8">
-                                    <Label Grid.Column="0" Text="{Binding Title}" FontSize="12"/>
-                                    <Label Grid.Column="1" Text="{Binding Severity}" FontSize="12" TextColor="Gray"/>
-                                    <Label Grid.Column="2" Text="{Binding InstalledOn}" FontSize="12" TextColor="Gray"/>
+                                <Grid ColumnDefinitions="*,80,140,110" Padding="8,5" ColumnSpacing="8">
+                                    <Label Grid.Column="0" Text="{Binding Title}" FontSize="12" LineBreakMode="TailTruncation"/>
+                                    <Label Grid.Column="1" Text="{Binding KbNumber}" FontSize="12" FontAttributes="Bold"
+                                           TextColor="#0078D4" TextDecorations="Underline"
+                                           IsVisible="{Binding KbNumber, Converter={StaticResource StringNotEmptyConverter}}">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.OpenKbCommand}"
+                                                CommandParameter="{Binding KbNumber}"/>
+                                        </Label.GestureRecognizers>
+                                    </Label>
+                                    <Label Grid.Column="2" Text="{Binding Severity}" FontSize="12" TextColor="Gray"/>
+                                    <Label Grid.Column="3" Text="{Binding InstalledOn}" FontSize="12" TextColor="Gray"/>
                                 </Grid>
                             </DataTemplate>
                         </CollectionView.ItemTemplate>
@@ -490,7 +500,7 @@
                         <CollectionView.ItemTemplate>
                             <DataTemplate>
                                 <Grid ColumnDefinitions="Auto,*" Padding="14,8" ColumnSpacing="10">
-                                    <Label Grid.Column="0" Text="ðŸ”‘" FontSize="14"/>
+                                    <Label Grid.Column="0" Text="*" FontSize="14"/>
                                     <Label Grid.Column="1" Text="{Binding .}" FontSize="13" VerticalOptions="Center"/>
                                 </Grid>
                             </DataTemplate>
@@ -523,7 +533,13 @@
                             <DataTemplate>
                                 <Grid ColumnDefinitions="100,*,120,*" Padding="8,5" ColumnSpacing="8">
                                     <Label Grid.Column="0" Text="{Binding HotFixId}" FontSize="12" FontAttributes="Bold"
-                                           TextColor="#0078D4"/>
+                                           TextColor="#0078D4" TextDecorations="Underline">
+                                        <Label.GestureRecognizers>
+                                            <TapGestureRecognizer
+                                                Command="{Binding Source={RelativeSource AncestorType={x:Type ContentPage}}, Path=BindingContext.OpenKbCommand}"
+                                                CommandParameter="{Binding HotFixId}"/>
+                                        </Label.GestureRecognizers>
+                                    </Label>
                                     <Label Grid.Column="1" Text="{Binding Description}" FontSize="12"/>
                                     <Label Grid.Column="2" Text="{Binding InstalledOn}" FontSize="12" TextColor="Gray"/>
                                     <Label Grid.Column="3" Text="{Binding InstalledBy}" FontSize="11" TextColor="Gray"/>
@@ -540,7 +556,7 @@
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,*" ColumnSpacing="8">
                     <Button Grid.Column="0" Text="Load Processes" Command="{Binding LoadProcessesCommand}"
                             BackgroundColor="SteelBlue" Padding="16,8"/>
-                    <Button Grid.Column="1" Text="âš¡ Kill Process" Command="{Binding KillProcessCommand}"
+                    <Button Grid.Column="1" Text="Kill Process" Command="{Binding KillProcessCommand}"
                             BackgroundColor="#CC4400" Padding="16,8"/>
                     <ActivityIndicator Grid.Column="2" IsRunning="{Binding ProcessesLoading}"
                                        IsVisible="{Binding ProcessesLoading}" Color="SteelBlue"
@@ -585,11 +601,11 @@
                        Text="Use the Target Computer field above to set the machine. Actions are confirmed before executing."
                        TextColor="Gray" FontSize="12"/>
                 <HorizontalStackLayout Grid.Row="1" Spacing="10">
-                    <Button Text="ðŸ”„ Reboot Now" Command="{Binding RebootNowCommand}"
+                    <Button Text="Reboot Now" Command="{Binding RebootNowCommand}"
                             BackgroundColor="#CC4400" Padding="18,10" FontAttributes="Bold"/>
-                    <Button Text="âŒ Cancel Pending Reboot" Command="{Binding CancelRebootCommand}"
+                    <Button Text="Cancel Reboot" Command="{Binding CancelRebootCommand}"
                             BackgroundColor="White" TextColor="Black" Padding="18,10"/>
-                    <Button Text="ðŸ–¥ Enable RDP" Command="{Binding EnableRdpCommand}"
+                    <Button Text="Enable RDP" Command="{Binding EnableRdpCommand}"
                             BackgroundColor="#1565C0" Padding="18,10"/>
                     <ActivityIndicator IsRunning="{Binding RebootActionLoading}"
                                        IsVisible="{Binding RebootActionLoading}" Color="SteelBlue"
@@ -676,11 +692,11 @@
                     <Entry Grid.Column="1" Text="{Binding RunAsArgs}" Placeholder="optional arguments"/>
                 </Grid>
                 <HorizontalStackLayout Grid.Row="5" Spacing="10">
-                    <Button Text="â–¶ Run / Launch" Command="{Binding RunAsExecuteCommand}"
+                    <Button Text="Run / Launch" Command="{Binding RunAsExecuteCommand}"
                             BackgroundColor="#228B22" Padding="16,8" FontAttributes="Bold"/>
-                    <Button Text="â–¶ Start Service" Command="{Binding RunAsStartServiceCommand}"
+                    <Button Text="Start Service" Command="{Binding RunAsStartServiceCommand}"
                             BackgroundColor="#1565C0" Padding="16,8"/>
-                    <Button Text="â–  Stop Service" Command="{Binding RunAsStopServiceCommand}"
+                    <Button Text="Stop Service" Command="{Binding RunAsStopServiceCommand}"
                             BackgroundColor="#CC4400" Padding="16,8"/>
                     <ActivityIndicator IsRunning="{Binding RunAsLoading}" IsVisible="{Binding RunAsLoading}"
                                        Color="SteelBlue" VerticalOptions="Center"/>
@@ -806,7 +822,7 @@
                 </Grid>
                 <Grid Grid.Row="3" ColumnDefinitions="*,Auto,Auto,Auto,Auto" ColumnSpacing="8">
                     <Entry Grid.Column="0" Text="{Binding DeployScriptName}" Placeholder="script.ps1"/>
-                    <Button Grid.Column="1" Text="ðŸ“‚ Browse" Command="{Binding DeployBrowseCommand}"
+                    <Button Grid.Column="1" Text="Browse" Command="{Binding DeployBrowseCommand}"
                             BackgroundColor="White" TextColor="Black" Padding="12,6"/>
                     <CheckBox Grid.Column="2" IsChecked="{Binding DeployExecute}" VerticalOptions="Center"/>
                     <Label Grid.Column="3" Text="Execute after drop" VerticalOptions="Center" FontSize="12"/>
@@ -832,7 +848,7 @@
                         </CollectionView>
                     </Border>
                 </Grid>
-                <Button Grid.Row="5" Text="ðŸš€ Deploy &amp; Run" Command="{Binding DeployRunCommand}"
+                <Button Grid.Row="5" Text="Deploy &amp; Run" Command="{Binding DeployRunCommand}"
                         BackgroundColor="#8B0000" TextColor="White" FontAttributes="Bold"
                         Padding="20,10" HorizontalOptions="Start"/>
             </Grid>
@@ -1293,7 +1309,7 @@
                 <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,Auto,Auto,*" ColumnSpacing="8">
                     <Button Grid.Column="0" Text="Load Tasks" Command="{Binding LoadSchedTasksCommand}"
                             BackgroundColor="SteelBlue" Padding="16,8"/>
-                    <Button Grid.Column="1" Text="â–¶ Run" Command="{Binding RunSchedTaskCommand}"
+                    <Button Grid.Column="1" Text="Run" Command="{Binding RunSchedTaskCommand}"
                             BackgroundColor="#228B22" Padding="14,8"/>
                     <Button Grid.Column="2" Text="Enable" Command="{Binding EnableSchedTaskCommand}"
                             BackgroundColor="#1565C0" Padding="14,8"/>

@@ -19,6 +19,7 @@
             <conv:BoolToLockedConverter x:Key="BoolToLockedConverter"/>
             <conv:BoolToLicensedConverter x:Key="BoolToLicensedConverter"/>
             <conv:UserStatusColorConverter x:Key="UserStatusColorConverter"/>
+            <conv:StringNotEmptyConverter x:Key="StringNotEmptyConverter"/>
         </ResourceDictionary>
     </Application.Resources>
 </Application>
