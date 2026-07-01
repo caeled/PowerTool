@@ -1,0 +1,8 @@
+[Desktop Entry]
+Name=PowellTec IT Support Tools
+Comment=Champion Labs IT Support Toolkit
+Exec=PowellTecTools
+Icon=com.powelltec.PowellTecTools
+Type=Application
+Categories=System;Administration;
+StartupNotify=true

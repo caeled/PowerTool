@@ -17,6 +17,9 @@ modules:
     buildsystem: simple
     build-commands:
       - install -Dm755 PowellTecTools /app/bin/PowellTecTools
+      - install -Dm644 com.powelltec.PowellTecTools.desktop /app/share/applications/com.powelltec.PowellTecTools.desktop
     sources:
       - type: file
         path: publish/linux-x64/PowellTecTools
+      - type: file
+        path: com.powelltec.PowellTecTools.desktop
