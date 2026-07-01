@@ -474,12 +474,16 @@ document.getElementById('rdp-connect').addEventListener('click', () => {
   const host = rdpHostInput.value.trim();
   if (!host) return;
   rdpBackdrop.classList.remove('open');
-  const a = document.createElement('a');
-  a.href = `rdp://full%20address=s:${encodeURIComponent(host)}`;
+  const rdpContent = `full address:s:${host}\nprompt for credentials:i:1\nusername:s:\n`;
+  const blob = new Blob([rdpContent], { type: 'application/x-rdp' });
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
+  a.href     = url;
+  a.download = `connect-${host}.rdp`;
   a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
-  setTimeout(() => document.body.removeChild(a), 500);
+  setTimeout(() => { URL.revokeObjectURL(url); document.body.removeChild(a); }, 500);
 });
 
 rdpHostInput.addEventListener('keydown', e => {
