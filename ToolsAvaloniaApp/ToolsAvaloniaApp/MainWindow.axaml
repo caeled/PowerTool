@@ -180,7 +180,8 @@
         <MenuItem Header="File">
           <MenuItem Header="Settings..." Command="{Binding SettingsCommand}"/>
           <Separator/>
-          <MenuItem Header="Help / Documentation" Command="{Binding HelpCommand}"/>
+          <MenuItem Header="Help / Documentation"  Command="{Binding HelpCommand}"/>
+          <MenuItem Header="Support Discussion"    Command="{Binding SupportCommand}"/>
           <Separator/>
           <MenuItem Header="Exit"        Command="{Binding ExitCommand}"/>
         </MenuItem>

@@ -85,6 +85,7 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand SettingsCommand      { get; }
     public ICommand RdpCommand           { get; }
     public ICommand HelpCommand          { get; }
+    public ICommand SupportCommand       { get; }
 
     private QuickLinksConfig _quickLinks = QuickLinksConfig.Load();
     public QuickLinksConfig QuickLinks { get => _quickLinks; set => Set(ref _quickLinks, value); }
@@ -117,6 +118,12 @@ public class MainViewModel : INotifyPropertyChanged
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
                 FileName        = "https://docs.google.com/document/d/1GAKlQmspUTn7rM4OzAwovkaq_p0ins6x7BrIdSLjCp4/edit",
+                UseShellExecute = true
+            }));
+        SupportCommand  = new RelayCommand(() =>
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName        = "https://groups.google.com/d/forum/powelltooltalk",
                 UseShellExecute = true
             }));
         QuickLinkCommands = Enumerable.Range(0, 4).Select(i => new RelayCommand(() =>
