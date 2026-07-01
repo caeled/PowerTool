@@ -24,7 +24,7 @@ public partial class SystemInfoPage : ContentPage
         SelectTab(TabOverview);
     }
 
-    private void OnTabClicked(object sender, EventArgs e)
+    private void OnTabClicked(object? sender, EventArgs e)
     {
         if (sender is Button btn) SelectTab(btn);
     }

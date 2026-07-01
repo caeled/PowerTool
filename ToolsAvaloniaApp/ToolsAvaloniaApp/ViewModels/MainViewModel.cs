@@ -130,9 +130,10 @@ public class MainViewModel : INotifyPropertyChanged
         {
             var link = _quickLinks.Links[i];
             if (!link.IsConfigured) return;
+            var url = link.Url.Contains("://") ? link.Url : "https://" + link.Url;
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
-                FileName = link.Url, UseShellExecute = true
+                FileName = url, UseShellExecute = true
             });
         })).ToArray<ICommand>();
     }

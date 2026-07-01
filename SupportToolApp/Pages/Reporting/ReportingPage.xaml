@@ -14,7 +14,7 @@
             <Button Text="Export to CSV" Command="{Binding ExportCsvCommand}" Margin="4" BackgroundColor="ForestGreen"/>
         </FlexLayout>
 
-        <Frame Grid.Row="2" BorderColor="LightGray" Padding="0">
+        <Border Grid.Row="2" Stroke="LightGray" Padding="0">
             <CollectionView ItemsSource="{Binding ReportRows}">
                 <CollectionView.Header>
                     <Grid ColumnDefinitions="*,*,*" BackgroundColor="LightGray" Padding="8,4">
@@ -33,6 +33,6 @@
                     </DataTemplate>
                 </CollectionView.ItemTemplate>
             </CollectionView>
-        </Frame>
+        </Border>
     </Grid>
 </ContentPage>

@@ -118,7 +118,7 @@ public class EmailViewModel : BaseViewModel
         RevokeAccessCommand = new Command(async () =>
         {
             if (string.IsNullOrWhiteSpace(DelegateMailbox) || string.IsNullOrWhiteSpace(DelegateUser)) { ErrorMessage = "Both fields required."; return; }
-            var confirm = await Application.Current!.MainPage!.DisplayAlert("Confirm", $"Revoke {DelegateUser}'s access to {DelegateMailbox}?", "Yes", "Cancel");
+            var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlertAsync("Confirm", $"Revoke {DelegateUser}'s access to {DelegateMailbox}?", "Yes", "Cancel");
             if (!confirm) return;
             var ok = await _exchange.RevokeFullAccessAsync(DelegateMailbox.Trim(), DelegateUser.Trim());
             StatusMessage = ok ? $"Access revoked for {DelegateUser} on {DelegateMailbox}." : "Failed to revoke access.";

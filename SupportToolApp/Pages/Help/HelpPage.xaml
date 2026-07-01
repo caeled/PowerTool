@@ -4,17 +4,31 @@
              x:Class="SupportToolApp.Pages.Help.HelpPage"
              Title="Help">
 
-    <Grid RowDefinitions="Auto,*" Padding="16" RowSpacing="12">
+    <Grid RowDefinitions="Auto,Auto,*" Padding="16" RowSpacing="12">
+
+        <!-- Quick-link buttons -->
+        <FlexLayout Grid.Row="0" Wrap="Wrap" JustifyContent="Start">
+            <Button Text="📄 New or Updated" Clicked="OnWhatsNewClicked"
+                    BackgroundColor="#0078D4" TextColor="White"
+                    FontAttributes="Bold" FontSize="13"
+                    Padding="16,8" Margin="0,0,8,0" CornerRadius="8"/>
+            <Button Text="🔍 Microsoft Support" Clicked="OnMsSupportClicked"
+                    BackgroundColor="#0078D4" TextColor="White"
+                    FontSize="13" Padding="16,8" Margin="0,0,8,0" CornerRadius="8"/>
+            <Button Text="🗄️ Internal KB" Clicked="OnInternalKbClicked"
+                    BackgroundColor="#228B22" TextColor="White"
+                    FontSize="13" Padding="16,8" CornerRadius="8"/>
+        </FlexLayout>
 
         <!-- Search Bar -->
-        <Border Grid.Row="0" Stroke="#0078D4" StrokeThickness="1" Padding="8"
+        <Border Grid.Row="1" Stroke="#0078D4" StrokeThickness="1" Padding="8"
                 StrokeShape="RoundRectangle 6" BackgroundColor="#F0F7FF">
             <Entry x:Name="SearchEntry" Placeholder="Search help topics..."
                    TextChanged="OnSearchChanged" ClearButtonVisibility="WhileEditing"/>
         </Border>
 
         <!-- Help Content -->
-        <ScrollView Grid.Row="1">
+        <ScrollView Grid.Row="2">
             <VerticalStackLayout x:Name="HelpContainer" Spacing="16"/>
         </ScrollView>
 

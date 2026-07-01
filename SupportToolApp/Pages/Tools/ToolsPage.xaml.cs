@@ -99,13 +99,13 @@ public partial class ToolsPage : ContentPage
         SelectCategory(CatSystem, TabApps);
     }
 
-    private void OnCategoryClicked(object sender, EventArgs e)
+    private void OnCategoryClicked(object? sender, EventArgs e)
     {
         if (sender is not Button cat || !_categories.TryGetValue(cat, out var tools)) return;
         SelectCategory(cat, tools[0]);
     }
 
-    private void OnTabClicked(object sender, EventArgs e)
+    private void OnTabClicked(object? sender, EventArgs e)
     {
         if (sender is Button btn) SelectTab(btn);
     }
@@ -148,7 +148,7 @@ public partial class ToolsPage : ContentPage
         _activeTab = tab;
     }
 
-    private void OnEventLogPreset(object sender, EventArgs e)
+    private void OnEventLogPreset(object? sender, EventArgs e)
     {
         if (_vm == null || sender is not Button btn) return;
         _vm.EventLogName = btn.Text;

@@ -16,7 +16,7 @@ public partial class ComparePage : ContentPage
         InitializeComponent();
     }
 
-    private async void OnBrowseA(object sender, EventArgs e)
+    private async void OnBrowseA(object? sender, EventArgs e)
     {
         var path = await PickFile();
         if (path == null) return;
@@ -26,7 +26,7 @@ public partial class ComparePage : ContentPage
         await TryLoadColumns();
     }
 
-    private async void OnBrowseB(object sender, EventArgs e)
+    private async void OnBrowseB(object? sender, EventArgs e)
     {
         var path = await PickFile();
         if (path == null) return;
@@ -210,7 +210,7 @@ public partial class ComparePage : ContentPage
         return rows;
     }
 
-    private async void OnCompare(object sender, EventArgs e)
+    private async void OnCompare(object? sender, EventArgs e)
     {
         if (_pathA == null || _pathB == null) { await DisplayAlert("Compare", "Please select both files first.", "OK"); return; }
         if (ColumnPicker.SelectedItem is not string col) { await DisplayAlert("Compare", "Please select a column to compare on.", "OK"); return; }
@@ -234,7 +234,7 @@ public partial class ComparePage : ContentPage
         ExportButton.IsVisible = true;
     }
 
-    private void OnClear(object sender, EventArgs e)
+    private void OnClear(object? sender, EventArgs e)
     {
         _pathA = _pathB = null;
         _rowsA.Clear(); _rowsB.Clear();
@@ -250,7 +250,7 @@ public partial class ComparePage : ContentPage
         StatusLabel.IsVisible = false;
     }
 
-    private async void OnExport(object sender, EventArgs e)
+    private async void OnExport(object? sender, EventArgs e)
     {
         try
         {

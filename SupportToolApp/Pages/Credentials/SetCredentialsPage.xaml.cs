@@ -19,7 +19,7 @@ public partial class SetCredentialsPage : ContentPage
         EntGooglePassword.Text = creds.GooglePassword;
     }
 
-    private void OnSave(object sender, EventArgs e)
+    private void OnSave(object? sender, EventArgs e)
     {
         _creds.SetUserCred(
             string.IsNullOrWhiteSpace(EntUserDomain.Text) ? "." : EntUserDomain.Text.Trim(),
@@ -36,7 +36,7 @@ public partial class SetCredentialsPage : ContentPage
         LblStatus.IsVisible = true;
     }
 
-    private void OnClear(object sender, EventArgs e)
+    private void OnClear(object? sender, EventArgs e)
     {
         EntUserDomain.Text = "."; EntUserUsername.Text = ""; EntUserPassword.Text = "";
         EntO365Username.Text = ""; EntO365Password.Text = "";

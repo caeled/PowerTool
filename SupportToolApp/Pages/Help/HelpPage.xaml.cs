@@ -166,7 +166,7 @@ public partial class HelpPage : ContentPage
         BuildCards(_filtered);
     }
 
-    private void OnSearchChanged(object sender, TextChangedEventArgs e)
+    private void OnSearchChanged(object? sender, TextChangedEventArgs e)
     {
         var q = e.NewTextValue?.Trim() ?? "";
         _filtered = string.IsNullOrEmpty(q)
@@ -240,6 +240,15 @@ public partial class HelpPage : ContentPage
             });
         }
     }
+
+    private async void OnWhatsNewClicked(object? sender, EventArgs e)
+        => await Launcher.OpenAsync("https://docs.google.com/document/d/1RKXF2eR6bdol3OLz554H8gIkVg90BcTehI-y59m3av8/edit?usp=sharing");
+
+    private async void OnMsSupportClicked(object? sender, EventArgs e)
+        => await Launcher.OpenAsync("https://support.microsoft.com/search");
+
+    private async void OnInternalKbClicked(object? sender, EventArgs e)
+        => await Launcher.OpenAsync("http://caeled.geekgalaxy.com/web/steve/tech/DeepSupportPortal.html");
 
     private static int CategoryOrder(string cat) => cat switch
     {

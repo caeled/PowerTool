@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SupportToolApp.Pages.WebApps.WebAppsPage"
+             Title="Web Apps">
+
+    <Grid RowDefinitions="Auto,*,Auto" Padding="16">
+
+        <!-- Header row -->
+        <Grid Grid.Row="0" ColumnDefinitions="*,Auto" Margin="0,0,0,12">
+            <Label Grid.Column="0" Text="Web Apps" FontSize="22" FontAttributes="Bold"
+                   VerticalOptions="Center"/>
+            <Button Grid.Column="1" x:Name="BtnEdit" Text="Edit" Clicked="OnEditToggle"
+                    BackgroundColor="#555" TextColor="White"
+                    Padding="16,6" FontSize="13"/>
+        </Grid>
+
+        <!-- Launch buttons -->
+        <ScrollView Grid.Row="1">
+            <FlexLayout x:Name="ButtonPanel" Wrap="Wrap" JustifyContent="Start"
+                        AlignItems="Start" AlignContent="Start"/>
+        </ScrollView>
+
+        <!-- Add form (edit mode only) -->
+        <Border Grid.Row="2" x:Name="AddForm" IsVisible="False"
+                Stroke="#DDD" StrokeThickness="1" StrokeShape="RoundRectangle 8"
+                Padding="12" Margin="0,12,0,0">
+            <Grid RowDefinitions="Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="8" ColumnSpacing="8">
+                <Label Grid.Row="0" Grid.ColumnSpan="2" Text="Add Web App"
+                       FontAttributes="Bold" FontSize="14"/>
+                <Entry Grid.Row="1" Grid.Column="0" x:Name="EntryName"
+                       Placeholder="App name (e.g. Jira)" FontSize="14"/>
+                <Entry Grid.Row="2" Grid.Column="0" x:Name="EntryUrl"
+                       Placeholder="URL (e.g. https://yourcompany.atlassian.net)"
+                       Keyboard="Url" FontSize="14"/>
+                <Button Grid.Row="1" Grid.RowSpan="2" Grid.Column="1"
+                        Text="Add" Clicked="OnAddApp"
+                        BackgroundColor="#0078D4" TextColor="White"
+                        Padding="20,6" FontSize="13" VerticalOptions="Center"/>
+            </Grid>
+        </Border>
+
+    </Grid>
+</ContentPage>

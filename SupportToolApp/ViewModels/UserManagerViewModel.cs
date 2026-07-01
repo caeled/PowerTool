@@ -118,7 +118,7 @@ public class UserManagerViewModel : BaseViewModel
     private async Task ResetPasswordAsync()
     {
         if (SelectedUser == null) return;
-        var newPw = await Application.Current!.MainPage!.DisplayPromptAsync(
+        var newPw = await ((Page)Application.Current!.Windows[0].Page!).DisplayPromptAsync(
             "Reset Password",
             $"New password for {SelectedUser.DisplayName}:",
             "Reset", "Cancel", keyboard: Keyboard.Default);
@@ -132,7 +132,7 @@ public class UserManagerViewModel : BaseViewModel
     private async Task RevokeSessionsAsync()
     {
         if (SelectedUser == null) return;
-        var confirm = await Application.Current!.MainPage!.DisplayAlert(
+        var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlertAsync(
             "Revoke O365 Sessions",
             $"This will immediately sign {SelectedUser.DisplayName} out of all Office 365 sessions worldwide. Proceed?",
             "Yes, Revoke", "Cancel");

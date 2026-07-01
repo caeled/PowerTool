@@ -32,6 +32,12 @@ public class AppConfig
 
     public bool UseMockData { get; set; } = true;
 
+    public List<WebAppEntry> WebApps { get; set; } =
+    [
+        new() { Name = "Office 365",  Url = "https://office.com",      Color = "#0078D4" },
+        new() { Name = "Google Admin",Url = "https://admin.google.com", Color = "#4285F4" },
+    ];
+
     public static AppConfig Load()
     {
         try
@@ -59,4 +65,11 @@ public class ServerEntry
     public string Name { get; set; } = "";
     public string Host { get; set; } = "";
     public string Description { get; set; } = "";
+}
+
+public class WebAppEntry
+{
+    public string Name  { get; set; } = "";
+    public string Url   { get; set; } = "";
+    public string Color { get; set; } = "#0078D4";
 }

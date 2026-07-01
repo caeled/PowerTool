@@ -1,4 +1,4 @@
-﻿using System.Collections.ObjectModel;
+using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
 using System.Text.Json;
@@ -8,7 +8,7 @@ using SupportToolApp.Services;
 
 namespace SupportToolApp.ViewModels;
 
-// ── Data models ───────────────────────────────────────────────────────────────
+// -- Data models ---------------------------------------------------------------
 
 public class OverviewData
 {
@@ -56,7 +56,7 @@ public class HardwareData
     public bool   HasBattery   { get; set; }
     public string BatteryPct   { get; set; } = "";
     public List<RamModule> RamModules { get; set; } = [];
-    public string CpuSummary => $"{CpuName}  —  {CpuCores} cores / {CpuLogical} logical @ {CpuSpeed}";
+    public string CpuSummary => $"{CpuName}  �  {CpuCores} cores / {CpuLogical} logical @ {CpuSpeed}";
 }
 
 public class DiskInfo
@@ -138,7 +138,7 @@ public class ServiceItem
     public string StartName { get; set; } = "";
 }
 
-// ── ViewModel ─────────────────────────────────────────────────────────────────
+// -- ViewModel -----------------------------------------------------------------
 
 public class SystemInfoViewModel : BaseViewModel
 {
@@ -166,7 +166,7 @@ public class SystemInfoViewModel : BaseViewModel
     }
 
     public string CredentialStatus => string.IsNullOrWhiteSpace(_creds.UserUsername)
-        ? "No credentials set — local queries only"
+        ? "No credentials set � local queries only"
         : $"Using: {_creds.UserDomain}\\{_creds.UserUsername}";
 
     public OverviewData? Overview { get => _overview; set => SetProperty(ref _overview, value); }
@@ -218,7 +218,7 @@ public class SystemInfoViewModel : BaseViewModel
             SoftwareSearch = ""; ServiceSearch = "";
 
             var t = Target.Trim();
-            StatusMessage = string.IsNullOrWhiteSpace(t) ? "Querying local machine…" : $"Querying {t}…";
+            StatusMessage = string.IsNullOrWhiteSpace(t) ? "Querying local machine�" : $"Querying {t}�";
 
             try
             {
@@ -233,7 +233,7 @@ public class SystemInfoViewModel : BaseViewModel
                     QueryServicesAsync(t));
                 HasData = true;
                 var name = Overview?.ComputerName ?? (string.IsNullOrWhiteSpace(t) ? Environment.MachineName : t);
-                StatusMessage = $"Ready — {name}";
+                StatusMessage = $"Ready � {name}";
                 OnPropertyChanged(nameof(AppCount));
                 OnPropertyChanged(nameof(ServiceCount));
             }
@@ -263,7 +263,7 @@ public class SystemInfoViewModel : BaseViewModel
         });
     }
 
-    // ── PS helpers ────────────────────────────────────────────────────────────
+    // -- PS helpers ------------------------------------------------------------
 
     private string WrapScript(string target, string body)
     {
@@ -335,7 +335,7 @@ public class SystemInfoViewModel : BaseViewModel
     private static int     Int(JsonElement el, string p) =>
         el.TryGetProperty(p, out var v) && v.TryGetInt32(out var i) ? i : 0;
 
-    // ── Queries ───────────────────────────────────────────────────────────────
+    // -- Queries ---------------------------------------------------------------
 
     private async Task QueryOverviewAsync(string target)
     {
@@ -759,13 +759,13 @@ public class SystemInfoViewModel : BaseViewModel
         OnPropertyChanged(nameof(AppCount));
     }
 
-    // ── Export ────────────────────────────────────────────────────────────────
+    // -- Export ----------------------------------------------------------------
 
     private async Task ExportReportAsync()
     {
         var sb = new StringBuilder();
         var name = Overview?.ComputerName ?? (string.IsNullOrWhiteSpace(Target) ? Environment.MachineName : Target);
-        sb.AppendLine($"System Inventory Report — {name}");
+        sb.AppendLine($"System Inventory Report � {name}");
         sb.AppendLine($"Generated: {DateTime.Now:f}");
         sb.AppendLine(new string('=', 70));
 
@@ -846,12 +846,12 @@ public class SystemInfoViewModel : BaseViewModel
             var savePath = await AppFileDialog.SaveFileAsync("Save Inventory Report", fileName, ".txt");
             if (string.IsNullOrEmpty(savePath)) return;
             await File.WriteAllTextAsync(savePath, report);
-            var open = await Application.Current!.Windows[0].Page!.DisplayAlert("Report Saved", $"Saved to:\n{savePath}", "Open", "Close");
+            var open = await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Report Saved", $"Saved to:\n{savePath}", "Open", "Close");
             if (open) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(savePath) { UseShellExecute = true });
         }
         catch (Exception ex)
         {
-            await Application.Current!.Windows[0].Page!.DisplayAlert("Export Failed", ex.Message, "OK");
+            await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Export Failed", ex.Message, "OK");
         }
     }
 }

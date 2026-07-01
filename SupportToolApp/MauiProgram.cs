@@ -12,6 +12,7 @@ using SupportToolApp.Pages.Credentials;
 using SupportToolApp.Pages.Tools;
 using SupportToolApp.Pages.Help;
 using SupportToolApp.Pages.Compare;
+using SupportToolApp.Pages.WebApps;
 using SupportToolApp.Services.Graph;
 using SupportToolApp.Services.Mock;
 using SupportToolApp.ViewModels;
@@ -74,6 +75,7 @@ public static class MauiProgram
         builder.Services.AddTransient<SetCredentialsPage>();
         builder.Services.AddTransient<HelpPage>();
         builder.Services.AddTransient<ComparePage>();
+        builder.Services.AddTransient<WebAppsPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();

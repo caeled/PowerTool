@@ -37,12 +37,13 @@
 		<ApplicationDisplayVersion>1.0.0</ApplicationDisplayVersion>
 		<ApplicationVersion>1</ApplicationVersion>
 
-		<!-- MSIX packaging (Windows only) -->
-		<WindowsPackageType Condition="$([MSBuild]::IsOSPlatform('windows'))">MSIX</WindowsPackageType>
-		<AppxPackageSigningEnabled Condition="$([MSBuild]::IsOSPlatform('windows'))">true</AppxPackageSigningEnabled>
-		<PackageCertificateThumbprint Condition="$([MSBuild]::IsOSPlatform('windows'))">AD7D59FE9A6A0832DDB1D9D64FDA6A5F92EA36DC</PackageCertificateThumbprint>
-		<PackageCertificateKeyFile Condition="$([MSBuild]::IsOSPlatform('windows'))">PowellTec.pfx</PackageCertificateKeyFile>
-		<PackageCertificatePassword Condition="$([MSBuild]::IsOSPlatform('windows'))">$(PFX_PASSWORD)</PackageCertificatePassword>
+		<!-- MSIX packaging (Windows only — disabled for debug/dev builds) -->
+		<WindowsPackageType Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(Configuration)' == 'Release'">MSIX</WindowsPackageType>
+		<WindowsPackageType Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(Configuration)' == 'Debug'">None</WindowsPackageType>
+		<AppxPackageSigningEnabled Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(Configuration)' == 'Release'">true</AppxPackageSigningEnabled>
+		<PackageCertificateThumbprint Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(Configuration)' == 'Release'">AD7D59FE9A6A0832DDB1D9D64FDA6A5F92EA36DC</PackageCertificateThumbprint>
+		<PackageCertificateKeyFile Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(Configuration)' == 'Release'">PowellTec.pfx</PackageCertificateKeyFile>
+		<PackageCertificatePassword Condition="$([MSBuild]::IsOSPlatform('windows')) and '$(Configuration)' == 'Release'">$(PFX_PASSWORD)</PackageCertificatePassword>
 
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'ios'">15.0</SupportedOSPlatformVersion>
 		<SupportedOSPlatformVersion Condition="$([MSBuild]::GetTargetPlatformIdentifier('$(TargetFramework)')) == 'maccatalyst'">15.0</SupportedOSPlatformVersion>
@@ -70,12 +71,13 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Graph" Version="5.*" />
+		<PackageReference Include="Microsoft.Graph" Version="5.65.0" />
+		<PackageReference Include="Microsoft.Kiota.Abstractions" Version="1.22.2" />
 		<PackageReference Include="Microsoft.Identity.Client" Version="4.*" />
 		<PackageReference Include="Microsoft.Identity.Client.Extensions.Msal" Version="4.*" />
 		<PackageReference Include="Microsoft.Maui.Controls" Version="$(MauiVersion)" />
 		<PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="10.0.0" />
-		<PackageReference Include="System.Management" Version="9.0.0" Condition="$([MSBuild]::IsOSPlatform('windows'))"/>
+		<PackageReference Include="System.Management" Version="9.0.0" Condition="$([MSBuild]::IsOSPlatform('windows'))" />
 	</ItemGroup>
 
 </Project>

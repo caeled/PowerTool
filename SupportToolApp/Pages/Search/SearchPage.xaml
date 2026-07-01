@@ -7,7 +7,7 @@
         <Label Grid.Row="0" Grid.ColumnSpan="2" Text="Search &amp; Lookup" FontSize="20" FontAttributes="Bold"/>
 
         <!-- AD Lookup -->
-        <Frame Grid.Row="1" Grid.Column="0" BorderColor="LightGray" Padding="12">
+        <Border Grid.Row="1" Grid.Column="0" Stroke="LightGray" Padding="12">
             <VerticalStackLayout Spacing="10">
                 <Label Text="Active Directory Lookup" FontAttributes="Bold" FontSize="15"/>
                 <Grid ColumnDefinitions="*,Auto">
@@ -40,10 +40,10 @@
                     </CollectionView.ItemTemplate>
                 </CollectionView>
             </VerticalStackLayout>
-        </Frame>
+        </Border>
 
         <!-- Web Shortcuts -->
-        <Frame Grid.Row="1" Grid.Column="1" BorderColor="LightGray" Padding="12">
+        <Border Grid.Row="1" Grid.Column="1" Stroke="LightGray" Padding="12">
             <VerticalStackLayout Spacing="10">
                 <Label Text="Web Search" FontAttributes="Bold" FontSize="15"/>
                 <Entry x:Name="WebSearchEntry" Placeholder="Search term..."/>
@@ -61,6 +61,6 @@
                 <Button Text="Entra ID (Azure AD)" Command="{Binding OpenUrlCommand}" CommandParameter="https://entra.microsoft.com" HorizontalOptions="Start"/>
                 <Button Text="Intune / Endpoint Mgr" Command="{Binding OpenUrlCommand}" CommandParameter="https://intune.microsoft.com" HorizontalOptions="Start"/>
             </VerticalStackLayout>
-        </Frame>
+        </Border>
     </Grid>
 </ContentPage>

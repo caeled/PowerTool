@@ -1,6 +1,8 @@
 using System.Text.Json;
 using SupportToolApp.Config;
 using SupportToolApp.Helpers;
+using SupportToolApp.Pages.Credentials;
+using SupportToolApp.Pages.Settings;
 using SupportToolApp.Services;
 
 namespace SupportToolApp;
@@ -13,6 +15,10 @@ public partial class AppShell : Shell
     {
         InitializeComponent();
         _creds = creds;
+
+        // Register pages removed from flyout so GoToAsync still works
+        Routing.RegisterRoute("Settings",       typeof(SettingsPage));
+        Routing.RegisterRoute("SetCredentials", typeof(SetCredentialsPage));
         creds.LoadQuickLinks();
         creds.Changed += () => MainThread.BeginInvokeOnMainThread(RefreshQuickLinks);
         RefreshQuickLinks();
@@ -60,51 +66,57 @@ public partial class AppShell : Shell
         btn.Text      = string.IsNullOrWhiteSpace(name) ? url : name;
     }
 
-    private async void OnFolderClicked(object sender, EventArgs e)
+    private async void OnFolderClicked(object? sender, EventArgs e)
     {
         if (string.IsNullOrWhiteSpace(_creds.LocalFolder)) return;
         try { await Launcher.OpenAsync(new Uri($"file:///{_creds.LocalFolder.Replace('\\', '/')}")); }
         catch { System.Diagnostics.Process.Start("explorer.exe", _creds.LocalFolder); }
     }
 
-    private async void OnLibraryClicked(object sender, EventArgs e)
+    private async void OnLibraryClicked(object? sender, EventArgs e)
         => await Launcher.OpenAsync(new Uri(string.IsNullOrWhiteSpace(_creds.LibraryUrl)
             ? "https://en.wikipedia.org/wiki/Main_Page" : _creds.LibraryUrl));
 
-    private async void OnO365Clicked(object sender, EventArgs e)
+    private async void OnO365Clicked(object? sender, EventArgs e)
         => await Launcher.OpenAsync(new Uri("https://m365.cloud.microsoft/chat/"));
 
-    private async void OnGoogleClicked(object sender, EventArgs e)
+    private async void OnGoogleClicked(object? sender, EventArgs e)
         => await Launcher.OpenAsync(new Uri("https://docs.google.com/document/u/0/"));
 
-    private async void OnQuickLink1Clicked(object sender, EventArgs e)
+    private async void OnQuickLink1Clicked(object? sender, EventArgs e)
     {
         if (!string.IsNullOrWhiteSpace(_creds.QuickLink1Url))
             await Launcher.OpenAsync(new Uri(_creds.QuickLink1Url));
     }
 
-    private async void OnQuickLink2Clicked(object sender, EventArgs e)
+    private async void OnQuickLink2Clicked(object? sender, EventArgs e)
     {
         if (!string.IsNullOrWhiteSpace(_creds.QuickLink2Url))
             await Launcher.OpenAsync(new Uri(_creds.QuickLink2Url));
     }
 
-    private async void OnQuickLink3Clicked(object sender, EventArgs e)
+    private async void OnQuickLink3Clicked(object? sender, EventArgs e)
     {
         if (!string.IsNullOrWhiteSpace(_creds.QuickLink3Url))
             await Launcher.OpenAsync(new Uri(_creds.QuickLink3Url));
     }
 
-    private async void OnQuickLink4Clicked(object sender, EventArgs e)
+    private async void OnQuickLink4Clicked(object? sender, EventArgs e)
     {
         if (!string.IsNullOrWhiteSpace(_creds.QuickLink4Url))
             await Launcher.OpenAsync(new Uri(_creds.QuickLink4Url));
     }
 
-    private async void OnHelpClicked(object sender, EventArgs e)
+    private async void OnSettingsClicked(object? sender, EventArgs e)
+        => await Shell.Current.GoToAsync("Settings");
+
+    private async void OnCredentialsClicked(object? sender, EventArgs e)
+        => await Shell.Current.GoToAsync("SetCredentials");
+
+    private async void OnHelpClicked(object? sender, EventArgs e)
         => await Shell.Current.GoToAsync("//Help");
 
-    private async void OnSaveConfig(object sender, EventArgs e)
+    private async void OnSaveConfig(object? sender, EventArgs e)
     {
         try
         {
@@ -122,7 +134,7 @@ public partial class AppShell : Shell
         }
     }
 
-    private async void OnLoadConfig(object sender, EventArgs e)
+    private async void OnLoadConfig(object? sender, EventArgs e)
     {
         try
         {

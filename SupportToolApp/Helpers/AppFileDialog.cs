@@ -50,9 +50,11 @@ internal static class AppFileDialog
     {
 #if WINDOWS
         return await Task.FromResult(Win32FileDialog.BrowseFolder(title));
+#elif MACCATALYST
+        return await MacFolderPicker.PickAsync(title);
 #else
-        var result = await FolderPicker.Default.PickAsync(CancellationToken.None);
-        return result?.Folder?.Path;
+        // Android/iOS have no real folder picker — return Documents as default
+        return await Task.FromResult(Environment.GetFolderPath(Environment.SpecialFolder.MyDocuments));
 #endif
     }
 }

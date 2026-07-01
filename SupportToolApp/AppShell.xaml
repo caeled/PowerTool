@@ -15,6 +15,7 @@
        xmlns:cp="clr-namespace:SupportToolApp.Pages.Compare"
        xmlns:nm="clr-namespace:SupportToolApp.Pages.Monitor"
        xmlns:snd="clr-namespace:SupportToolApp.Pages.SoundCombine"
+       xmlns:wa="clr-namespace:SupportToolApp.Pages.WebApps"
        x:Class="SupportToolApp.AppShell"
        Shell.FlyoutBehavior="Flyout"
        Title="IT Support Tool">
@@ -23,6 +24,9 @@
         <MenuBarItem Text="File">
             <MenuFlyoutItem Text="Save Config..." Clicked="OnSaveConfig"/>
             <MenuFlyoutItem Text="Load Config..." Clicked="OnLoadConfig"/>
+            <MenuFlyoutSeparator/>
+            <MenuFlyoutItem Text="Settings" Clicked="OnSettingsClicked"/>
+            <MenuFlyoutItem Text="🔑 Credentials" Clicked="OnCredentialsClicked"/>
             <MenuFlyoutSeparator/>
             <MenuFlyoutItem Text="Help" Clicked="OnHelpClicked"/>
         </MenuBarItem>
@@ -121,14 +125,6 @@
         <ShellContent ContentTemplate="{DataTemplate sc:SearchPage}" Route="Search"/>
     </FlyoutItem>
 
-    <FlyoutItem Title="Settings">
-        <ShellContent ContentTemplate="{DataTemplate st:SettingsPage}" Route="Settings"/>
-    </FlyoutItem>
-
-    <FlyoutItem Title="🔑 Credentials">
-        <ShellContent ContentTemplate="{DataTemplate cr:SetCredentialsPage}" Route="SetCredentials"/>
-    </FlyoutItem>
-
     <FlyoutItem Title="Help">
         <ShellContent ContentTemplate="{DataTemplate hp:HelpPage}" Route="Help"/>
     </FlyoutItem>
@@ -139,6 +135,10 @@
 
     <FlyoutItem Title="Sound Combine">
         <ShellContent ContentTemplate="{DataTemplate snd:SoundCombinePage}" Route="SoundCombine"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="Web Apps">
+        <ShellContent ContentTemplate="{DataTemplate wa:WebAppsPage}" Route="WebApps"/>
     </FlyoutItem>
 
     <FlyoutItem Title="Network Monitor">
