@@ -1,4 +1,4 @@
-using System.Runtime.InteropServices;
+﻿using System.Runtime.InteropServices;
 using System.Text;
 using System.Xml.Linq;
 
@@ -151,7 +151,7 @@ public partial class ComparePage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Load Error", ex.Message, "OK");
+            await DisplayAlertAsync("Load Error", ex.Message, "OK");
         }
     }
 
@@ -212,8 +212,8 @@ public partial class ComparePage : ContentPage
 
     private async void OnCompare(object? sender, EventArgs e)
     {
-        if (_pathA == null || _pathB == null) { await DisplayAlert("Compare", "Please select both files first.", "OK"); return; }
-        if (ColumnPicker.SelectedItem is not string col) { await DisplayAlert("Compare", "Please select a column to compare on.", "OK"); return; }
+        if (_pathA == null || _pathB == null) { await DisplayAlertAsync("Compare", "Please select both files first.", "OK"); return; }
+        if (ColumnPicker.SelectedItem is not string col) { await DisplayAlertAsync("Compare", "Please select a column to compare on.", "OK"); return; }
 
         var setA = _rowsA.Select(r => r.TryGetValue(col, out var v) ? v : "").ToHashSet(StringComparer.OrdinalIgnoreCase);
         var setB = _rowsB.Select(r => r.TryGetValue(col, out var v) ? v : "").ToHashSet(StringComparer.OrdinalIgnoreCase);
@@ -287,7 +287,7 @@ public partial class ComparePage : ContentPage
         }
         catch (Exception ex)
         {
-            await DisplayAlert("Export Failed", ex.Message, "OK");
+            await DisplayAlertAsync("Export Failed", ex.Message, "OK");
         }
     }
 

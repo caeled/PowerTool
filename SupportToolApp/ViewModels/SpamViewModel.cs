@@ -1,4 +1,4 @@
-#pragma warning disable CS0618 // DisplayAlert obsolete until MAUI async variant resolves from ViewModel context
+﻿#pragma warning disable CS0618 // DisplayAlert obsolete until MAUI async variant resolves from ViewModel context
 using System.Windows.Input;
 using SupportToolApp.Services;
 
@@ -41,7 +41,7 @@ public class SpamViewModel : BaseViewModel
                 ErrorMessage = "Enter at least a mailbox, sender, or subject to purge.";
                 return;
             }
-            var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlert(
+            var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlertAsync(
                 "Confirm Email Purge",
                 $"Permanently delete emails matching:\n" +
                 $"  Mailbox: {(string.IsNullOrWhiteSpace(PurgeMailbox) ? "ALL" : PurgeMailbox)}\n" +
@@ -63,7 +63,7 @@ public class SpamViewModel : BaseViewModel
         RevokeRulesCommand = new Command(async () =>
         {
             if (string.IsNullOrWhiteSpace(RulesMailbox)) { ErrorMessage = "Enter a mailbox address."; return; }
-            var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlert(
+            var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlertAsync(
                 "Revoke Inbox Rules",
                 $"Remove ALL inbox rules for {RulesMailbox}?\nAttackers use inbox rules to hide phishing confirmations.",
                 "Yes, Remove All Rules", "Cancel");
@@ -75,7 +75,7 @@ public class SpamViewModel : BaseViewModel
         RevokeSessionsCommand = new Command(async () =>
         {
             if (string.IsNullOrWhiteSpace(SessionUpn)) { ErrorMessage = "Enter a UPN."; return; }
-            var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlert(
+            var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlertAsync(
                 "Revoke O365 Sessions",
                 $"Immediately sign {SessionUpn} out of ALL Office 365 sessions?",
                 "Yes, Revoke", "Cancel");
@@ -87,7 +87,7 @@ public class SpamViewModel : BaseViewModel
         NuclearCommand = new Command(async () =>
         {
             if (string.IsNullOrWhiteSpace(BreachUpn)) { ErrorMessage = "Enter the compromised user's UPN."; return; }
-            var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlert(
+            var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlertAsync(
                 "Full Breach Remediation",
                 $"For {BreachUpn}, this will:\n\n" +
                 "  1. Purge known phishing emails\n" +

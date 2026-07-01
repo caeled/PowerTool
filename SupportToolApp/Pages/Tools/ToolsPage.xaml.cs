@@ -124,9 +124,10 @@ public partial class ToolsPage : ContentPage
         => await Shell.Current.GoToAsync("SoundCombine");
 
     private void OnPowerCopyClicked(object? sender, EventArgs e)
-        => BindingContext is ViewModels.Tools.ToolsViewModel vm
-            ? vm.LaunchPowerCopyCommand.Execute(null)
-            : null;
+    {
+        if (BindingContext is ViewModels.Tools.ToolsViewModel vm)
+            vm.LaunchPowerCopyCommand.Execute(null);
+    }
 
     private void SelectCategory(Button cat, Button firstTab)
     {

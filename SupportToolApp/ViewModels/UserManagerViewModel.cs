@@ -1,4 +1,4 @@
-#pragma warning disable CS0618 // DisplayAlert obsolete until MAUI async variant resolves from ViewModel context
+﻿#pragma warning disable CS0618 // DisplayAlert obsolete until MAUI async variant resolves from ViewModel context
 using System.Collections.ObjectModel;
 using System.Windows.Input;
 using SupportToolApp.Models;
@@ -133,7 +133,7 @@ public class UserManagerViewModel : BaseViewModel
     private async Task RevokeSessionsAsync()
     {
         if (SelectedUser == null) return;
-        var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlert(
+        var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlertAsync(
             "Revoke O365 Sessions",
             $"This will immediately sign {SelectedUser.DisplayName} out of all Office 365 sessions worldwide. Proceed?",
             "Yes, Revoke", "Cancel");
