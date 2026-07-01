@@ -103,22 +103,34 @@ public partial class MainWindow : Window
         }
         else
         {
-            // Linux — try xfreerdp, fall back to rdp:// URI
-            try
+            // Linux — try Remmina, then xfreerdp, then xdg-open
+            var launched = false;
+            foreach (var (exe, args) in new[]
             {
-                System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                ("remmina",  $"-c rdp://{host}"),
+                ("xfreerdp", $"/v:{host}"),
+            })
+            {
+                try
                 {
-                    FileName        = "xfreerdp",
-                    Arguments       = $"/v:{host}",
-                    UseShellExecute = false
-                });
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+                    {
+                        FileName        = exe,
+                        Arguments       = args,
+                        UseShellExecute = true
+                    });
+                    launched = true;
+                    break;
+                }
+                catch { }
             }
-            catch
+            if (!launched)
             {
                 System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
                 {
-                    FileName        = $"rdp://full%20address=s:{host}",
-                    UseShellExecute = true
+                    FileName        = "xdg-open",
+                    Arguments       = $"rdp://{host}",
+                    UseShellExecute = false
                 });
             }
         }
