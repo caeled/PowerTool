@@ -84,6 +84,7 @@ public class MainViewModel : INotifyPropertyChanged
     public ICommand KnowledgeBaseCommand { get; }
     public ICommand SettingsCommand      { get; }
     public ICommand RdpCommand           { get; }
+    public ICommand HelpCommand          { get; }
 
     private QuickLinksConfig _quickLinks = QuickLinksConfig.Load();
     public QuickLinksConfig QuickLinks { get => _quickLinks; set => Set(ref _quickLinks, value); }
@@ -112,6 +113,12 @@ public class MainViewModel : INotifyPropertyChanged
             }));
         SettingsCommand = new RelayCommand(() => OnSettingsRequested?.Invoke());
         RdpCommand      = new RelayCommand(() => OnRdpRequested?.Invoke(_quickLinks.RdpDefault));
+        HelpCommand     = new RelayCommand(() =>
+            System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
+            {
+                FileName        = "https://drive.google.com/drive/folders/1IO9fmiuasZ-vNwuvqAKhOdWsbpeNCCKq",
+                UseShellExecute = true
+            }));
         QuickLinkCommands = Enumerable.Range(0, 4).Select(i => new RelayCommand(() =>
         {
             var link = _quickLinks.Links[i];

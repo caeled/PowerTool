@@ -180,6 +180,8 @@
         <MenuItem Header="File">
           <MenuItem Header="Settings..." Command="{Binding SettingsCommand}"/>
           <Separator/>
+          <MenuItem Header="Help / Documentation" Command="{Binding HelpCommand}"/>
+          <Separator/>
           <MenuItem Header="Exit"        Command="{Binding ExitCommand}"/>
         </MenuItem>
         <MenuItem Header="System">
@@ -373,6 +375,11 @@
 
       </DockPanel>
     </Grid>
+
+    <!-- v1.0 label bottom-right -->
+    <TextBlock DockPanel.Dock="Bottom" Text="v1.0"
+               Foreground="#30363D" FontSize="10"
+               HorizontalAlignment="Right" Margin="0,2,8,2"/>
 
   </DockPanel>
 </Window>

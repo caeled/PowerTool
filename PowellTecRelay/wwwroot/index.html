@@ -51,6 +51,8 @@
   .ql-btn { background: #1a3a6b; color: #79c0ff; border: none; padding: 6px 14px; border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600; }
   .ql-btn:hover { background: #2d5fa8; }
   .ql-btn.empty { background: #161b22; color: #484f58; cursor: default; pointer-events: none; }
+  #btn-help    { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  #btn-help:hover { border-color: var(--text); color: var(--text); }
   #btn-settings { background: transparent; border: 1px solid var(--border); color: var(--muted); padding: 5px 10px; border-radius: 6px; cursor: pointer; font-size: 14px; }
   #btn-settings:hover { border-color: var(--text); color: var(--text); }
 
@@ -161,6 +163,7 @@
     <button id="ql-1" class="ql-btn empty">Link 2</button>
     <button id="ql-2" class="ql-btn empty">Link 3</button>
     <button id="ql-3" class="ql-btn empty">Link 4</button>
+    <button id="btn-help" title="Help / Documentation">❓</button>
     <button id="btn-settings" title="Settings">⚙</button>
   </div>
 </div>
@@ -520,6 +523,8 @@ function escHtml(s) {
   return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
 }
 
+document.getElementById('btn-help').addEventListener('click', () =>
+  window.open('https://drive.google.com/drive/folders/1IO9fmiuasZ-vNwuvqAKhOdWsbpeNCCKq', '_blank'));
 document.getElementById('btn-settings').addEventListener('click', openSettingsModal);
 document.getElementById('s-cancel').addEventListener('click', () =>
   settingsBackdrop.classList.remove('open'));
