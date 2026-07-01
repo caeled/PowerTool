@@ -94,10 +94,12 @@ public partial class MainWindow : Window
         }
         else if (OperatingSystem.IsMacOS())
         {
+            var rdpFile = Path.Combine(Path.GetTempPath(), $"connect-{host}.rdp");
+            File.WriteAllText(rdpFile, $"full address:s:{host}\nprompt for credentials:i:1\n");
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
                 FileName        = "open",
-                Arguments       = $"rdp://full%20address=s:{host}",
+                Arguments       = $"\"{rdpFile}\"",
                 UseShellExecute = false
             });
         }
