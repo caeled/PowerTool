@@ -25,7 +25,7 @@
             <MenuFlyoutItem Text="Save Config..." Clicked="OnSaveConfig"/>
             <MenuFlyoutItem Text="Load Config..." Clicked="OnLoadConfig"/>
             <MenuFlyoutSeparator/>
-            <MenuFlyoutItem Text="Settings" Clicked="OnSettingsClicked"/>
+            <MenuFlyoutItem Text="⚙️ Settings" Clicked="OnSettingsClicked"/>
             <MenuFlyoutItem Text="🔑 Credentials" Clicked="OnCredentialsClicked"/>
             <MenuFlyoutSeparator/>
             <MenuFlyoutItem Text="Help" Clicked="OnHelpClicked"/>

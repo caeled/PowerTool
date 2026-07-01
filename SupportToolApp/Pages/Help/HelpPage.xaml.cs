@@ -245,7 +245,7 @@ public partial class HelpPage : ContentPage
         => await Launcher.OpenAsync("https://docs.google.com/document/d/1RKXF2eR6bdol3OLz554H8gIkVg90BcTehI-y59m3av8/edit?usp=sharing");
 
     private async void OnMsSupportClicked(object? sender, EventArgs e)
-        => await Launcher.OpenAsync("https://support.microsoft.com/search");
+        => await Launcher.OpenAsync("http://caeled.geekgalaxy.com/web/steve/tech/AdditionalSupportResources.html");
 
     private async void OnInternalKbClicked(object? sender, EventArgs e)
         => await Launcher.OpenAsync("http://caeled.geekgalaxy.com/web/steve/tech/DeepSupportPortal.html");

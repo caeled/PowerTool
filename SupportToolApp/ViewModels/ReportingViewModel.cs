@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // DisplayAlert obsolete until MAUI async variant resolves from ViewModel context
 using System.Collections.ObjectModel;
 using System.Text;
 using System.Windows.Input;
@@ -70,7 +71,7 @@ public class ReportingViewModel : BaseViewModel
             foreach (var r in ReportRows) sb.AppendLine($"\"{r.Col1}\",\"{r.Col2}\",\"{r.Col3}\"");
             var path = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Desktop), $"Report_{DateTime.Now:yyyyMMdd_HHmmss}.csv");
             await File.WriteAllTextAsync(path, sb.ToString());
-            await ((Page)Application.Current!.Windows[0].Page!).DisplayAlertAsync("Exported", $"Saved to:\n{path}", "OK");
+            await ((Page)Application.Current!.Windows[0].Page!).DisplayAlert("Exported", $"Saved to:\n{path}", "OK");
         });
     }
 }

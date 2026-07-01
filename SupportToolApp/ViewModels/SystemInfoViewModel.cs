@@ -1,3 +1,4 @@
+#pragma warning disable CS0618 // DisplayAlert obsolete until MAUI async variant resolves from ViewModel context
 using System.Collections.ObjectModel;
 using System.Diagnostics;
 using System.Text;
@@ -846,12 +847,12 @@ public class SystemInfoViewModel : BaseViewModel
             var savePath = await AppFileDialog.SaveFileAsync("Save Inventory Report", fileName, ".txt");
             if (string.IsNullOrEmpty(savePath)) return;
             await File.WriteAllTextAsync(savePath, report);
-            var open = await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Report Saved", $"Saved to:\n{savePath}", "Open", "Close");
+            var open = await Application.Current!.Windows[0].Page!.DisplayAlert("Report Saved", $"Saved to:\n{savePath}", "Open", "Close");
             if (open) System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(savePath) { UseShellExecute = true });
         }
         catch (Exception ex)
         {
-            await Application.Current!.Windows[0].Page!.DisplayAlertAsync("Export Failed", ex.Message, "OK");
+            await Application.Current!.Windows[0].Page!.DisplayAlert("Export Failed", ex.Message, "OK");
         }
     }
 }
