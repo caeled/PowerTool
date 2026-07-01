@@ -116,7 +116,7 @@ public class MainViewModel : INotifyPropertyChanged
         HelpCommand     = new RelayCommand(() =>
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
             {
-                FileName        = "https://drive.google.com/drive/folders/1IO9fmiuasZ-vNwuvqAKhOdWsbpeNCCKq",
+                FileName        = "https://docs.google.com/document/d/1GAKlQmspUTn7rM4OzAwovkaq_p0ins6x7BrIdSLjCp4/edit",
                 UseShellExecute = true
             }));
         QuickLinkCommands = Enumerable.Range(0, 4).Select(i => new RelayCommand(() =>
