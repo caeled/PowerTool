@@ -15,10 +15,10 @@ jobs:
       - name: Show Xcode versions
         run: ls /Applications | grep -i xcode
 
-      - name: Install .NET 9
+      - name: Install .NET 10
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: '10.0.x'
 
       - name: Install MAUI workloads
         run: dotnet workload install maui-maccatalyst
@@ -26,8 +26,8 @@ jobs:
       - name: Build Mac Catalyst
         run: |
           cd SupportToolApp
-          dotnet publish -f net9.0-maccatalyst -c Release \
-            -p:TargetFrameworks=net9.0-maccatalyst \
+          dotnet publish -f net10.0-maccatalyst -c Release \
+            -p:TargetFrameworks=net10.0-maccatalyst \
             -p:ApplicationTitle="PowellTec IT Support Tools" \
             -p:ApplicationId="com.powelltec.supporttools" \
             -p:ApplicationDisplayVersion="1.0.0" \
@@ -37,5 +37,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: PowellTec-MacCatalyst
-          path: SupportToolApp/bin/Release/net9.0-maccatalyst/**/*.app
+          path: SupportToolApp/bin/Release/net10.0-maccatalyst/**/*.app
           if-no-files-found: warn
