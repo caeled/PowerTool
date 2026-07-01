@@ -19,6 +19,10 @@ public partial class AppShell : Shell
         // Register pages removed from flyout so GoToAsync still works
         Routing.RegisterRoute("Settings",       typeof(SettingsPage));
         Routing.RegisterRoute("SetCredentials", typeof(SetCredentialsPage));
+        Routing.RegisterRoute("Help",           typeof(Pages.Help.HelpPage));
+        Routing.RegisterRoute("NetworkMonitor", typeof(Pages.Monitor.NetworkMonitorPage));
+        Routing.RegisterRoute("Compare",        typeof(Pages.Compare.ComparePage));
+        Routing.RegisterRoute("SoundCombine",   typeof(Pages.SoundCombine.SoundCombinePage));
         creds.LoadQuickLinks();
         creds.Changed += () => MainThread.BeginInvokeOnMainThread(RefreshQuickLinks);
         RefreshQuickLinks();
@@ -114,7 +118,10 @@ public partial class AppShell : Shell
         => await Shell.Current.GoToAsync("SetCredentials");
 
     private async void OnHelpClicked(object? sender, EventArgs e)
-        => await Shell.Current.GoToAsync("//Help");
+        => await Shell.Current.GoToAsync("Help");
+
+    private void OnExitClicked(object? sender, EventArgs e)
+        => Application.Current?.Quit();
 
     private async void OnSaveConfig(object? sender, EventArgs e)
     {

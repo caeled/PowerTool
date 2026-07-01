@@ -45,10 +45,11 @@
         <!-- Category Bar -->
         <HorizontalStackLayout Grid.Row="1" Spacing="4">
             <Button Text="System"  x:Name="CatSystem"  Clicked="OnCategoryClicked" BackgroundColor="#0078D4" Padding="18,8" FontSize="13" FontAttributes="Bold"/>
-            <Button Text="Users"   x:Name="CatUsers"   Clicked="OnCategoryClicked" BackgroundColor="White" TextColor="Black"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
-            <Button Text="Network" x:Name="CatNetwork" Clicked="OnCategoryClicked" BackgroundColor="White" TextColor="Black"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
-            <Button Text="Remote"  x:Name="CatRemote"  Clicked="OnCategoryClicked" BackgroundColor="White" TextColor="Black"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
-            <Button Text="Deploy"  x:Name="CatDeploy"  Clicked="OnCategoryClicked" BackgroundColor="White" TextColor="Black"    Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+            <Button Text="Users"   x:Name="CatUsers"   Clicked="OnCategoryClicked" BackgroundColor="White" TextColor="Black" Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+            <Button Text="Network" x:Name="CatNetwork" Clicked="OnCategoryClicked" BackgroundColor="White" TextColor="Black" Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+            <Button Text="Remote"  x:Name="CatRemote"  Clicked="OnCategoryClicked" BackgroundColor="White" TextColor="Black" Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+            <Button Text="Deploy"  x:Name="CatDeploy"  Clicked="OnCategoryClicked" BackgroundColor="White" TextColor="Black" Padding="18,8" FontSize="13" FontAttributes="Bold"/>
+            <Button Text="General" x:Name="CatGeneral" Clicked="OnCategoryClicked" BackgroundColor="White" TextColor="Black" Padding="18,8" FontSize="13" FontAttributes="Bold"/>
         </HorizontalStackLayout>
 
         <!-- Tool Bar â€” filtered by category -->
@@ -97,7 +98,8 @@
                 <Button Text="Reset NIC"    x:Name="TabResetNic"   Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
                 <Button Text="Ping"         x:Name="TabPing"       Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
                 <Button Text="WiFi Setup"   x:Name="TabWifiSetup"  Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
-                <Button Text="DHCP Stats"  x:Name="TabDhcpStats"  Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="DHCP Stats"     x:Name="TabDhcpStats"   Clicked="OnTabClicked"          BackgroundColor="White"   TextColor="Black"  Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Network Monitor" x:Name="TabNetMonitor" Clicked="OnNetworkMonitorClicked" BackgroundColor="#0078D4" TextColor="White" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
                 <!-- Remote -->
                 <Button Text="Pending Reboot" x:Name="TabReboot"       Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
                 <Button Text="Remote Reboot"  x:Name="TabRebootAction" Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
@@ -122,7 +124,10 @@
                 <Button Text="Update Log"      x:Name="TabUpdateLog"       Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
                 <Button Text="Windows Key"  x:Name="TabWinKey"     Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
                 <Button Text="WSUS Client"  x:Name="TabWsusClient" Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
-                <Button Text="PowerCopy"   x:Name="TabPowerCopy"  Clicked="OnTabClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="PowerCopy"     x:Name="TabPowerCopy"    Clicked="OnTabClicked"             BackgroundColor="White"   TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <!-- General -->
+                <Button Text="Compare Files" x:Name="TabCompareFiles" Clicked="OnCompareFilesClicked"   BackgroundColor="White"   TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Sound Combine" x:Name="TabSoundCombine" Clicked="OnSoundCombineClicked"   BackgroundColor="White"   TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
         </FlexLayout>
 
         <!-- Status -->

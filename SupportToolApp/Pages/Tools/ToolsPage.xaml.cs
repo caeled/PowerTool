@@ -91,9 +91,10 @@ public partial class ToolsPage : ContentPage
         {
             { CatSystem,  [TabApps, TabServices, TabUpdates, TabPatches, TabProcesses, TabPrinters, TabDiskSpace, TabSchedTasks, TabActivation, TabTempClean, TabStartup, TabRemotePsSystem, TabPsRunSystem, TabAutoLogon, TabSetPrinter, TabTrustedSites, TabQuickAccess, TabDiskCleanup, TabKeepAlive] },
             { CatUsers,   [TabLocalUsers, TabLoggedOn, TabLocalAdmins, TabRunAs, TabGroupMembership, TabAcctLockout, TabRdpSessions, TabPwdExpiry, TabUserMgmt, TabAdReset] },
-            { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns, TabFlushDns, TabNetStat, TabTrace, TabWifi, TabProxy, TabResetNic, TabPing, TabWifiSetup, TabDhcpStats] },
+            { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns, TabFlushDns, TabNetStat, TabTrace, TabWifi, TabProxy, TabResetNic, TabPing, TabWifiSetup, TabDhcpStats, TabNetMonitor] },
             { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate, TabRemotePsRemote, TabPsRunRemote, TabDirBrowser, TabProcKill, TabWinRmToggle, TabWakeOnLan, TabHostsFile] },
             { CatDeploy,  [TabDeploy, TabCopyFile, TabWinget, TabRegPush, TabPendingUpdates, TabRunUpdates, TabUpdateLog, TabWinKey, TabWsusClient, TabPowerCopy] },
+            { CatGeneral, [TabCompareFiles, TabSoundCombine] },
         };
 
         SelectCategory(CatSystem, TabApps);
@@ -109,6 +110,15 @@ public partial class ToolsPage : ContentPage
     {
         if (sender is Button btn) SelectTab(btn);
     }
+
+    private async void OnNetworkMonitorClicked(object? sender, EventArgs e)
+        => await Shell.Current.GoToAsync("NetworkMonitor");
+
+    private async void OnCompareFilesClicked(object? sender, EventArgs e)
+        => await Shell.Current.GoToAsync("Compare");
+
+    private async void OnSoundCombineClicked(object? sender, EventArgs e)
+        => await Shell.Current.GoToAsync("SoundCombine");
 
     private void SelectCategory(Button cat, Button firstTab)
     {

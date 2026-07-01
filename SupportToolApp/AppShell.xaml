@@ -29,6 +29,8 @@
             <MenuFlyoutItem Text="🔑 Credentials" Clicked="OnCredentialsClicked"/>
             <MenuFlyoutSeparator/>
             <MenuFlyoutItem Text="Help" Clicked="OnHelpClicked"/>
+            <MenuFlyoutSeparator/>
+            <MenuFlyoutItem Text="Exit" Clicked="OnExitClicked"/>
         </MenuBarItem>
     </Shell.MenuBarItems>
 
@@ -125,24 +127,9 @@
         <ShellContent ContentTemplate="{DataTemplate sc:SearchPage}" Route="Search"/>
     </FlyoutItem>
 
-    <FlyoutItem Title="Help">
-        <ShellContent ContentTemplate="{DataTemplate hp:HelpPage}" Route="Help"/>
-    </FlyoutItem>
-
-    <FlyoutItem Title="Compare Files">
-        <ShellContent ContentTemplate="{DataTemplate cp:ComparePage}" Route="Compare"/>
-    </FlyoutItem>
-
-    <FlyoutItem Title="Sound Combine">
-        <ShellContent ContentTemplate="{DataTemplate snd:SoundCombinePage}" Route="SoundCombine"/>
-    </FlyoutItem>
-
     <FlyoutItem Title="Web Apps">
         <ShellContent ContentTemplate="{DataTemplate wa:WebAppsPage}" Route="WebApps"/>
     </FlyoutItem>
 
-    <FlyoutItem Title="Network Monitor">
-        <ShellContent ContentTemplate="{DataTemplate nm:NetworkMonitorPage}" Route="NetworkMonitor"/>
-    </FlyoutItem>
 
 </Shell>
