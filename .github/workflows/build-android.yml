@@ -1,0 +1,41 @@
+name: Build Android
+
+on:
+  push:
+    branches: [ master ]
+  workflow_dispatch:
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+
+      - name: Install MAUI Android workload
+        run: dotnet workload install maui-android
+
+      - name: Build Android APK
+        run: |
+          cd SupportToolApp
+          dotnet publish -f net10.0-android -c Release \
+            -p:AndroidSigningKeyStore="" \
+            -p:AndroidKeyAlias="" \
+            -p:AndroidSigningKeyPass="" \
+            -p:AndroidSigningStorePass="" \
+            -p:ApplicationTitle="PowellTec IT Support Tools" \
+            -p:ApplicationId="com.powelltec.supporttools" \
+            -p:ApplicationDisplayVersion="1.0.0" \
+            -p:ApplicationVersion=1
+
+      - name: Upload Android APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: PowellTec-Android
+          path: SupportToolApp/bin/Release/net10.0-android/**/*.apk
+          if-no-files-found: warn
