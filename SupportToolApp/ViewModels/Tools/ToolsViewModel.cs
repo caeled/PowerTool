@@ -1165,7 +1165,7 @@ public class ToolsViewModel : BaseViewModel
                 : "";
             if (!System.IO.File.Exists(script))
             {
-                ((Page?)Application.Current?.Windows[0].Page)?.DisplayAlertAsync("Not Found", $"PowerCopy.ps1 not found.\nLooked in: {script}", "OK");
+                ((Page?)Application.Current?.Windows[0].Page)?.DisplayAlert("Not Found", $"PowerCopy.ps1 not found.\nLooked in: {script}", "OK");
                 return;
             }
             var psi = new System.Diagnostics.ProcessStartInfo
@@ -1217,7 +1217,7 @@ public class ToolsViewModel : BaseViewModel
             if (SelectedProcess == null) return;
             var target = await ResolveTargetAsync();
             if (target == null) return;
-            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlertAsync(
+            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlert(
                 "Kill Process", $"Kill '{SelectedProcess.Name}' (PID {SelectedProcess.Id}) on {target}?", "Kill", "Cancel");
             if (!confirm) return;
             var script = PsScripts.KillProcess(target, SelectedProcess.Id);
@@ -1230,7 +1230,7 @@ public class ToolsViewModel : BaseViewModel
         {
             var target = await ResolveTargetAsync();
             if (target == null) return;
-            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlertAsync(
+            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlert(
                 "Reboot", $"Reboot {target} now?", "Reboot", "Cancel");
             if (!confirm) return;
             RebootActionLoading = true;
@@ -1439,7 +1439,7 @@ public class ToolsViewModel : BaseViewModel
             if (share == null) return;
             var target = await ResolveTargetAsync();
             if (target == null) return;
-            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlertAsync(
+            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlert(
                 "Remove Share", $"Remove share '{share.Name}' on {target}?", "Remove", "Cancel");
             if (!confirm) return;
             await RunPsRaw(PsScripts.RemoveShare(target, share.Name));
@@ -1492,7 +1492,7 @@ public class ToolsViewModel : BaseViewModel
             { StatusMessage = "Group and user are required."; return; }
             var target = await ResolveTargetAsync();
             if (target == null) return;
-            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlertAsync(
+            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlert(
                 "Remove from Group", $"Remove '{GrpMemberUser}' from '{GrpMemberGroup}' on {target}?", "Remove", "Cancel");
             if (!confirm) return;
             GroupMemberLoading = true;
@@ -1610,7 +1610,7 @@ public class ToolsViewModel : BaseViewModel
             if (RdpSelectedSession == null) { RdpStatus = "Select a session to kick."; return; }
             var target = await ResolveTargetAsync();
             if (target == null) return;
-            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlertAsync(
+            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlert(
                 "Kick Session", $"Log off session {RdpSelectedSession.SessionId} ({RdpSelectedSession.Username}) on {target}?", "Kick", "Cancel");
             if (!confirm) return;
             RdpLoading = true;
@@ -1792,7 +1792,7 @@ public class ToolsViewModel : BaseViewModel
             { StatusMessage = "Key and value name are required."; return; }
             var target = await ResolveTargetAsync();
             if (target == null) return;
-            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlertAsync(
+            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlert(
                 "Delete Registry Value", $"Delete {RegHive}\\{RegKey}\\{RegValueName} on {target}?", "Delete", "Cancel");
             if (!confirm) return;
             RegistryLoading = true;
@@ -2216,7 +2216,7 @@ Invoke-Command -ComputerName '{target}'{(string.IsNullOrWhiteSpace(credPart) ? "
             if (ProcKillSelected == null) { ProcKillStatus = "Select a process first."; return; }
             var target = await ResolveTargetAsync();
             if (target == null) return;
-            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlertAsync(
+            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlert(
                 "Kill Process", $"Kill {ProcKillSelected.Name} (PID {ProcKillSelected.Pid}) on {target}?", "Kill", "Cancel");
             if (!confirm) return;
             ProcKillLoading = true;
@@ -2310,7 +2310,7 @@ Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
         {
             var target = await ResolveTargetAsync();
             if (target == null) return;
-            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlertAsync(
+            bool confirm = await Application.Current!.Windows[0].Page!.DisplayAlert(
                 "Disable WinRM", $"Disable WinRM on {target}? This will break remote management.", "Disable", "Cancel");
             if (!confirm) return;
             WinRmLoading = true; WinRmStatusVisible = false; WinRmOutput = "Disabling WinRM...";

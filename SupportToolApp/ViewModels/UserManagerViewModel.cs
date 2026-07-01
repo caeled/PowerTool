@@ -133,7 +133,7 @@ public class UserManagerViewModel : BaseViewModel
     private async Task RevokeSessionsAsync()
     {
         if (SelectedUser == null) return;
-        var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlertAsync(
+        var confirm = await ((Page)Application.Current!.Windows[0].Page!).DisplayAlert(
             "Revoke O365 Sessions",
             $"This will immediately sign {SelectedUser.DisplayName} out of all Office 365 sessions worldwide. Proceed?",
             "Yes, Revoke", "Cancel");

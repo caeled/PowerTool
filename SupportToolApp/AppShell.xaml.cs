@@ -135,11 +135,11 @@ public partial class AppShell : Shell
             var path = await AppFileDialog.SaveFileAsync("Save Configuration", defaultName, ".json");
             if (string.IsNullOrEmpty(path)) return;
             await File.WriteAllTextAsync(path, json);
-            await DisplayAlertAsync("Config Saved", $"Configuration saved to:\n{path}\n\nCredentials were not included.", "OK");
+            await DisplayAlert("Config Saved", $"Configuration saved to:\n{path}\n\nCredentials were not included.", "OK");
         }
         catch (Exception ex)
         {
-            await DisplayAlertAsync("Save Failed", ex.Message, "OK");
+            await DisplayAlert("Save Failed", ex.Message, "OK");
         }
     }
 
@@ -153,23 +153,23 @@ public partial class AppShell : Shell
             var export = ConfigExport.FromJson(json);
             if (export == null)
             {
-                await DisplayAlertAsync("Load Failed", "The selected file is not a valid SupportTool config.", "OK");
+                await DisplayAlert("Load Failed", "The selected file is not a valid SupportTool config.", "OK");
                 return;
             }
 
-            var confirm = await DisplayAlertAsync("Load Config",
+            var confirm = await DisplayAlert("Load Config",
                 "This will overwrite your current settings (not credentials). Continue?", "Yes", "Cancel");
             if (!confirm) return;
 
             export.Apply(_creds);
             RefreshQuickLinks();
 
-            await DisplayAlertAsync("Config Loaded",
+            await DisplayAlert("Config Loaded",
                 "Settings loaded. Open the Settings page to review, then save to persist.", "OK");
         }
         catch (Exception ex)
         {
-            await DisplayAlertAsync("Load Failed", ex.Message, "OK");
+            await DisplayAlert("Load Failed", ex.Message, "OK");
         }
     }
 }
