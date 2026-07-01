@@ -120,9 +120,9 @@ jobs:
             -p:PublishProfile=win-x64 `
             --nologo
 
-      - name: Upload relay exe
+      - name: Upload relay
         uses: actions/upload-artifact@v4
         with:
           name: PowellTecRelay-win-x64
-          path: publish/relay-win-x64/PowellTecRelay.exe
+          path: publish/relay-win-x64/
           if-no-files-found: error
