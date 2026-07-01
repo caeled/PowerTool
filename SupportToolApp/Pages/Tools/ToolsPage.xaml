@@ -126,8 +126,9 @@
                 <Button Text="WSUS Client"  x:Name="TabWsusClient" Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
                 <Button Text="PowerCopy"     x:Name="TabPowerCopy"    Clicked="OnTabClicked"             BackgroundColor="White"   TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
                 <!-- General -->
-                <Button Text="Compare Files" x:Name="TabCompareFiles" Clicked="OnCompareFilesClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
-                <Button Text="Sound Combine" x:Name="TabSoundCombine" Clicked="OnSoundCombineClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="PowerCopy"     x:Name="TabPowerCopyGeneral" Clicked="OnTabClicked"          BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Compare Files" x:Name="TabCompareFiles"     Clicked="OnCompareFilesClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Sound Combine" x:Name="TabSoundCombine"     Clicked="OnSoundCombineClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
         </FlexLayout>
 
         <!-- Status -->
@@ -1364,18 +1365,9 @@
             </Grid>
 
             <!-- â”€â”€ Temp Cleanup â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ -->
-            <Grid x:Name="PanelTempClean" RowDefinitions="Auto,Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
-                <!-- Credentials row -->
-                <Grid Grid.Row="0" ColumnDefinitions="60,100,80,*,80,*" ColumnSpacing="8">
-                    <Label Grid.Column="0" Text="Domain:" VerticalOptions="Center"/>
-                    <Entry Grid.Column="1" Text="{Binding TempCleanDomain}" Placeholder="."/>
-                    <Label Grid.Column="2" Text="Username:" VerticalOptions="Center"/>
-                    <Entry Grid.Column="3" Text="{Binding TempCleanUsername}" Placeholder="admin (blank = current user)"/>
-                    <Label Grid.Column="4" Text="Password:" VerticalOptions="Center"/>
-                    <Entry Grid.Column="5" Text="{Binding TempCleanPassword}" IsPassword="True"/>
-                </Grid>
+            <Grid x:Name="PanelTempClean" RowDefinitions="Auto,Auto,*" RowSpacing="8" Padding="4" IsVisible="False">
                 <!-- Action buttons row -->
-                <Grid Grid.Row="1" ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="8">
+                <Grid Grid.Row="0" ColumnDefinitions="Auto,Auto,Auto,*" ColumnSpacing="8">
                     <Button Grid.Column="0" Text="Scan" Command="{Binding TempCleanScanCommand}"
                             BackgroundColor="SteelBlue" Padding="16,8"/>
                     <Button Grid.Column="1" Text="Clean Now" Command="{Binding TempCleanRunCommand}"
@@ -1383,11 +1375,11 @@
                     <ActivityIndicator Grid.Column="2" IsRunning="{Binding TempCleanLoading}"
                                        IsVisible="{Binding TempCleanLoading}" Color="SteelBlue"
                                        HorizontalOptions="Start" VerticalOptions="Center"/>
-                    <Label Grid.Column="3" Text="Cleans: C:\Windows\Temp and Prefetch"
+                    <Label Grid.Column="3" Text="Cleans: C:\Windows\Temp and Prefetch — uses saved credentials"
                            VerticalOptions="Center" TextColor="Gray" FontSize="12"/>
                 </Grid>
                 <!-- Folder browser row -->
-                <Grid Grid.Row="2" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
+                <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="8">
                     <Label Grid.Column="0" Text="Browse folder:" VerticalOptions="Center" FontAttributes="Bold"/>
                     <Picker Grid.Column="1" ItemsSource="{Binding TempCleanFolders}"
                             SelectedItem="{Binding TempCleanSelectedFolder}" VerticalOptions="Center"/>
@@ -1395,7 +1387,7 @@
                             BackgroundColor="#1565C0" Padding="16,8"/>
                 </Grid>
                 <!-- Output -->
-                <Border Grid.Row="3" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
+                <Border Grid.Row="2" Padding="14,10" StrokeShape="RoundRectangle 6" BackgroundColor="#1A1A1A" Stroke="#333">
                     <ScrollView>
                         <Label Text="{Binding TempCleanOutput}" FontFamily="Courier New" FontSize="12" TextColor="#00FF41"/>
                     </ScrollView>

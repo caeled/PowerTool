@@ -78,7 +78,8 @@ public partial class ToolsPage : ContentPage
             { TabPing,            PanelPing },
             { TabWifiSetup,       PanelWifiSetup },
             { TabDhcpStats,       PanelDhcpStats },
-            { TabPowerCopy,       PanelPowerCopy },
+            { TabPowerCopy,        PanelPowerCopy },
+            { TabPowerCopyGeneral, PanelPowerCopy },
             { TabAutoLogon,       PanelAutoLogon },
             { TabSetPrinter,      PanelSetPrinter },
             { TabTrustedSites,    PanelTrustedSites },
@@ -98,7 +99,7 @@ public partial class ToolsPage : ContentPage
             { CatNetwork, [TabNetwork, TabPorts, TabPingSweep, TabDns, TabFlushDns, TabNetStat, TabTrace, TabWifi, TabProxy, TabResetNic, TabPing, TabWifiSetup, TabDhcpStats, TabNetMonitor] },
             { CatRemote,  [TabReboot, TabRebootAction, TabEventLog, TabShares, TabRegistry, TabGpUpdate, TabRemotePsRemote, TabPsRunRemote, TabDirBrowser, TabProcKill, TabWinRmToggle, TabWakeOnLan, TabHostsFile] },
             { CatDeploy,  [TabDeploy, TabCopyFile, TabWinget, TabRegPush, TabPendingUpdates, TabRunUpdates, TabUpdateLog, TabWinKey, TabWsusClient, TabPowerCopy] },
-            { CatGeneral, [TabCompareFiles, TabSoundCombine] },
+            { CatGeneral, [TabPowerCopyGeneral, TabCompareFiles, TabSoundCombine] },
         };
 
         SelectCategory(CatSystem, TabApps);
