@@ -123,10 +123,6 @@
         <ShellContent ContentTemplate="{DataTemplate si:SystemInfoPage}" Route="SystemInfo"/>
     </FlyoutItem>
 
-    <FlyoutItem Title="Search &amp; Lookup">
-        <ShellContent ContentTemplate="{DataTemplate sc:SearchPage}" Route="Search"/>
-    </FlyoutItem>
-
     <FlyoutItem Title="Web Apps">
         <ShellContent ContentTemplate="{DataTemplate wa:WebAppsPage}" Route="WebApps"/>
     </FlyoutItem>

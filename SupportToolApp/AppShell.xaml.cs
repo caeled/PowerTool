@@ -21,6 +21,7 @@ public partial class AppShell : Shell
         Routing.RegisterRoute("SetCredentials", typeof(SetCredentialsPage));
         Routing.RegisterRoute("Help",           typeof(Pages.Help.HelpPage));
         Routing.RegisterRoute("NetworkMonitor", typeof(Pages.Monitor.NetworkMonitorPage));
+        Routing.RegisterRoute("Search",         typeof(Pages.Search.SearchPage));
         Routing.RegisterRoute("Compare",        typeof(Pages.Compare.ComparePage));
         Routing.RegisterRoute("SoundCombine",   typeof(Pages.SoundCombine.SoundCombinePage));
         creds.LoadQuickLinks();

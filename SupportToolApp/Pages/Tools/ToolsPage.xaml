@@ -126,8 +126,8 @@
                 <Button Text="WSUS Client"  x:Name="TabWsusClient" Clicked="OnTabClicked" BackgroundColor="#8B0000" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
                 <Button Text="PowerCopy"     x:Name="TabPowerCopy"    Clicked="OnTabClicked"             BackgroundColor="White"   TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
                 <!-- General -->
-                <Button Text="Compare Files" x:Name="TabCompareFiles" Clicked="OnCompareFilesClicked"   BackgroundColor="White"   TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
-                <Button Text="Sound Combine" x:Name="TabSoundCombine" Clicked="OnSoundCombineClicked"   BackgroundColor="White"   TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Compare Files" x:Name="TabCompareFiles" Clicked="OnCompareFilesClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
+                <Button Text="Sound Combine" x:Name="TabSoundCombine" Clicked="OnSoundCombineClicked" BackgroundColor="White" TextColor="Black" Padding="14,7" FontSize="12" Margin="0,0,4,4" IsVisible="False"/>
         </FlexLayout>
 
         <!-- Status -->
@@ -2069,6 +2069,65 @@
                 <Label Grid.Row="0" Text="Opens PowerCopy - a Robocopy GUI for advanced file copy, mirror, and move operations with logging and progress." TextColor="Gray" FontSize="12"/>
                 <Button Grid.Row="1" Text="Launch PowerCopy" Command="{Binding LaunchPowerCopyCommand}" BackgroundColor="SteelBlue" HorizontalOptions="Start" Padding="20,10"/>
             </Grid>
+
+            <!-- ── General / Search & Lookup ──────────────────────────────────── -->
+            <Grid x:Name="PanelSearch" RowDefinitions="Auto,*" ColumnDefinitions="*,*"
+                  ColumnSpacing="12" RowSpacing="12" Padding="4" IsVisible="False">
+                <!-- AD Lookup -->
+                <Border Grid.Row="0" Grid.Column="0" Stroke="LightGray" Padding="12">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Active Directory Lookup" FontAttributes="Bold" FontSize="15"/>
+                        <Grid ColumnDefinitions="*,Auto">
+                            <Entry x:Name="SearchAdEntry" Placeholder="Search users or computers..."/>
+                            <Button Grid.Column="1" Text="Search" Command="{Binding SearchAdCommand}"
+                                    CommandParameter="{Binding Text, Source={x:Reference SearchAdEntry}}" Margin="4,0,0,0"/>
+                        </Grid>
+                        <CollectionView ItemsSource="{Binding AdResults}" HeightRequest="180">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <VerticalStackLayout Padding="4,4">
+                                        <Label Text="{Binding DisplayName}" FontAttributes="Bold"/>
+                                        <Label Text="{Binding UserPrincipalName}" TextColor="Gray" FontSize="12"/>
+                                        <Label Text="{Binding Department}" FontSize="11"/>
+                                    </VerticalStackLayout>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                        <Label Text="File Shares" FontAttributes="Bold" FontSize="15" Margin="0,8,0,0"/>
+                        <CollectionView ItemsSource="{Binding FileShares}" HeightRequest="100">
+                            <CollectionView.ItemTemplate>
+                                <DataTemplate>
+                                    <Grid ColumnDefinitions="*,Auto" Padding="4,4">
+                                        <Label Grid.Column="0" Text="{Binding Name}"/>
+                                        <Button Grid.Column="1" Text="Browse" Command="{Binding BrowseShareCommand}"
+                                                CommandParameter="{Binding Path}" FontSize="11" Padding="8,4"/>
+                                    </Grid>
+                                </DataTemplate>
+                            </CollectionView.ItemTemplate>
+                        </CollectionView>
+                    </VerticalStackLayout>
+                </Border>
+                <!-- Web Search -->
+                <Border Grid.Row="0" Grid.Column="1" Stroke="LightGray" Padding="12">
+                    <VerticalStackLayout Spacing="10">
+                        <Label Text="Web Search" FontAttributes="Bold" FontSize="15"/>
+                        <Entry x:Name="WebSearchEntry2" Placeholder="Search term..."/>
+                        <FlexLayout Wrap="Wrap">
+                            <Button Text="Google"      Command="{Binding WebSearchCommand}" CommandParameter="https://www.google.com/search?q="              Margin="4" FontSize="12"/>
+                            <Button Text="Bing"        Command="{Binding WebSearchCommand}" CommandParameter="https://www.bing.com/search?q="                Margin="4" FontSize="12"/>
+                            <Button Text="Wikipedia"   Command="{Binding WebSearchCommand}" CommandParameter="https://en.wikipedia.org/wiki/Special:Search?search=" Margin="4" FontSize="12"/>
+                            <Button Text="Dell Support" Command="{Binding WebSearchCommand}" CommandParameter="https://www.dell.com/support/home/en-us/search/" Margin="4" FontSize="12"/>
+                        </FlexLayout>
+                        <Label Text="Quick Links" FontAttributes="Bold" FontSize="15" Margin="0,8,0,0"/>
+                        <Button Text="Microsoft 365 Admin"   Command="{Binding OpenUrlCommand}" CommandParameter="https://admin.microsoft.com"              HorizontalOptions="Start"/>
+                        <Button Text="Azure Portal"          Command="{Binding OpenUrlCommand}" CommandParameter="https://portal.azure.com"                 HorizontalOptions="Start"/>
+                        <Button Text="Exchange Admin Center" Command="{Binding OpenUrlCommand}" CommandParameter="https://admin.exchange.microsoft.com"     HorizontalOptions="Start"/>
+                        <Button Text="Entra ID (Azure AD)"   Command="{Binding OpenUrlCommand}" CommandParameter="https://entra.microsoft.com"              HorizontalOptions="Start"/>
+                        <Button Text="Intune / Endpoint Mgr" Command="{Binding OpenUrlCommand}" CommandParameter="https://intune.microsoft.com"             HorizontalOptions="Start"/>
+                    </VerticalStackLayout>
+                </Border>
+            </Grid>
+
         </Grid>
     </Grid>
 </ContentPage>

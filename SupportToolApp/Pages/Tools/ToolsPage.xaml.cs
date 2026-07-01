@@ -1,3 +1,4 @@
+using SupportToolApp.ViewModels;
 using SupportToolApp.ViewModels.Tools;
 
 namespace SupportToolApp.Pages.Tools;
@@ -8,15 +9,18 @@ public partial class ToolsPage : ContentPage
     private Button? _activeTab;
     private Button? _activeCategory;
     private ToolsViewModel? _vm;
+    private readonly SearchViewModel _searchVm;
 
     // Which tool buttons belong to each category
     private readonly Dictionary<Button, Button[]> _categories;
 
-    public ToolsPage(ToolsViewModel vm)
+    public ToolsPage(ToolsViewModel vm, SearchViewModel searchVm)
     {
         InitializeComponent();
         BindingContext = vm;
         _vm = vm;
+        _searchVm = searchVm;
+        PanelSearch.BindingContext = searchVm;
 
         _tabs = new()
         {
@@ -133,10 +137,16 @@ public partial class ToolsPage : ContentPage
 
         // Show only this category's tool buttons, hide the rest
         var visible = _categories[cat];
-        foreach (var (btn, _) in _tabs)
+        foreach (var btn in _categories.Values.SelectMany(b => b))
             btn.IsVisible = visible.Contains(btn);
 
-        SelectTab(firstTab);
+        PanelSearch.IsVisible = (cat == CatGeneral);
+
+        if (_tabs.ContainsKey(firstTab))
+            SelectTab(firstTab);
+        else
+            foreach (var panel in _tabs.Values.Distinct())
+                panel.IsVisible = false;
     }
 
     private void SelectTab(Button tab)
