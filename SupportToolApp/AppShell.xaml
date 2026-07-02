@@ -127,5 +127,8 @@
         <ShellContent ContentTemplate="{DataTemplate wa:WebAppsPage}" Route="WebApps"/>
     </FlyoutItem>
 
+    <MenuItem Text="Settings"     Clicked="OnSettingsClicked"/>
+    <MenuItem Text="Credentials"  Clicked="OnCredentialsClicked"/>
+    <MenuItem Text="Help"         Clicked="OnHelpClicked"/>
 
 </Shell>
