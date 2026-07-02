@@ -1,0 +1,58 @@
+name: Cleanup old artifacts
+
+# Keeps the newest 3 artifacts per name and deletes the rest, so build
+# artifacts don't pile up and fill the 0.5 GB free Actions storage quota.
+
+on:
+  workflow_run:
+    workflows:
+      - "Build Mac Catalyst"
+      - "Build Android"
+      - "Build PowellTec Tools (Avalonia)"
+    types:
+      - completed
+  schedule:
+    - cron: "0 6 * * *"   # daily backstop at 06:00 UTC
+  workflow_dispatch:
+
+permissions:
+  actions: write
+  contents: read
+
+jobs:
+  cleanup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Keep newest 3 artifacts per name
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          KEEP: 3
+        run: |
+          set -euo pipefail
+          # id<TAB>name<TAB>created_at, newest first
+          gh api "repos/$REPO/actions/artifacts" --paginate \
+            -q '.artifacts | sort_by(.created_at) | reverse | .[] | "\(.id)\t\(.name)\t\(.created_at)"' \
+            > all_artifacts.txt || true
+
+          if [ ! -s all_artifacts.txt ]; then
+            echo "No artifacts found. Nothing to do."
+            exit 0
+          fi
+
+          deleted=0
+          # Track how many of each name we've kept so far
+          declare -A seen
+          while IFS=$'\t' read -r id name created; do
+            [ -z "$id" ] && continue
+            count=${seen["$name"]:-0}
+            if [ "$count" -lt "$KEEP" ]; then
+              seen["$name"]=$((count+1))
+              echo "KEEP  $name  ($created)  id=$id"
+            else
+              echo "DELETE $name  ($created)  id=$id"
+              gh api -X DELETE "repos/$REPO/actions/artifacts/$id" >/dev/null 2>&1 && deleted=$((deleted+1)) || true
+            fi
+          done < all_artifacts.txt
+
+          echo "Deleted $deleted artifact(s); kept up to $KEEP per name."
