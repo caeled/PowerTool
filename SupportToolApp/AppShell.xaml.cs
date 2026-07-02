@@ -27,6 +27,15 @@ public partial class AppShell : Shell
         creds.LoadQuickLinks();
         creds.Changed += () => MainThread.BeginInvokeOnMainThread(RefreshQuickLinks);
         RefreshQuickLinks();
+        // Add Settings/Credentials/Help to flyout only on platforms that lack a MenuBar
+        if (DeviceInfo.Current.Platform == DevicePlatform.Android
+         || DeviceInfo.Current.Platform == DevicePlatform.MacCatalyst)
+        {
+            Items.Add(new MenuItem { Text = "Settings"    , Command = new Command(() => OnSettingsClicked(this, EventArgs.Empty)) });
+            Items.Add(new MenuItem { Text = "Credentials" , Command = new Command(() => OnCredentialsClicked(this, EventArgs.Empty)) });
+            Items.Add(new MenuItem { Text = "Help"        , Command = new Command(() => OnHelpClicked(this, EventArgs.Empty)) });
+        }
+
         Navigated += (_, _) => FlyoutIsPresented = false;
         Loaded += async (_, _) =>
         {

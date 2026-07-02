@@ -127,26 +127,5 @@
         <ShellContent ContentTemplate="{DataTemplate wa:WebAppsPage}" Route="WebApps"/>
     </FlyoutItem>
 
-    <MenuItem Text="Settings"    Clicked="OnSettingsClicked">
-        <MenuItem.IsVisible>
-            <OnPlatform x:TypeArguments="x:Boolean" Default="False">
-                <On Platform="Android,MacCatalyst" Value="True"/>
-            </OnPlatform>
-        </MenuItem.IsVisible>
-    </MenuItem>
-    <MenuItem Text="Credentials" Clicked="OnCredentialsClicked">
-        <MenuItem.IsVisible>
-            <OnPlatform x:TypeArguments="x:Boolean" Default="False">
-                <On Platform="Android,MacCatalyst" Value="True"/>
-            </OnPlatform>
-        </MenuItem.IsVisible>
-    </MenuItem>
-    <MenuItem Text="Help"        Clicked="OnHelpClicked">
-        <MenuItem.IsVisible>
-            <OnPlatform x:TypeArguments="x:Boolean" Default="False">
-                <On Platform="Android,MacCatalyst" Value="True"/>
-            </OnPlatform>
-        </MenuItem.IsVisible>
-    </MenuItem>
 
 </Shell>
