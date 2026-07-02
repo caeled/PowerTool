@@ -33,9 +33,18 @@ jobs:
             -p:ApplicationDisplayVersion="1.0.0" \
             -p:ApplicationVersion=1
 
-      - name: Upload Mac app
+      - name: Ad-hoc sign and tar the .app
+        run: |
+          cd SupportToolApp/bin/Release/net10.0-maccatalyst
+          APP=$(ls -d *.app | head -n1)
+          echo "Packaging: $APP"
+          codesign --force --deep --sign - "$APP"
+          # tar preserves executable bits + symlinks that GitHub's zip would destroy
+          tar -czf PowellTec-MacCatalyst.tar.gz "$APP"
+
+      - name: Upload Mac app (tarball)
         uses: actions/upload-artifact@v4
         with:
           name: PowellTec-MacCatalyst
-          path: SupportToolApp/bin/Release/net10.0-maccatalyst/**/*.app
+          path: SupportToolApp/bin/Release/net10.0-maccatalyst/PowellTec-MacCatalyst.tar.gz
           if-no-files-found: warn
