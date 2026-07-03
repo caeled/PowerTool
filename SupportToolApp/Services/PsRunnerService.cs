@@ -15,6 +15,9 @@ public class PsRunnerService
 {
     private readonly CredentialService _creds;
 
+    private static readonly JsonSerializerOptions CaseInsensitive = new() { PropertyNameCaseInsensitive = true };
+    private sealed record RelayRunResponse(string Output, bool Success);
+
     // One shared client per app — a new HttpClient per call exhausts sockets.
     // Per-request headers are set on HttpRequestMessage, never on this client,
     // so concurrent calls can't race on DefaultRequestHeaders.
@@ -75,8 +78,11 @@ public class PsRunnerService
             if (!response.IsSuccessStatusCode)
                 return $"RELAY ERROR: HTTP {(int)response.StatusCode} — {json}";
 
-            var result = JsonSerializer.Deserialize<JsonElement>(json);
-            return result.TryGetProperty("Output", out var o) ? o.GetString() ?? "" : json;
+            // The relay serializes with camelCase ("output"/"success"), so the
+            // property lookup MUST be case-insensitive — a case-sensitive
+            // TryGetProperty("Output") silently misses and returns the raw blob.
+            var result = JsonSerializer.Deserialize<RelayRunResponse>(json, CaseInsensitive);
+            return result?.Output ?? json;
         }
         catch (Exception ex) { return $"RELAY ERROR: {ex.Message}"; }
     }
