@@ -85,7 +85,12 @@ public partial class AppShell : Shell
     {
         if (string.IsNullOrWhiteSpace(_creds.LocalFolder)) return;
         try { await Launcher.OpenAsync(new Uri($"file:///{_creds.LocalFolder.Replace('\\', '/')}")); }
-        catch { System.Diagnostics.Process.Start("explorer.exe", _creds.LocalFolder); }
+        catch
+        {
+            // Fallback for Windows only — Process.Start would throw again on Android/Mac
+            if (OperatingSystem.IsWindows())
+                try { System.Diagnostics.Process.Start("explorer.exe", _creds.LocalFolder); } catch { }
+        }
     }
 
     private async void OnLibraryClicked(object? sender, EventArgs e)

@@ -36,6 +36,9 @@ public static class MauiProgram
         // Credential service — singleton so all pages share the same instance
         builder.Services.AddSingleton<CredentialService>();
 
+        // PowerShell runner — local on Windows, PowellTecRelay elsewhere
+        builder.Services.AddSingleton<PsRunnerService>();
+
         // Auth service (always registered — mock ignores it)
         builder.Services.AddSingleton<IAuthService, GraphAuthService>();
 

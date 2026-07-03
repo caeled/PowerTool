@@ -54,6 +54,11 @@ public class SettingsViewModel : BaseViewModel
     public string RelayUrl    { get => _relayUrl;    set => SetProperty(ref _relayUrl, value); }
     public string RelayApiKey { get => _relayApiKey; set => SetProperty(ref _relayApiKey, value); }
 
+    private string _relayTestResult = "";
+    private bool _relayTesting;
+    public string RelayTestResult { get => _relayTestResult; set => SetProperty(ref _relayTestResult, value); }
+    public bool RelayTesting { get => _relayTesting; set => SetProperty(ref _relayTesting, value); }
+
     public string NewServerName { get => _newServerName; set => SetProperty(ref _newServerName, value); }
     public string NewServerHost { get => _newServerHost; set => SetProperty(ref _newServerHost, value); }
     public bool IsSigningIn { get => _isSigningIn; set => SetProperty(ref _isSigningIn, value); }
@@ -102,6 +107,7 @@ public class SettingsViewModel : BaseViewModel
 
     public ICommand BrowseLogoCommand { get; }
     public ICommand BrowseFolderCommand { get; }
+    public ICommand TestRelayCommand { get; }
 
     public SettingsViewModel(IAuthService auth, CredentialService creds)
     {
@@ -139,6 +145,15 @@ public class SettingsViewModel : BaseViewModel
         {
             var folder = await AppFileDialog.BrowseFolderAsync("Select local folder");
             if (!string.IsNullOrEmpty(folder)) LocalFolder = folder;
+        });
+
+        TestRelayCommand = new Command(async () =>
+        {
+            if (RelayTesting) return;
+            RelayTesting = true;
+            RelayTestResult = "Testing...";
+            RelayTestResult = await PsRunnerService.TestRelayAsync(RelayUrl.Trim());
+            RelayTesting = false;
         });
 
         SaveCommand = new Command(() =>

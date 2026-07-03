@@ -955,10 +955,12 @@ public class ToolsViewModel : BaseViewModel
     // ── Constructor ──────────────────────────────────────────────────────────
 
     private readonly CredentialService _creds;
+    private readonly PsRunnerService _ps;
 
-    public ToolsViewModel(CredentialService creds)
+    public ToolsViewModel(CredentialService creds, PsRunnerService ps)
     {
         _creds = creds;
+        _ps = ps;
         creds.Changed += () => MainThread.BeginInvokeOnMainThread(ApplyCredentials);
 
         ClearTargetCommand = new Command(() => TargetComputer = "");
@@ -1156,6 +1158,11 @@ public class ToolsViewModel : BaseViewModel
 
         LaunchPowerCopyCommand = new Command(() =>
         {
+            if (!OperatingSystem.IsWindows())
+            {
+                StatusMessage = "PowerCopy is a Windows desktop tool and is only available on Windows.";
+                return;
+            }
             // Walk up from AppContext.BaseDirectory until we find a sibling ToolBox folder
             var dir = new System.IO.DirectoryInfo(AppContext.BaseDirectory);
             while (dir != null && !System.IO.Directory.Exists(System.IO.Path.Combine(dir.FullName, "ToolBox")))
@@ -2023,6 +2030,8 @@ public class ToolsViewModel : BaseViewModel
 
         ConnectRemotePsCommand = new Command(async () =>
         {
+            if (!OperatingSystem.IsWindows())
+            { RemotePsStatus = "Interactive PS sessions need a local console — Windows only. Use 'Run PS on Remote' instead."; return; }
             if (string.IsNullOrWhiteSpace(RemotePsUsername) || string.IsNullOrWhiteSpace(RemotePsPassword))
             { RemotePsStatus = "Admin credentials are required for PSRemoting."; return; }
             var target = await ResolveTargetAsync();
@@ -2876,50 +2885,8 @@ Invoke-Command -ComputerName '{target}'{credFlag} -ScriptBlock {{
         StatusMessage = $"{action}ed {serviceName} on {target}.";
     }
 
-    private string RunPsSync(string script)
-    {
-        // On non-Windows, route through the relay service instead of local PowerShell
-        if (!OperatingSystem.IsWindows())
-        {
-            if (!_creds.HasRelay)
-                return "ERROR: No relay configured. Enter the relay URL in Credentials.";
-            try
-            {
-                using var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(120) };
-                if (!string.IsNullOrWhiteSpace(_creds.RelayApiKey))
-                    http.DefaultRequestHeaders.Add("X-Api-Key", _creds.RelayApiKey);
-                var body = System.Text.Json.JsonSerializer.Serialize(new { Script = script });
-                var content = new System.Net.Http.StringContent(body, System.Text.Encoding.UTF8, "application/json");
-                var response = http.PostAsync($"{_creds.RelayUrl.TrimEnd('/')}/run", content).GetAwaiter().GetResult();
-                var json = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                var result = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(json);
-                return result.TryGetProperty("Output", out var o) ? o.GetString() ?? "" : json;
-            }
-            catch (Exception ex) { return $"RELAY ERROR: {ex.Message}"; }
-        }
-
-        var temp = Path.Combine(Path.GetTempPath(), $"tool_{Guid.NewGuid():N}.ps1");
-        File.WriteAllText(temp, script, new System.Text.UTF8Encoding(encoderShouldEmitUTF8Identifier: true));
-        try
-        {
-            var psi = new ProcessStartInfo("powershell.exe",
-                $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"{temp}\"")
-            {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-            using var proc = Process.Start(psi)!;
-            var stdout = proc.StandardOutput.ReadToEnd();
-            var stderr = proc.StandardError.ReadToEnd();
-            proc.WaitForExit();
-            if (!string.IsNullOrWhiteSpace(stderr) && string.IsNullOrWhiteSpace(stdout))
-                return $"STDERR: {stderr.Trim()}";
-            return stdout;
-        }
-        finally { try { File.Delete(temp); } catch { } }
-    }
+    // Delegates to PsRunnerService: local PowerShell on Windows, relay elsewhere.
+    private string RunPsSync(string script) => _ps.Run(script);
 
     private async Task RunPsRaw(string script) => await Task.Run(() => RunPsSync(script));
 

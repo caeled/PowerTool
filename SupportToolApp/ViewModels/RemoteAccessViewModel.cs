@@ -61,9 +61,12 @@ public class RemoteAccessViewModel : BaseViewModel
     public ICommand ClearTargetCommand { get; }
     public ICommand PopOutCommand { get; }
 
-    public RemoteAccessViewModel(IAdService ad)
+    private readonly PsRunnerService _ps;
+
+    public RemoteAccessViewModel(IAdService ad, PsRunnerService ps)
     {
         _ad = ad;
+        _ps = ps;
 
         foreach (var s in AppConfig.Instance.Servers)
             Servers.Add(s);
@@ -84,6 +87,7 @@ public class RemoteAccessViewModel : BaseViewModel
         DeployToolCommand = new Command(() => LaunchTool(AppConfig.Instance.DeployToolUrl));
         ComputerMgmtCommand = new Command(async () =>
         {
+            if (NotWindows("Computer Management")) return;
             var host = await ResolveTargetAsync();
             if (host == null) return;
             try
@@ -100,6 +104,7 @@ public class RemoteAccessViewModel : BaseViewModel
         });
         EventViewerCommand = new Command(async () =>
         {
+            if (NotWindows("Event Viewer")) return;
             var host = await ResolveTargetAsync();
             if (host == null) return;
             try
@@ -125,19 +130,11 @@ public class RemoteAccessViewModel : BaseViewModel
             }
             try
             {
-                var psi = new System.Diagnostics.ProcessStartInfo("powershell.exe",
-                    $"-NoProfile -Command \"Invoke-Command -ComputerName '{host}' -ScriptBlock {{ {RemoteCommand} }}\"")
-                {
-                    RedirectStandardOutput = true,
-                    RedirectStandardError = true,
-                    UseShellExecute = false,
-                    CreateNoWindow = true
-                };
-                var proc = System.Diagnostics.Process.Start(psi)!;
-                var output = await proc.StandardOutput.ReadToEndAsync();
-                var error = await proc.StandardError.ReadToEndAsync();
-                await proc.WaitForExitAsync();
-                RemoteOutput = string.IsNullOrWhiteSpace(output) ? (error.Trim()) : output.Trim();
+                // Routed through PsRunnerService: local PowerShell on Windows,
+                // PowellTecRelay on Android/Mac (relay host runs the Invoke-Command).
+                var script = $"Invoke-Command -ComputerName '{host}' -ScriptBlock {{ {RemoteCommand} }}";
+                var output = await _ps.RunAsync(script);
+                RemoteOutput = output.Trim();
                 StatusMessage = $"Command ran on {host}";
             }
             catch (Exception ex) { StatusMessage = $"Failed: {ex.Message}"; }
@@ -214,6 +211,7 @@ public class RemoteAccessViewModel : BaseViewModel
 
     private void LaunchRdp(string host)
     {
+        if (NotWindows("RDP (mstsc)")) return;
         try
         {
             System.Diagnostics.Process.Start("mstsc", $"/v:{host}");
@@ -225,6 +223,21 @@ public class RemoteAccessViewModel : BaseViewModel
     private void LaunchTool(string path)
     {
         if (string.IsNullOrWhiteSpace(path)) { StatusMessage = "No path or URL configured. Set it in Credentials."; return; }
+
+        // http(s) URLs open fine on any platform via the system browser
+        if (path.StartsWith("http://", StringComparison.OrdinalIgnoreCase)
+         || path.StartsWith("https://", StringComparison.OrdinalIgnoreCase))
+        {
+            try
+            {
+                Launcher.Default.OpenAsync(new Uri(path));
+                StatusMessage = $"Launched: {path}";
+            }
+            catch (Exception ex) { StatusMessage = $"Failed to launch: {ex.Message}"; }
+            return;
+        }
+
+        if (NotWindows("Launching local programs")) return;
         try
         {
             System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo
@@ -235,5 +248,14 @@ public class RemoteAccessViewModel : BaseViewModel
             StatusMessage = $"Launched: {path}";
         }
         catch (Exception ex) { StatusMessage = $"Failed to launch: {ex.Message}"; }
+    }
+
+    // Sets a status message and returns true when running on a platform that
+    // can't host interactive Windows apps (Android / Mac Catalyst).
+    private bool NotWindows(string feature)
+    {
+        if (OperatingSystem.IsWindows()) return false;
+        StatusMessage = $"{feature} is only available on Windows.";
+        return true;
     }
 }

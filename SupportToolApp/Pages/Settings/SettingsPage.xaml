@@ -203,6 +203,11 @@
                         <Label Grid.Column="0" Text="API Key:" VerticalOptions="Center"/>
                         <Entry Grid.Column="1" Text="{Binding RelayApiKey}" Placeholder="changeme" IsPassword="True"/>
                     </Grid>
+                    <Grid ColumnDefinitions="Auto,*" ColumnSpacing="12">
+                        <Button Grid.Column="0" Text="Test Relay" Command="{Binding TestRelayCommand}"
+                                BackgroundColor="#0078D4" TextColor="White" Padding="14,6" FontSize="12" FontAttributes="Bold"/>
+                        <Label Grid.Column="1" Text="{Binding RelayTestResult}" VerticalOptions="Center" FontSize="12"/>
+                    </Grid>
                 </VerticalStackLayout>
             </Border>
 

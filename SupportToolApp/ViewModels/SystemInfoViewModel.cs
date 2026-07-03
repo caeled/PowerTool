@@ -144,6 +144,7 @@ public class ServiceItem
 public class SystemInfoViewModel : BaseViewModel
 {
     private readonly CredentialService _creds;
+    private readonly PsRunnerService _ps;
 
     private string _target = "", _statusMessage = "", _softwareSearch = "", _serviceSearch = "", _errorMessage = "";
     private string _loginCountText = "10";
@@ -202,9 +203,10 @@ public class SystemInfoViewModel : BaseViewModel
     public ICommand ExportCommand       { get; }
     public ICommand QueryLoginsCommand  { get; }
 
-    public SystemInfoViewModel(CredentialService creds)
+    public SystemInfoViewModel(CredentialService creds, PsRunnerService ps)
     {
         _creds = creds;
+        _ps = ps;
 
         QueryCommand = new Command(async () =>
         {
@@ -284,49 +286,14 @@ public class SystemInfoViewModel : BaseViewModel
             """;
     }
 
+    // Delegates to PsRunnerService: local PowerShell on Windows, relay elsewhere.
+    // This page's parsers expect JSON, so error strings are wrapped as {"error":...}.
     private string RunPs(string script)
     {
-        // On non-Windows, route through the relay service instead of local PowerShell
-        if (!OperatingSystem.IsWindows())
-        {
-            if (!_creds.HasRelay)
-                return "{\"error\":\"No relay configured. Enter the relay URL in Credentials.\"}";
-            try
-            {
-                using var http = new System.Net.Http.HttpClient { Timeout = TimeSpan.FromSeconds(120) };
-                if (!string.IsNullOrWhiteSpace(_creds.RelayApiKey))
-                    http.DefaultRequestHeaders.Add("X-Api-Key", _creds.RelayApiKey);
-                var body = System.Text.Json.JsonSerializer.Serialize(new { Script = script });
-                var content = new System.Net.Http.StringContent(body, System.Text.Encoding.UTF8, "application/json");
-                var response = http.PostAsync($"{_creds.RelayUrl.TrimEnd('/')}/run", content).GetAwaiter().GetResult();
-                var json = response.Content.ReadAsStringAsync().GetAwaiter().GetResult();
-                var result = System.Text.Json.JsonSerializer.Deserialize<System.Text.Json.JsonElement>(json);
-                return result.TryGetProperty("Output", out var o) ? (o.GetString() ?? "").Trim() : json;
-            }
-            catch (Exception ex) { return $"{{\"error\":\"Relay error: {ex.Message}\"}}"; }
-        }
-
-        var tmp = Path.Combine(Path.GetTempPath(), $"si_{Guid.NewGuid():N}.ps1");
-        File.WriteAllText(tmp, script, new UTF8Encoding(true));
-        try
-        {
-            var psi = new ProcessStartInfo("powershell.exe",
-                $"-NoProfile -NonInteractive -ExecutionPolicy Bypass -File \"{tmp}\"")
-            {
-                RedirectStandardOutput = true,
-                RedirectStandardError = true,
-                UseShellExecute = false,
-                CreateNoWindow = true
-            };
-            using var proc = Process.Start(psi)!;
-            var output = proc.StandardOutput.ReadToEnd();
-            var error  = proc.StandardError.ReadToEnd();
-            proc.WaitForExit();
-            if (string.IsNullOrWhiteSpace(output) && !string.IsNullOrWhiteSpace(error))
-                try { File.WriteAllText(Path.Combine(Path.GetTempPath(), "si_debug_last.txt"), $"=== SCRIPT ===\n{script}\n\n=== ERROR ===\n{error}"); } catch { }
-            return output.Trim();
-        }
-        finally { try { File.Delete(tmp); } catch { } }
+        var output = _ps.Run(script);
+        if (output.StartsWith("ERROR:") || output.StartsWith("RELAY ERROR:") || output.StartsWith("STDERR:"))
+            return JsonSerializer.Serialize(new { error = output });
+        return output.Trim();
     }
 
     private static string  Str(JsonElement el, string p) =>

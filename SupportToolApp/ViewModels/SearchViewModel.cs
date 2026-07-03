@@ -47,6 +47,7 @@ public class SearchViewModel : BaseViewModel
         });
         BrowseShareCommand = new Command<string>(path =>
         {
+            if (!OperatingSystem.IsWindows()) return;   // Explorer shares are Windows-only
             try { System.Diagnostics.Process.Start("explorer.exe", path); } catch { }
         });
     }
