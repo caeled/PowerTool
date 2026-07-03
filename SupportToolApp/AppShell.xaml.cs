@@ -94,37 +94,39 @@ public partial class AppShell : Shell
     }
 
     private async void OnLibraryClicked(object? sender, EventArgs e)
-        => await Launcher.OpenAsync(new Uri(string.IsNullOrWhiteSpace(_creds.LibraryUrl)
-            ? "https://en.wikipedia.org/wiki/Main_Page" : _creds.LibraryUrl));
+        => await SafeOpenUrlAsync(string.IsNullOrWhiteSpace(_creds.LibraryUrl)
+            ? "https://en.wikipedia.org/wiki/Main_Page" : _creds.LibraryUrl);
 
     private async void OnO365Clicked(object? sender, EventArgs e)
-        => await Launcher.OpenAsync(new Uri("https://m365.cloud.microsoft/chat/"));
+        => await SafeOpenUrlAsync("https://m365.cloud.microsoft/chat/");
 
     private async void OnGoogleClicked(object? sender, EventArgs e)
-        => await Launcher.OpenAsync(new Uri("https://docs.google.com/document/u/0/"));
+        => await SafeOpenUrlAsync("https://docs.google.com/document/u/0/");
 
-    private async void OnQuickLink1Clicked(object? sender, EventArgs e)
-    {
-        if (!string.IsNullOrWhiteSpace(_creds.QuickLink1Url))
-            await Launcher.OpenAsync(new Uri(_creds.QuickLink1Url));
-    }
+    private async void OnQuickLink1Clicked(object? sender, EventArgs e) => await SafeOpenUrlAsync(_creds.QuickLink1Url);
+    private async void OnQuickLink2Clicked(object? sender, EventArgs e) => await SafeOpenUrlAsync(_creds.QuickLink2Url);
+    private async void OnQuickLink3Clicked(object? sender, EventArgs e) => await SafeOpenUrlAsync(_creds.QuickLink3Url);
+    private async void OnQuickLink4Clicked(object? sender, EventArgs e) => await SafeOpenUrlAsync(_creds.QuickLink4Url);
 
-    private async void OnQuickLink2Clicked(object? sender, EventArgs e)
+    // Opens a URL in the system browser without ever throwing. A bad/scheme-less
+    // URL used to crash the whole Android activity (unhandled async-void exception);
+    // here we normalize the scheme and surface failures as an alert instead.
+    private async Task SafeOpenUrlAsync(string? url)
     {
-        if (!string.IsNullOrWhiteSpace(_creds.QuickLink2Url))
-            await Launcher.OpenAsync(new Uri(_creds.QuickLink2Url));
-    }
+        if (string.IsNullOrWhiteSpace(url)) return;
+        url = url.Trim();
 
-    private async void OnQuickLink3Clicked(object? sender, EventArgs e)
-    {
-        if (!string.IsNullOrWhiteSpace(_creds.QuickLink3Url))
-            await Launcher.OpenAsync(new Uri(_creds.QuickLink3Url));
-    }
+        // Prepend https:// when the user left the scheme off (e.g. "voice.google.com")
+        if (!url.Contains("://"))
+            url = "https://" + url;
 
-    private async void OnQuickLink4Clicked(object? sender, EventArgs e)
-    {
-        if (!string.IsNullOrWhiteSpace(_creds.QuickLink4Url))
-            await Launcher.OpenAsync(new Uri(_creds.QuickLink4Url));
+        if (!Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            await DisplayAlert("Invalid Link", $"This isn't a valid URL:\n{url}", "OK");
+            return;
+        }
+        try { await Launcher.OpenAsync(uri); }
+        catch (Exception ex) { await DisplayAlert("Couldn't Open Link", ex.Message, "OK"); }
     }
 
     private async void OnSettingsClicked(object? sender, EventArgs e)
