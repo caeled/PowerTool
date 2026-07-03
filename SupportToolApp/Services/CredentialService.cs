@@ -131,17 +131,28 @@ public class CredentialService
         set { _libraryName = value; Preferences.Set("libraryname", value); Changed?.Invoke(); }
     }
 
+    // ── TEMP TESTING SHORTCUT ─────────────────────────────────────────────────
+    // While iterating on relay functionality, auto-fill the relay URL + key so we
+    // don't have to type them on every device. Flip UseTestRelayDefaults to false
+    // (or just clear the constants) to restore normal "must be entered" behavior.
+    // TODO: turn OFF before any real deployment — see memory project-remote-relay-idea.
+    private const bool   UseTestRelayDefaults = true;
+    private const string TestRelayUrl    = "http://192.168.0.32:5000";
+    private const string TestRelayApiKey = "dd0cc3ae964d98cb6504b2417a76a6efd8b4f394c8c5fc05db8d63c7ddffd11f";
+
     // Relay service (used on non-Windows platforms instead of local PowerShell)
     private string _relayUrl = "", _relayApiKey = "";
     public string RelayUrl
     {
-        get => _relayUrl;
+        get => !string.IsNullOrWhiteSpace(_relayUrl) ? _relayUrl
+             : UseTestRelayDefaults ? TestRelayUrl : "";
         set { _relayUrl = value; Preferences.Set("relayurl", value); Changed?.Invoke(); }
     }
     public string RelayApiKey
     {
-        get => _relayApiKey;
+        get => !string.IsNullOrWhiteSpace(_relayApiKey) ? _relayApiKey
+             : UseTestRelayDefaults ? TestRelayApiKey : "";
         set { _relayApiKey = value; Preferences.Set("relayapikey", value); Changed?.Invoke(); }
     }
-    public bool HasRelay => !string.IsNullOrWhiteSpace(_relayUrl);
+    public bool HasRelay => !string.IsNullOrWhiteSpace(RelayUrl);
 }
