@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="SupportToolApp.Pages.RemoteDesktop.RemoteDesktopPage"
+             Title="Remote Desktop">
+
+    <Grid RowDefinitions="Auto,Auto,*" Padding="12" RowSpacing="8">
+
+        <!-- Header -->
+        <Label Grid.Row="0" Text="Remote Desktop (Guacamole)" FontSize="20" FontAttributes="Bold"/>
+
+        <!-- Address bar -->
+        <Grid Grid.Row="1" ColumnDefinitions="*,Auto,Auto" ColumnSpacing="8">
+            <Entry Grid.Column="0" x:Name="UrlEntry" Keyboard="Url"
+                   Placeholder="http://&lt;guacamole-host&gt;:8080/guacamole"/>
+            <Button Grid.Column="1" Text="Go" Clicked="OnGo"
+                    BackgroundColor="#0078D4" TextColor="White" Padding="16,6"/>
+            <Button Grid.Column="2" Text="Save" Clicked="OnSave"
+                    BackgroundColor="#228B22" TextColor="White" Padding="14,6"/>
+        </Grid>
+
+        <!-- The remote session renders here -->
+        <Border Grid.Row="2" Stroke="#CCC" StrokeThickness="1" StrokeShape="RoundRectangle 6">
+            <Grid>
+                <WebView x:Name="Browser"/>
+                <!-- Shown until a URL is set -->
+                <VerticalStackLayout x:Name="EmptyState" Spacing="6"
+                                     HorizontalOptions="Center" VerticalOptions="Center">
+                    <Label Text="No remote desktop configured" FontAttributes="Bold"
+                           HorizontalOptions="Center"/>
+                    <Label Text="Enter your Guacamole URL above and tap Go (Save to remember it)."
+                           TextColor="Gray" FontSize="12" HorizontalTextAlignment="Center"/>
+                </VerticalStackLayout>
+            </Grid>
+        </Border>
+    </Grid>
+</ContentPage>

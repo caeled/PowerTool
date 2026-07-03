@@ -85,6 +85,7 @@ public class CredentialService
         _logoColor    = Preferences.Get("logocolor",    "#0078D4");
         _relayUrl     = Preferences.Get("relayurl",     "");
         _relayApiKey  = Preferences.Get("relayapikey",  "");
+        _remoteDesktopUrl = Preferences.Get("remotedesktopurl", "");
     }
 
     // Logo (image path or initials badge)
@@ -155,4 +156,14 @@ public class CredentialService
         set { _relayApiKey = value; Preferences.Set("relayapikey", value); Changed?.Invoke(); }
     }
     public bool HasRelay => !string.IsNullOrWhiteSpace(RelayUrl);
+
+    // Guacamole (HTML5 remote desktop) base URL, shown in the Remote Desktop WebView.
+    // e.g. http://192.168.0.50:8080/guacamole  — see DockerServices/guacamole.
+    private string _remoteDesktopUrl = "";
+    public string RemoteDesktopUrl
+    {
+        get => _remoteDesktopUrl;
+        set { _remoteDesktopUrl = value; Preferences.Set("remotedesktopurl", value); Changed?.Invoke(); }
+    }
+    public bool HasRemoteDesktop => !string.IsNullOrWhiteSpace(_remoteDesktopUrl);
 }

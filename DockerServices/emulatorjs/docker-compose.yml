@@ -1,0 +1,27 @@
+# EmulatorJS — browser-based retro game server (LinuxServer.io image)
+# First/learning container. Drop ROMs in ./data, manage at :3000, play at :80.
+#
+# Start:   docker compose up -d
+# Logs:    docker compose logs -f
+# Stop:    docker compose down   (data persists in ./config and ./data)
+#
+# After first start:
+#   1. Open http://<host-ip>:3000  → the management UI
+#   2. Add a system + upload ROMs (or drop files into ./data/<system>/)
+#   3. Play at http://<host-ip>:80
+services:
+  emulatorjs:
+    image: lscr.io/linuxserver/emulatorjs:latest
+    container_name: emulatorjs
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=America/Chicago          # <-- set to your timezone
+    volumes:
+      - ./config:/config            # app config (persists)
+      - ./data:/data                # ROMs + generated player data (persists)
+    ports:
+      - "3000:3000"                 # management / config UI
+      - "80:80"                     # player frontend
+      - "4001:4001"                 # IPFS (optional; safe to remove)
+    restart: unless-stopped

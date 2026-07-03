@@ -1,0 +1,47 @@
+# Apache Guacamole — clientless HTML5 remote desktop (RDP/VNC/SSH in a browser)
+# The Android/Mac remote-desktop + interactive-shell answer. Brokered here,
+# shown in the app via a WebView. Three services: db + guacd proxy + web app.
+#
+# ONE-TIME setup BEFORE first `up` — generate the database schema:
+#   mkdir -p init
+#   docker run --rm guacamole/guacamole:1.5.5 /opt/guacamole/bin/initdb.sh --postgresql > init/initdb.sql
+#   (the ./init folder is auto-loaded by Postgres on first start)
+#
+# Then:
+#   docker compose up -d
+#   Open http://<host-ip>:8080/guacamole   (default login guacadmin / guacadmin — CHANGE IT)
+#
+# CHANGE the two POSTGRES passwords below (must match) before first run.
+services:
+  postgres:
+    image: postgres:16-alpine
+    container_name: guac-postgres
+    environment:
+      POSTGRES_DB: guacamole_db
+      POSTGRES_USER: guacamole
+      POSTGRES_PASSWORD: CHANGE_ME_DB_PASSWORD      # <-- change
+    volumes:
+      - ./data/postgres:/var/lib/postgresql/data
+      - ./init:/docker-entrypoint-initdb.d:ro       # initdb.sql loaded on first start
+    restart: unless-stopped
+
+  guacd:
+    image: guacamole/guacd:1.5.5
+    container_name: guac-guacd
+    restart: unless-stopped
+
+  guacamole:
+    image: guacamole/guacamole:1.5.5
+    container_name: guac-web
+    depends_on:
+      - postgres
+      - guacd
+    environment:
+      GUACD_HOSTNAME: guacd
+      POSTGRESQL_HOSTNAME: postgres
+      POSTGRESQL_DATABASE: guacamole_db
+      POSTGRESQL_USER: guacamole
+      POSTGRESQL_PASSWORD: CHANGE_ME_DB_PASSWORD    # <-- match postgres above
+    ports:
+      - "8080:8080"                                 # web UI at /guacamole
+    restart: unless-stopped

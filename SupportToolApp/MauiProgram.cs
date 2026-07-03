@@ -79,6 +79,7 @@ public static class MauiProgram
         builder.Services.AddTransient<HelpPage>();
         builder.Services.AddTransient<ComparePage>();
         builder.Services.AddTransient<WebAppsPage>();
+        builder.Services.AddTransient<Pages.RemoteDesktop.RemoteDesktopPage>();
 
 #if DEBUG
         builder.Logging.AddDebug();

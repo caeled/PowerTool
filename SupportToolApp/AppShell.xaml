@@ -16,6 +16,7 @@
        xmlns:nm="clr-namespace:SupportToolApp.Pages.Monitor"
        xmlns:snd="clr-namespace:SupportToolApp.Pages.SoundCombine"
        xmlns:wa="clr-namespace:SupportToolApp.Pages.WebApps"
+       xmlns:rd="clr-namespace:SupportToolApp.Pages.RemoteDesktop"
        x:Class="SupportToolApp.AppShell"
        Shell.FlyoutBehavior="Flyout"
        Title="IT Support Tool">
@@ -113,6 +114,10 @@
 
     <FlyoutItem Title="Remote Access">
         <ShellContent ContentTemplate="{DataTemplate ra:RemoteAccessPage}" Route="RemoteAccess"/>
+    </FlyoutItem>
+
+    <FlyoutItem Title="Remote Desktop">
+        <ShellContent ContentTemplate="{DataTemplate rd:RemoteDesktopPage}" Route="RemoteDesktop"/>
     </FlyoutItem>
 
     <FlyoutItem Title="Reporting">
