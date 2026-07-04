@@ -1,7 +1,15 @@
 # DockerServices
 
-Container configs + setup for the Docker host (a dedicated Fedora NUC — see
-`SETUP-Fedora-NUC.md`). Two services planned:
+Container configs + setup for the Docker host. The compose files are Linux
+containers and run **unchanged** on either host, so the interim/permanent split
+costs nothing:
+
+- **Now (interim):** Windows NUC via Docker Desktop + WSL2 — `SETUP-Windows-Docker.md`
+  (helper: `Install-DockerPrereqs.ps1`).
+- **Later (permanent):** dedicated Fedora NUC, headless — `SETUP-Fedora-NUC.md`.
+- **Migration:** copy this whole folder to the new host, `docker compose up -d`. No edits.
+
+Two services:
 
 | Folder        | What it is                                   | Purpose |
 |---------------|----------------------------------------------|---------|
