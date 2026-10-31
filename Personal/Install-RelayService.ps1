@@ -31,7 +31,7 @@
 
 .EXAMPLE
     # Fresh install
-    .\Install-RelayService.ps1 -ServicePassword 'S3cur3P@ss!' -ApiKey 'my-secret-key'
+    .\Install-RelayService.ps1 -ServicePassword 'REPLACE-WITH-A-STRONG-PASSWORD' -ApiKey 'REPLACE-WITH-YOUR-OWN-API-KEY'
 
 .EXAMPLE
     # Upgrade (preserves API key and password)
